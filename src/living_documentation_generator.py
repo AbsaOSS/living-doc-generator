@@ -1,27 +1,10 @@
 import os
 import subprocess
-import argparse
 import sys
 
 
-def extract_args():
-    """ Extract and return the required arguments using argparse. """
-    parser = argparse.ArgumentParser(description='Generate Living Documentation from GitHub repositories.')
-
-    parser.add_argument('--github-token', required=True, help='GitHub token for authentication.')
-    parser.add_argument('--project-state-mining', required=True, help='Enable or disable mining of project state data.')
-    parser.add_argument('--projects-title-filter', required=True, help='Filter projects by titles. Provide a list of project titles.')
-    parser.add_argument('--milestones-as-chapters', required=True, help='Treat milestones as chapters in the generated documentation.')
-    parser.add_argument('--repositories', required=True, help='JSON string defining the repositories to be included in the documentation generation.')
-
-    args = parser.parse_args()
-
+def extend_args():
     env_vars = {
-        'GITHUB_TOKEN': args.github_token,
-        'PROJECT_STATE_MINING': args.project_state_mining,
-        'PROJECTS_TITLE_FILTER': args.projects_title_filter,
-        'MILESTONES_AS_CHAPTERS': args.milestones_as_chapters,
-        'REPOSITORIES': args.repositories,
         'FETCH_DIRECTORY': "src/data/fetched_data",
         'CONSOLIDATION_DIRECTORY': "src/data/consolidation_data",
         'MARKDOWN_PAGE_DIRECTORY': "src/output/markdown_pages"
@@ -44,7 +27,7 @@ def run_script(script_name, env):
 
 def main():
     print("Extracting arguments from command line.")
-    env_vars = extract_args()
+    env_vars = extend_args()
 
     # Create a local copy of the current environment variables
     local_env = os.environ.copy()
@@ -68,6 +51,18 @@ def main():
 
     # Generate markdown pages
     run_script('convert_features_to_pages.py', local_env)
+
+    # TODO ideas to consider during OOP refactoring
+    #
+    #   1. make clean script as method in this script
+    #   2. can be run_script replaced by method calls? ==> reduction standalone script files to methods using OOP
+    #       - we have ActionInputs class, we will have shared logic in library
+    #   3. we can introduce a classes
+    #       - LivingDocumentationDataMiner - mines issues from N repositories, projects
+    #           - will define method for issues mining
+    #           - will define method for project state mining
+    #       - LivingDocumentationConsolidator - consolidates mined data
+    #       - LivingDocumentationBuilder - builds markdown pages from consolidated data
 
 
 if __name__ == '__main__':

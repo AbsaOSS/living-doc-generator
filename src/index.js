@@ -12,7 +12,7 @@ async function run() {
         const repositories = core.getInput('repositories');
 
         // Construct the path to the Python script
-        const scriptPath = path.join(__dirname, 'controller.py');
+        const scriptPath = path.join(__dirname, 'living_documentation_generator.py');
 
         // Construct the command with the provided inputs
         const command = `python3 ${scriptPath} \
