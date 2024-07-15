@@ -55,7 +55,7 @@ class Issue:
 
         :return: The body of the issue as a string, or an empty string if there is no body.
         """
-        return self.__issue.body if self.__issue.body else ""
+        return self.__issue.body if self.__issue.body else "Feature has no content"
 
     @property
     def state(self) -> str:

@@ -48,11 +48,12 @@ def main() -> None:
         issues = GithubManager().fetch_issues(labels=config_repository.query_labels)
 
         # Convert issue objects to dictionaries because they cannot be serialized to JSON directly
-        issues_to_save = [issue_to_dict(issue) for issue in issues]
+        issues_to_save = [issue_to_dict(issue, config_repository) for issue in issues]
+        logging.info(f"`{len(issues_to_save)}` issues in total fetched and ready to be saved.")
 
         # Save issues from one repository as a unique JSON file
         output_file_name = save_to_json_file(issues_to_save, "feature", OUTPUT_DIRECTORY, config_repository.name)
-        logging.info(f"Saved {len(issues_to_save)} issues to {output_file_name}.")
+        logging.info(f"Issue saved into file: {output_file_name}.")
 
     logging.info("Script for downloading issues from GitHub API ended.")
 

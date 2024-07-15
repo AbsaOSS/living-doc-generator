@@ -126,23 +126,3 @@ class RepositoryIssue:
             issue_counter += 1
 
         return issue_counter
-
-    @staticmethod
-    def sanitize_filename(filename: str) -> str:
-        """
-        Sanitizes the provided filename by removing invalid characters and replacing spaces with underscores.
-
-        @param filename: The filename to be sanitized.
-
-        @return: The sanitized filename.
-        """
-        # Remove invalid characters for Windows filenames
-        sanitized_name = re.sub(r'[<>:"/|?*`]', '', filename)
-        # Reduce consecutive periods
-        sanitized_name = re.sub(r'\.{2,}', '.', sanitized_name)
-        # Reduce consecutive spaces to a single space
-        sanitized_name = re.sub(r' {2,}', ' ', sanitized_name)
-        # Replace space with '_'
-        sanitized_name = sanitized_name.replace(' ', '_')
-
-        return sanitized_name

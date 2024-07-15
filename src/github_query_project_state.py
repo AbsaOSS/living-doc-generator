@@ -67,7 +67,7 @@ def main() -> None:
 
     # Save project state into unique JSON file
     output_file_name = save_to_json_file(project_issues_to_save, "projects", OUTPUT_DIRECTORY, "issues")
-    logging.info(f"Project Issue state saved into file: {output_file_name}.")
+    logging.info(f"Project issue state saved into file: {output_file_name}.")
 
     logging.info("Script for downloading project data from GitHub GraphQL ended.")
 

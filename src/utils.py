@@ -7,9 +7,11 @@ These functions can be imported and used in other src as needed.
 
 import os
 import json
+import re
 import requests
 from typing import List
 
+from action.model.config_repository import ConfigRepository
 from github_integration.model.issue import Issue
 
 
@@ -96,11 +98,11 @@ def load_repository_issue_from_issue_directory(directory: str, repository_name: 
     return issue_json_from_data
 
 
-def issue_to_dict(issue: Issue):
+def issue_to_dict(issue: Issue, config_repository: ConfigRepository):
     return {
         "number": issue.number,
-        #"organization_name": issue.organization_name,
-        #"repository_name": issue.repository_name,
+        "organization_name": config_repository.owner,
+        "repository_name": config_repository.name,
         "title": issue.title,
         "state": issue.state,
         #"url": issue.url,
@@ -113,3 +115,38 @@ def issue_to_dict(issue: Issue):
         #"milestone_html_url": issue.milestone.html_url,
         "labels": issue.labels
         }
+
+
+def make_string_key(issue: dict) -> str:
+    """
+       Creates a unique 3way string key for identifying every unique feature.
+
+       @return: The unique string key for the feature.
+    """
+    organization_name = issue.get("organization_name")
+    repository_name = issue.get("repository_name")
+    number = issue.get("number")
+
+    string_key = f"{organization_name}/{repository_name}/{number}"
+
+    return string_key
+
+
+def sanitize_filename(filename: str) -> str:
+    """
+    Sanitizes the provided filename by removing invalid characters and replacing spaces with underscores.
+
+    @param filename: The filename to be sanitized.
+
+    @return: The sanitized filename.
+    """
+    # Remove invalid characters for Windows filenames
+    sanitized_name = re.sub(r'[<>:"/|?*`]', '', filename)
+    # Reduce consecutive periods
+    sanitized_name = re.sub(r'\.{2,}', '.', sanitized_name)
+    # Reduce consecutive spaces to a single space
+    sanitized_name = re.sub(r' {2,}', ' ', sanitized_name)
+    # Replace space with '_'
+    sanitized_name = sanitized_name.replace(' ', '_')
+
+    return sanitized_name
