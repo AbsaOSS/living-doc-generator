@@ -9,15 +9,9 @@ for each unique repository.
 import os
 import logging
 
-from github import Github, Auth
-
 from action.action_inputs import ActionInputs
 from github_integration.github_manager import GithubManager
-
-from utils import (ensure_folder_exists,
-                   save_to_json_file,
-                   issue_to_dict)
-
+from utils import ensure_folder_exists, issue_to_dict, save_to_json_file
 
 ISSUES_PER_PAGE_LIMIT = 100
 OUTPUT_DIRECTORY = "../data/fetched_data/issue_data"
@@ -25,6 +19,7 @@ OUTPUT_DIRECTORY = "../data/fetched_data/issue_data"
 
 def main() -> None:
     # Configure logging
+    # TODO: look at best practice of logging in Python (Logger, place for configuration, etc.)
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
     logging.info("Script for downloading issues from GitHub API started.")
@@ -37,16 +32,14 @@ def main() -> None:
     ensure_folder_exists(OUTPUT_DIRECTORY, current_dir)
 
     # Initialize GitHub instance
-    auth = Auth.Token(token=action_inputs.github_token)
-    GithubManager().github = Github(auth=auth, per_page=ISSUES_PER_PAGE_LIMIT)
-    GithubManager().show_rate_limit()
+    GithubManager().initialize_github_instance(action_inputs.github_token, ISSUES_PER_PAGE_LIMIT)
 
     # Mine issues from every config repository
     config_repositories = action_inputs.repositories
     for config_repository in config_repositories:
         repository_id = f"{config_repository.owner}/{config_repository.name}"
 
-        if GithubManager().fetch_repository(repository_id) is None:
+        if GithubManager().store_repository(repository_id) is None:
             return None
 
         logging.info(f"Downloading issues from repository `{config_repository.owner}/{config_repository.name}`.")

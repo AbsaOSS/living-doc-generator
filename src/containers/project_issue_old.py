@@ -1,9 +1,12 @@
 from typing import Optional
 
+from typing_extensions import deprecated
+
 NO_VALUE_SELECTED = "N/A"
 
 
-class ProjectIssue:
+@deprecated
+class ProjectIssueOld:
     def __init__(self):
         self.number: int = 0
         self.organization_name: str = ""
@@ -40,7 +43,7 @@ class ProjectIssue:
         self.repository_name = repository_info['name']
         self.organization_name = repository_info['owner']['login']
 
-        field_types = []
+        """field_types = []
         if 'fieldValues' in issue_json:
             for node in issue_json['fieldValues']['nodes']:
                 if node['__typename'] == 'ProjectV2ItemFieldSingleSelectValue':
@@ -54,7 +57,7 @@ class ProjectIssue:
             elif field_type in field_options.get('Size', []):
                 self.size = field_type
             elif field_type in field_options.get('MoSCoW', []):
-                self.moscow = field_type
+                self.moscow = field_type"""
 
     # TODO: wrong naming
     def load_from_data(self, issue_from_data):

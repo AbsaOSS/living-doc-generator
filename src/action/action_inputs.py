@@ -2,7 +2,8 @@ import json
 import logging
 import os
 
-from .model.config_repository import ConfigRepository
+from action.model.config_repository import ConfigRepository
+from utils import ensure_folder_exists
 
 
 class ActionInputs:
@@ -40,7 +41,7 @@ class ActionInputs:
 
     def load_from_environment(self, validate: bool = True) -> 'ActionInputs':
         self.__github_token = os.getenv('GITHUB_TOKEN')
-        self.__is_project_state_mining_enabled = os.getenv('PROJECT_STATE_MINING').lower == "true"
+        self.__is_project_state_mining_enabled = os.getenv('PROJECT_STATE_MINING').lower() == "true"
         self.__projects_title_filter = os.getenv('PROJECTS_TITLE_FILTER')
         self.__are_milestones_as_chapters_enabled = os.getenv('MILESTONES_AS_CHAPTERS').lower() == "true"
         self.__output_directory = os.getenv('OUTPUT_DIRECTORY')
@@ -71,5 +72,16 @@ class ActionInputs:
         return self
 
     def validate_inputs(self, repositories_json: str) -> None:
-        # TODO: repositories je json string, mam github token, output dir je dosazitelna, jinak vytvorim
-        pass
+        # Validate correct format of input repositories_json
+        try:
+            json.loads(repositories_json)
+        except json.JSONDecodeError:
+            raise ValueError("Input attr `repositories_json` is not a valid JSON string")
+
+        # Validate GitHub token
+        if not self.__github_token:
+            raise ValueError("GitHub token could not be loaded from the environment")
+
+        # TODO: Validate existence and reachability of output directory
+        # current_dir = os.path.dirname(os.path.abspath(__file__))
+        # ensure_folder_exists(self.output_directory, current_dir)

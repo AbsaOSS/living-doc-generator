@@ -6,74 +6,70 @@ It queries GitHub's GraphQL API to get the data, and then processes and generate
 project output JSON file/s.
 """
 
-import json
 import os
+import logging
 
-from containers.repository_old import Repository
+from action.action_inputs import ActionInputs
+from github_integration.github_manager import GithubManager
+from utils import ensure_folder_exists, save_to_json_file
 
-from utils import (ensure_folder_exists,
-                   initialize_request_session,
-                   save_to_json_file)
-
+ISSUES_PER_PAGE_LIMIT = 100
 OUTPUT_DIRECTORY = "../data/fetched_data/project_data"
 
 
 def main() -> None:
-    print("Script for downloading project data from GitHub GraphQL started.")
+    # Configure logging
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    # TODO: This part of code almost identical as in query_issues.py script
-    # TODO: Make an util method for parsing repositories
-    # Get environment variables from the controller script
-    github_token = os.getenv('GITHUB_TOKEN')
-    repositories_env = os.getenv('REPOSITORIES')
-    projects_title_filter = os.getenv('PROJECTS_TITLE_FILTER')
+    logging.info("Script for downloading project data from GitHub GraphQL started.")
 
-    project_state_mining = os.getenv('PROJECT_STATE_MINING')
-    project_state_mining = project_state_mining.lower() == 'true'
-
-    # Parse repositories JSON string
-    try:
-        repositories_json = json.loads(repositories_env)
-    except json.JSONDecodeError as e:
-        print(f"Error parsing REPOSITORIES: {e}")
-        exit(1)
+    # Load action inputs from the environment
+    action_inputs = ActionInputs().load_from_environment()
 
     # Check if the output directory exists and create it if not
     current_dir = os.path.dirname(os.path.abspath(__file__))
     ensure_folder_exists(OUTPUT_DIRECTORY, current_dir)
 
-    # Initialize the request session
-    session = initialize_request_session(github_token)
-
     # Check if project mining is allowed and exit the script if necessary
-    if not project_state_mining:
-        print("Project data mining is not allowed. The process will not start.")
+    if not action_inputs.is_project_state_mining_enabled:
+        logging.info("Project data mining is not allowed. The process will not start.")
         exit()
 
-    print("Project data mining allowed, starting the process.")
+    logging.info("Project data mining allowed, starting the process.")
 
-    projects = {}
+    # Initialize GitHub instance
+    GithubManager().initialize_github_instance(action_inputs.github_token, ISSUES_PER_PAGE_LIMIT)
 
-    # Generate main project structure for every unique project, that is attached to any input repository
-    for repository_json in repositories_json:
-        repository = Repository()
-        repository.load_from_json(repository_json)
+    # Initialize the request session
+    GithubManager().initialize_request_session(action_inputs.github_token)
 
-        # Update `projects` dictionary with key / value of project_id / project object
-        repository.get_unique_projects(session, projects_title_filter, projects)
+    # Mine project issues for every repository
+    projects = []
+    project_issues = []
+    config_repositories = action_inputs.repositories
+    for config_repository in config_repositories:
+        repository_id = f"{config_repository.owner}/{config_repository.name}"
 
-    # Update every project with project issue related data
-    for project_id, project in projects.items():
-        project.update_with_issue_data(session)
+        if GithubManager().store_repository(repository_id) is None:
+            return None
 
-        # Convert object back into dictionary, so it can be serialized to JSON directly
-        project_state_to_save = project.to_dict()
+        # Fetch all projects attached to the repository
+        projects_title_filter = action_inputs.projects_title_filter
+        projects.extend(prjts := GithubManager().fetch_repository_projects(projects_title_filter))
 
-        # Save project state into unique JSON file
-        output_file_name = save_to_json_file(project_state_to_save, "project", OUTPUT_DIRECTORY, project.title)
-        print(f"Project's '{project.title}' Issue state saved into file: {output_file_name}.")
+        # Update every project with project issue related data
+        for project in prjts:
+            project_issues.extend(GithubManager().fetch_project_issues(project))
 
-    print("Script for downloading project data from GitHub GraphQL ended.")
+    # Convert issue objects back into dictionary, so it can be serialized to JSON directly
+    project_issues_to_save = [project_issue.to_dict() for project_issue in project_issues]
+    logging.info(f"`{len(project_issues_to_save)}` project issues in total fetched and ready to be saved.")
+
+    # Save project state into unique JSON file
+    output_file_name = save_to_json_file(project_issues_to_save, "projects", OUTPUT_DIRECTORY, "issues")
+    logging.info(f"Project Issue state saved into file: {output_file_name}.")
+
+    logging.info("Script for downloading project data from GitHub GraphQL ended.")
 
 
 if __name__ == "__main__":

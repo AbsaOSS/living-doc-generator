@@ -1,7 +1,8 @@
 from typing import List, Dict
 import requests
+from typing_extensions import deprecated
 
-from .project_issue import ProjectIssue
+from .project_issue_old import ProjectIssueOld
 from .base_container import BaseContainer
 from .gh_project import GHProject
 
@@ -64,6 +65,7 @@ PROJECT_FIELD_OPTIONS_QUERY = """
         """
 
 
+@deprecated
 class Project(BaseContainer):
     def __init__(self):
         self.id: str = ""
@@ -72,7 +74,7 @@ class Project(BaseContainer):
         self.organization_name: str = ""
         self.config_repositories: List[str] = []
         self.project_repositories: List[str] = []
-        self.issues: List[ProjectIssue] = []
+        self.issues: List[ProjectIssueOld] = []
         self.field_options: Dict[str, List[str]] = {}
 
     def to_dict(self):
@@ -193,7 +195,7 @@ class Project(BaseContainer):
         for gh_issue in gh_project_issues:
             if ('content' in gh_issue and gh_issue['content'] is not None
                     and gh_issue['content'] != {}):
-                project_issue = ProjectIssue()
+                project_issue = ProjectIssueOld()
                 project_issue.load_from_api_json(gh_issue, self.field_options)
 
                 # Update project with attached repositories

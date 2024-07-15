@@ -4,14 +4,18 @@ import time
 from datetime import datetime
 from typing import Optional
 
-from github import Github
+import requests
+from github import Github, Auth
 from github.GitRelease import GitRelease
 from github.RateLimit import RateLimit
 from github.Repository import Repository
 
-from github_integration.model.commit import Commit
-from github_integration.model.issue import Issue
-from github_integration.model.pull_request import PullRequest
+from .github_project_queries import GithubProjectQueries
+from .model.commit import Commit
+from .model.issue import Issue
+from .model.pull_request import PullRequest
+from .model.github_project import GithubProject
+from .model.project_issue import ProjectIssue
 
 
 def singleton(cls):
@@ -46,6 +50,7 @@ class GithubManager:
         self.__g = None
         self.__repository = None
         self.__git_release = None
+        self.__session = None
 
     @property
     def github(self) -> Github:
@@ -85,7 +90,7 @@ class GithubManager:
 
     # fetch method
 
-    def fetch_repository(self, repository_id: str) -> Optional[Repository]:
+    def store_repository(self, repository_id: str) -> Optional[Repository]:
         """
         Fetches a repository from GitHub using the provided repository ID.
 
@@ -139,17 +144,25 @@ class GithubManager:
         if labels is None:
             labels = []
 
-        if self.__git_release is None:
+        # TODO: issue here!
+        # TODO: issue with saving repository issues, because we have to fetch extra labels, which is extra call and is late
+        issues = []
+        if not labels:
             logging.info(f"Fetching all issues for {self.__repository.full_name}")
-            issues = self.__repository.get_issues(state="all", labels=labels)
+            issues.extend(self.__repository.get_issues(state="all"))
         else:
-            logging.info(f"Fetching all issues since {self.__git_release.published_at} for {self.__repository.full_name}")
-            issues = self.__repository.get_issues(state="all", since=self.__git_release.published_at, labels=labels)
+            # We fetch issues for every config label, because we don't want to fetch all issues and filter afterward
+            for label in labels:
+                logging.info(f"Fetching issues with label {label} for {self.__repository.full_name}")
+                issues.extend(self.__repository.get_issues(state="all", labels=[label]))
 
         parsed_issues = []
+        issue_unique_numbers = []
         logging.info(f"Found {len(list(issues))} issues for {self.__repository.full_name}")
         for issue in list(issues):
-            parsed_issues.append(Issue(issue))
+            if issue.number not in issue_unique_numbers:
+                parsed_issues.append(Issue(issue))
+                issue_unique_numbers.append(issue.number)
 
         return parsed_issues
 
@@ -213,6 +226,11 @@ class GithubManager:
 
     # others
 
+    def initialize_github_instance(self, github_token: str, per_page: int):
+        auth = Auth.Token(token=github_token)
+        self.github = Github(auth=auth, per_page=per_page)
+        self.show_rate_limit()
+
     def show_rate_limit(self):
         if not logging.getLogger().isEnabledFor(logging.DEBUG):
             # save API Call when not in debug mode
@@ -232,3 +250,146 @@ class GithubManager:
             time.sleep(sleep_time)
         else:
             logging.debug(f"Rate limit: {rate_limit.core.remaining} remaining of {rate_limit.core.limit}")
+
+    def initialize_request_session(self, github_token: str):
+        """
+        Initializes the request Session and updates the headers.
+
+        @param github_token: The GitHub user token for authentication.
+
+        @return: A configured request session.
+        """
+
+        self.__session = requests.Session()
+        headers = {
+            "Authorization": f"Bearer {github_token}",
+            "User-Agent": "IssueFetcher/1.0"
+        }
+        self.__session.headers.update(headers)
+
+        return self.__session
+
+    def fetch_repository_projects(self, projects_title_filter) -> list[GithubProject]:
+        projects = []
+
+        # Fetch the project response from the GraphQL API
+        projects_from_repo_query = GithubProjectQueries.get_projects_from_repo_query(self.__repository.owner.login,
+                                                                                     self.__repository.name)
+        projects_from_repo_response = self.send_graphql_query(projects_from_repo_query)
+
+        # If response is not None, parse the project response
+        if projects_from_repo_response['repository'] is not None:
+            projects_from_repo_nodes = projects_from_repo_response['repository']['projectsV2']['nodes']
+            projects = []
+
+            for project_json in projects_from_repo_nodes:
+                # Check if the project is required based on the configuration filter
+                project_title = project_json['title']
+                # If no filter is provided, all projects are required
+                is_project_required = (projects_title_filter == '[]') or (project_title in projects_title_filter)
+
+                # Main project structure is loaded and added to the projects list
+                if is_project_required:
+                    project = GithubProject().load_from_json(project_json, self.__repository)
+                    projects.append(project)
+
+            # Add the field options to the main project structure
+            # TODO: Put this into load from json
+            projects = [self.update_field_options(project) for project in projects]
+
+        else:
+            logging.warning(f"'repository' key is None in response: {projects_from_repo_response}")
+
+        if not projects:
+            logging.info(f"No project attached for repository: {self.__repository.owner.login}/{self.__repository.name}")
+
+        return projects
+
+    def send_graphql_query(self, query: str) -> dict[str, dict]:
+        """
+        Sends a GraphQL query to the GitHub API and returns the response.
+        If an HTTP error occurs, it prints the error and returns an empty dictionary.
+
+        @param query: The GraphQL query to be sent in f string format.
+
+        @return: The response from the GitHub GraphQL API in a dictionary format.
+        """
+        try:
+            # Fetch the response from the API
+            response = self.__session.post('https://api.github.com/graphql', json={'query': query})
+            # Check if the request was successful
+            response.raise_for_status()
+
+            return response.json()["data"]
+
+        # Specific error handling for HTTP errors
+        except requests.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err}")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        return {}
+
+    def update_field_options(self, project: GithubProject):
+        # Fetch the project field options from the GraphQL API
+        project_field_options_query = GithubProjectQueries.get_project_field_options_query(self.__repository.owner.login,
+                                                                                           self.__repository.name,
+                                                                                           project.number)
+        field_option_response = self.send_graphql_query(project_field_options_query)
+
+        if field_option_response is None:
+            logging.warning(f"Field option response is None for query: {project_field_options_query}")
+
+        # Parse the field options from the response
+        field_options_nodes = field_option_response['repository']['projectV2']['fields']['nodes']
+        for field_option in field_options_nodes:
+            if "name" in field_option and "options" in field_option:
+                field_name = field_option["name"]
+                options = [option["name"] for option in field_option["options"]]
+
+                # Update the project structure with field options
+                project.field_options.update({field_name: options})
+
+        return project
+
+    def fetch_project_issues(self, project: GithubProject) -> list[ProjectIssue]:
+        """
+        Fetches all issues from a given project using a GraphQL query.
+        The issues are fetched supported by pagination.
+
+        @return: The list of all issues in the project.
+        """
+        project_issues_raw = []
+        cursor = None
+
+        while True:
+            # Add the after argument to the query if a cursor is provided
+            after_argument = f'after: "{cursor}"' if cursor else ''
+
+            # Fetch project issues via GraphQL query
+            issues_from_project_query = GithubProjectQueries.get_issues_from_project_query(project.id,
+                                                                                           after_argument)
+
+            project_issues_response = self.send_graphql_query(issues_from_project_query)
+
+            # Return empty list, if project has no issues attached
+            if len(project_issues_response) == 0:
+                return []
+
+            general_response_structure = project_issues_response['node']['items']
+            project_issue_data = general_response_structure['nodes']
+            page_info = general_response_structure['pageInfo']
+
+            # Extend project issues list per every page during pagination
+            project_issues_raw.extend(project_issue_data)
+            logging.info(f"Loaded `{len(project_issue_data)}` issues.")
+
+            # Check for closing the pagination process
+            if not page_info['hasNextPage']:
+                break
+            cursor = page_info['endCursor']
+
+        project_issues = [ProjectIssue().load_from_json(issue_json, project) for issue_json in project_issues_raw]
+
+        return project_issues

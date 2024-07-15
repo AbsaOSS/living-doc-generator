@@ -79,7 +79,7 @@ class RepositoryOLD(BaseContainer):
 
         return gh_projects
 
-    def get_issues(self, session: requests.sessions.Session) -> List[RepositoryIssue]:
+    """def get_issues(self, session: requests.sessions.Session) -> List[RepositoryIssue]:
         repository_issues = []
         repository_issue_numbers = set()
 
@@ -141,7 +141,7 @@ class RepositoryOLD(BaseContainer):
                 print(f"An error occurred: {e}")
                 break
 
-        return repository_issues
+        return repository_issues"""
 
     def get_base_endpoint(self, label_name: str) -> str:
         """
