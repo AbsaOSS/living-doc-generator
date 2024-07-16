@@ -51,11 +51,11 @@ def generate_issue_summary_table(consolidated_issue: ConsolidatedIssue) -> str:
 
         @return: A string representing the feature information in a table format.
     """
-    # Get the issue labels and join them into one string
+    # Join issue labels into one string
     labels = consolidated_issue.labels
     labels = ', '.join(labels) if labels else None
 
-    # Get the issue URL and format it as a Markdown link
+    # Format issue URL as a Markdown link
     issue_url = consolidated_issue.url
     issue_url = f"[GitHub link]({issue_url})" if issue_url else None
 
@@ -85,26 +85,6 @@ def generate_issue_summary_table(consolidated_issue: ConsolidatedIssue) -> str:
         # consolidated_issue.closed_at,
         labels
     ]
-
-    # # Update the summary table, if issue has a milestone object
-    # if consolidated_issue.milestone is not None:
-    #     milestone_url = consolidated_issue.milestone.html_url
-    #     milestone_url = f"[GitHub link]({milestone_url})"
-    #
-    #     headers.extend([
-    #         "Milestone number",
-    #         "Milestone title",
-    #         "Milestone URL"
-    #     ])
-    #
-    #     values.extend([
-    #         consolidated_issue.milestone.number,
-    #         consolidated_issue.milestone.title,
-    #         milestone_url
-    #     ])
-    # else:
-    #     headers.append("Milestone")
-    #     values.append(None)
 
     # Update the summary table, if issue is linked to the project
     if consolidated_issue.linked_to_project:
@@ -210,56 +190,6 @@ def generate_markdown_line(consolidated_issue) -> str:
     return md_issue_line
 
 
-# def group_issues_by_milestone(consolidated_issues_data: list) -> Dict[str, List[ConsolidatedIssue]]:
-#     """
-#         Groups issues by their milestone.
-#
-#         @param consolidated_issues_data: A list of all consolidated issues.
-#
-#         @return: A dictionary where each key is a milestone title and the value is a list of issues
-#          under that milestone.
-#     """
-#
-#     # Initialize a dictionary to store all milestones
-#     milestones = {}
-#
-#     # Create a consolidated issue objects from the data
-#     for consolidated_issue_data in consolidated_issues_data:
-#         consolidated_issue = ConsolidatedIssue()
-#         consolidated_issue.load_from_data(consolidated_issue_data)
-#
-#         # Prepare the structure for correct grouping the issues with same milestone
-#         if consolidated_issue.milestone is not None:
-#             milestone_title = f"{consolidated_issue.milestone.title}"
-#         else:
-#             milestone_title = "No milestone"
-#
-#         # Create a new milestone structure, if it does not exist
-#         if milestone_title not in milestones:
-#             milestones[milestone_title] = []
-#
-#         # Add the issue to the correct milestone
-#         milestones[milestone_title].append(consolidated_issue)
-#
-#     return milestones
-
-
-# def generate_milestone_block(milestone_table_header: str, milestone_title: str, issue_lines: List[str]) -> str:
-#     """
-#         Generates a markdown block for a given milestone and its features.
-#
-#         @param milestone_table_header: The table header for the milestone block.
-#         @param milestone_title: The title of the milestone.
-#         @param issue_lines: A list of markdown lines, each representing a feature.
-#
-#         @return: A string representing the markdown block for the milestone.
-#     """
-#
-#     milestone_block = f"\n### {milestone_title}\n" + milestone_table_header + "".join(issue_lines)
-#
-#     return milestone_block
-
-
 def process_consolidated_issues(consolidated_issues_data,
                                 issue_page_template: str,
                                 output_directory: str) -> str:
@@ -269,56 +199,17 @@ def process_consolidated_issues(consolidated_issues_data,
            |-----------------------|-----------------|---------------------------|---------|------|-----|
            """
 
+    # Create an issue summary table for every issue
     issue_markdown_content += "\n" + table_header
 
     for consolidated_issue_data in consolidated_issues_data:
         consolidated_issue = ConsolidatedIssue().load_consolidated_issue(consolidated_issue_data)
         issue_markdown_content += generate_markdown_line(consolidated_issue)
 
+        # Generate a single issue Markdown page
         generate_md_issue_page(issue_page_template, consolidated_issue, output_directory)
 
     return issue_markdown_content
-
-
-# def generate_table_of_contents(content: str) -> str:
-#     """
-#     Generates a table of contents for a given markdown content.
-#
-#     @param content: The string containing the markdown content.
-#
-#     @return: A string representing the table of contents in a md format.
-#     """
-#
-#     # Find all headings in the content
-#     headings = re.findall(r"(#+) (.+)", content)
-#
-#     # Set the table of contents
-#     toc = []
-#
-#     # Add the table of contents header
-#     toc.append("## Table of Contents")
-#
-#     for level, title in headings:
-#         # Ignore Heading 1
-#         if len(level) == 1:
-#             continue
-#
-#         # Normalize the title to create anchor links
-#         normalized_title = re.sub(r"[^\w\s-]", '', title.lower())
-#         anchor_link = normalized_title.replace(' ', '-')
-#
-#         # Calculate the indentation based on number of hash marks
-#         indentation = ' ' * 4 * (len(level) - 2)
-#
-#         # Create Markdown string for the table of contents
-#         toc_link = f"{indentation}- [{title}](#{anchor_link})"
-#
-#         toc.append(toc_link)
-#
-#     # ToC into single string separated
-#     toc_string = "\n".join(toc)
-#
-#     return toc_string
 
 
 def generate_index_page(issue_markdown_content: str, template_index_page: str, output_directory: str) -> None:
@@ -341,17 +232,6 @@ def generate_index_page(issue_markdown_content: str, template_index_page: str, o
     # Replace the issue placeholders in the index template
     index_page = replace_template_placeholders(template_index_page, replacement)
 
-    # Generate table of contents, if config value of `milestones_as_chapters` is True
-    # table_of_contents = generate_table_of_contents(index_page_content) if milestones_as_chapters else ""
-
-    # # Prepare additional replacements for the index page
-    # replacements = {
-    #     "table-of-contents": table_of_contents
-    # }
-
-    # Second wave of replacing placeholders in the index template
-    # index_page = replace_template_placeholders(index_page_content, replacements)
-
     # Create an index page file
     with open(os.path.join(output_directory, "_index.md"), 'w', encoding='utf-8') as index_file:
         index_file.write(index_page)
@@ -365,7 +245,7 @@ def main() -> None:
 
     logging.info("Script for converting consolidated issues into markdown pages started.")
 
-    # Load action inputs from the environment
+    # Load action inputs from the environment and prepare output directory
     action_inputs = ActionInputs().load_from_environment()
     output_directory_root = f"{action_inputs.output_directory}/liv-doc"
     output_directory = os.path.join(output_directory_root, OUTPUT_DIRECTORY_ISSUE)
@@ -386,13 +266,9 @@ def main() -> None:
     with open(INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as idx_page_template_file:
         index_page_template = idx_page_template_file.read()
 
-    # Organize consolidated issues data by milestones
-    # milestones = group_issues_by_milestone(consolidated_issues_data)
-
-    # Generate single markdown pages
+    # Process consolidated issues and generate markdown pages
     issue_markdown_content = process_consolidated_issues(consolidated_issues_data,
-                                                         issue_page_template,
-                                                         output_directory)
+                                                         issue_page_template, output_directory)
 
     # Generate index page
     generate_index_page(issue_markdown_content, index_page_template, output_directory)

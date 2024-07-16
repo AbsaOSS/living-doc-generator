@@ -79,24 +79,6 @@ def save_to_json_file(items_to_save: list, object_type: str, output_directory: s
     return output_file_name
 
 
-# def load_repository_issue_from_issue_directory(directory: str, repository_name: str) -> List[dict]:
-#     """
-#         Loads feature data from a JSON file located in a specified directory.
-#
-#         @param directory: The directory where the JSON file to be loaded is located.
-#         @param repository_name: The name of the repository for which the feature data is being loaded.
-#
-#         @return: The feature data as a list of dictionaries.
-#     """
-#     # Load feature data
-#     # TODO: Make a context attribute for feature, so the method is more generic
-#     issue_filename = f"{repository_name}.feature.json"
-#     issue_filename_path = os.path.join(directory, issue_filename).replace("-", "_").lower()
-#     issue_json_from_data = json.load(open(issue_filename_path))
-#
-#     return issue_json_from_data
-
-
 def issue_to_dict(issue: Issue, config_repository: ConfigRepository):
     return {
         "number": issue.number,

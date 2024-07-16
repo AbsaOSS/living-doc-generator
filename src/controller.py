@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 import argparse
@@ -33,16 +34,18 @@ def run_script(script_name, env):
     """ Helper function to run a Python script with environment variables using subprocess """
     try:
         # Running the python script with given environment variables
-        result = subprocess.run(['python3', script_name], env=env, text=True, capture_output=True, check=True)
-        print(f"Output from {script_name}: {result.stdout}")
+        result = subprocess.run(['python3.11', script_name], env=env, text=True, capture_output=True, check=True)
+        logging.info(f"Output from {script_name}: {result.stdout}")
 
     except subprocess.CalledProcessError as e:
-        print(f"Error running {script_name}: \n{e.stdout}\n{e.stderr}")
+        logging.error(f"Error running {script_name}: \n{e.stdout}\n{e.stderr}")
         sys.exit(1)
 
 
 def main():
-    print("Extracting arguments from command line.")
+    # Configure logging
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
     env_vars = extract_args()
 
     # Create a local copy of the current environment variables
@@ -51,7 +54,7 @@ def main():
     # Add the script-specific environment variables to the local copy
     local_env.update(env_vars)
 
-    print("Starting the Living Documentation Generator - mining phase")
+    logging.info("Starting the Living Documentation Generator - mining phase")
 
     # Clean the environment before mining
     run_script('clean_env_before_mining.py', local_env)
@@ -70,6 +73,6 @@ def main():
 
 
 if __name__ == '__main__':
-    print("Starting Living Documentation generation.")
+    logging.info("Starting Living Documentation generation.")
     main()
-    print("Living Documentation generation completed.")
+    logging.info("Living Documentation generation completed.")

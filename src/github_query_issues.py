@@ -19,7 +19,6 @@ OUTPUT_DIRECTORY = "../data/fetched_data/issue_data"
 
 def main() -> None:
     # Configure logging
-    # TODO: look at best practice of logging in Python (Logger, place for configuration, etc.)
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
     logging.info("Script for downloading issues from GitHub API started.")

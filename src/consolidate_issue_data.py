@@ -52,6 +52,7 @@ def main() -> None:
         with open(issue_file_path, 'r', encoding='utf-8') as issue_data_file:
             issue_data = json.load(issue_data_file)
 
+        # If project state mining is enabled, create main structure ready to update with project data
         if is_project_state_mining_enabled:
             consolidated_issues = {make_string_key(issue): ConsolidatedIssue().load_issue(issue)
                                    for issue in issue_data}
@@ -62,6 +63,7 @@ def main() -> None:
                     consolidated_issues[key].update_with_project_data(project_issues[key])
 
         else:
+            # If project data mining are not allowed, create main structure with no project mining info
             consolidated_issues = {make_string_key(issue): ConsolidatedIssue().load_issue(issue).no_project_mining()
                                    for issue in issue_data}
 
