@@ -9,7 +9,7 @@ from .gh_project import GHProject
 from .base_container import BaseContainer
 from .repository_issue import RepositoryIssue
 from .project import Project
-from .consolidated_issue import ConsolidatedIssue
+from .consolidated_issueOLD import ConsolidatedIssueOLD
 
 ISSUE_PER_PAGE = 100
 REPOSITORY_ISSUE_DIRECTORY = "../data/fetched_data/issue_data"
@@ -199,7 +199,7 @@ class RepositoryOLD(BaseContainer):
                     projects[project_id].config_repositories.append(self.repository_name)
 
     def consolidate_issues_without_project(self, set_of_used_repos: Set[str],
-                                           project_state_mining_switch: bool) -> List[ConsolidatedIssue]:
+                                           project_state_mining_switch: bool) -> List[ConsolidatedIssueOLD]:
         """
             Consolidates features that do not have a project attached.
             Updating feature structure with info of not having project attached.
@@ -221,7 +221,7 @@ class RepositoryOLD(BaseContainer):
                 repository_issue = RepositoryIssue()
                 repository_issue.load_from_data(repository_issue_from_data)
 
-                consolidated_issue = ConsolidatedIssue()
+                consolidated_issue = ConsolidatedIssueOLD()
                 consolidated_issue.load_repository_issue(repository_issue)
 
                 if not project_state_mining_switch:

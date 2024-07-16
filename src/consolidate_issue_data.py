@@ -53,7 +53,7 @@ def main() -> None:
             issue_data = json.load(issue_data_file)
 
         if is_project_state_mining_enabled:
-            consolidated_issues = {make_string_key(issue): ConsolidatedIssue(issue)
+            consolidated_issues = {make_string_key(issue): ConsolidatedIssue().load_issue(issue)
                                    for issue in issue_data}
 
             # Update issues with project data
@@ -62,7 +62,7 @@ def main() -> None:
                     consolidated_issues[key].update_with_project_data(project_issues[key])
 
         else:
-            consolidated_issues = {make_string_key(issue): ConsolidatedIssue(issue).no_project_mining()
+            consolidated_issues = {make_string_key(issue): ConsolidatedIssue().load_issue(issue).no_project_mining()
                                    for issue in issue_data}
 
     # Convert consolidated issues into dictionaries because they cannot be serialized to JSON directly

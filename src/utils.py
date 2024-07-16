@@ -9,7 +9,6 @@ import os
 import json
 import re
 import requests
-from typing import List
 
 from action.model.config_repository import ConfigRepository
 from github_integration.model.issue import Issue
@@ -80,22 +79,22 @@ def save_to_json_file(items_to_save: list, object_type: str, output_directory: s
     return output_file_name
 
 
-def load_repository_issue_from_issue_directory(directory: str, repository_name: str) -> List[dict]:
-    """
-        Loads feature data from a JSON file located in a specified directory.
-
-        @param directory: The directory where the JSON file to be loaded is located.
-        @param repository_name: The name of the repository for which the feature data is being loaded.
-
-        @return: The feature data as a list of dictionaries.
-    """
-    # Load feature data
-    # TODO: Make a context attribute for feature, so the method is more generic
-    issue_filename = f"{repository_name}.feature.json"
-    issue_filename_path = os.path.join(directory, issue_filename).replace("-", "_").lower()
-    issue_json_from_data = json.load(open(issue_filename_path))
-
-    return issue_json_from_data
+# def load_repository_issue_from_issue_directory(directory: str, repository_name: str) -> List[dict]:
+#     """
+#         Loads feature data from a JSON file located in a specified directory.
+#
+#         @param directory: The directory where the JSON file to be loaded is located.
+#         @param repository_name: The name of the repository for which the feature data is being loaded.
+#
+#         @return: The feature data as a list of dictionaries.
+#     """
+#     # Load feature data
+#     # TODO: Make a context attribute for feature, so the method is more generic
+#     issue_filename = f"{repository_name}.feature.json"
+#     issue_filename_path = os.path.join(directory, issue_filename).replace("-", "_").lower()
+#     issue_json_from_data = json.load(open(issue_filename_path))
+#
+#     return issue_json_from_data
 
 
 def issue_to_dict(issue: Issue, config_repository: ConfigRepository):
@@ -105,14 +104,14 @@ def issue_to_dict(issue: Issue, config_repository: ConfigRepository):
         "repository_name": config_repository.name,
         "title": issue.title,
         "state": issue.state,
-        #"url": issue.url,
+        "url": issue.url,
         "body": issue.body,
-        #"created_at": issue.created_at,
-        #"updated_at": issue.updated_at,
-        #"closed_at": issue.closed_at,
-        #"milestone_number": issue.milestone.number,
-        #"milestone_title": issue.milestone.title,
-        #"milestone_html_url": issue.milestone.html_url,
+        # "created_at": issue.created_at,
+        # "updated_at": issue.updated_at,
+        # "closed_at": issue.closed_at,
+        # "milestone_number": issue.milestone.number,
+        # "milestone_title": issue.milestone.title,
+        # "milestone_html_url": issue.milestone.html_url,
         "labels": issue.labels
         }
 

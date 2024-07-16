@@ -81,7 +81,3 @@ class ActionInputs:
         # Validate GitHub token
         if not self.__github_token:
             raise ValueError("GitHub token could not be loaded from the environment")
-
-        # TODO: Validate existence and reachability of output directory
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
-        # ensure_folder_exists(self.output_directory, current_dir)

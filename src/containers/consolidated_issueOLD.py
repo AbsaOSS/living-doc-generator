@@ -6,7 +6,7 @@ NO_PROJECT_ATTACHED = "---"
 NO_PROJECT_MINING = "-?-"
 
 
-class ConsolidatedIssue:
+class ConsolidatedIssueOLD:
     def __init__(self):
         # Data from repository issue
         self.number: int = 0

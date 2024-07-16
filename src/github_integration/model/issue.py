@@ -67,6 +67,15 @@ class Issue:
         return self.__issue.state
 
     @property
+    def url(self) -> str:
+        """
+        Gets the URL of the issue.
+
+        :return: The URL of the issue as a string.
+        """
+        return self.__issue.html_url
+
+    @property
     def labels(self) -> list[str]:
         """
         Gets the labels of the issue.
