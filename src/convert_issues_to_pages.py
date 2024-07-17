@@ -248,7 +248,7 @@ def main() -> None:
 
     # Check if the output directory exists and create it if not
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    output_directory = os.path.join(current_dir, output_directory_root, OUTPUT_DIRECTORY_ISSUE)
+    output_directory = os.path.join(output_directory_root, OUTPUT_DIRECTORY_ISSUE)
     ensure_folder_exists(output_directory, current_dir)
 
     logging.info("Starting the markdown page generation process.")
