@@ -8,10 +8,10 @@
     - [Environment Variables](#environment-variables)
     - [Inputs](#inputs)
     - [Features de/activation](#features-deactivation)
-    - [Features configuration](#features-configuration)
-    - [Page generator options](#page-generator-options)
+    - [Features Configuration](#features-configuration)
 - [Action Outputs](#action-outputs)
 - [Project Setup](#project-setup)
+- [Run Scripts Locally](#run-scripts-locally)
 - [Run unit test](#run-unit-test)
 - [Deployment](#deployment)
 - [Features](#features)
@@ -44,19 +44,19 @@ See the default action step definition:
   with:
     repositories: '[
       {
-        "orgName": "fin-services",
-        "repoName": "investment-app",
-        "queryLabels": ["feature", "enhancement"]
+        "owner": "fin-services",
+        "repo-name": "investment-app",
+        "query-labels": ["feature", "enhancement"]
       },
       {
-        "orgName": "health-analytics",
-        "repoName": "patient-data-analysis",
-        "queryLabels": ["functionality"]
+        "owner": "health-analytics",
+        "repo-name": "patient-data-analysis",
+        "query-labels": ["functionality"]
       },
       {
-        "orgName": "open-source-initiative",
-        "repoName": "community-driven-project",
-        "queryLabels": ["improvement"]
+        "owner": "open-source-initiative",
+        "repo-name": "community-driven-project",
+        "query-labels": ["improvement"]
       }
     ]'
   ```
@@ -70,31 +70,28 @@ See the full example of action step definition (in example are used non-default 
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
   with:
-    # features de/activation
+    # project state mining de/activation
     project-state-mining: true
     
-    # features configuration
+    # feature to filter projects 
     projects-title-filter": ["Community Outreach Initiatives", "Health Data Analysis"]
-    
-    # page generator options
-    milestones-as-chapters: true
 
     # inputs
     repositories: '[
       {
-        "orgName": "fin-services",
-        "repoName": "investment-app",
-        "queryLabels": ["feature", "enhancement"]
+        "owner": "fin-services",
+        "repo-name": "investment-app",
+        "query-labels": ["feature", "enhancement"]
       },
       {
-        "orgName": "health-analytics",
-        "repoName": "patient-data-analysis",
-        "queryLabels": ["functionality"]
+        "owner": "health-analytics",
+        "repo-name": "patient-data-analysis",
+        "query-labels": ["functionality"]
       },
       {
-        "orgName": "open-source-initiative",
-        "repoName": "community-driven-project",
-        "queryLabels": ["improvement"]
+        "owner": "open-source-initiative",
+        "repo-name": "community-driven-project",
+        "query-labels": ["improvement"]
       }
     ]'
 ```
@@ -123,19 +120,19 @@ Configure the action by customizing the following parameters based on your needs
     with:
       repositories: '[
         {
-          "orgName": "fin-services",
-          "repoName": "investment-app",
-          "queryLabels": ["feature", "enhancement"]
+          "owner": "fin-services",
+          "repo-name": "investment-app",
+          "query-labels": ["feature", "enhancement"]
         },
         {
-          "orgName": "health-analytics",
-          "repoName": "patient-data-analysis",
-          "queryLabels": ["functionality"]
+          "owner": "health-analytics",
+          "repo-name": "patient-data-analysis",
+          "query-labels": ["functionality"]
         },
         {
-          "orgName": "open-source-initiative",
-          "repoName": "community-driven-project",
-          "queryLabels": ["improvement"]
+          "owner": "open-source-initiative",
+          "repo-name": "community-driven-project",
+          "query-labels": ["improvement"]
         }
       ]'
     ```
@@ -150,7 +147,7 @@ Configure the action by customizing the following parameters based on your needs
       project-state-mining: false
     ```
     
-### Features configuration
+### Features Configuration
 - **projects-title-filter** (optional, `default: []`)
   - **Description**: Filters the projects by titles. Only projects with these titles will be considered.
   - **Usage**: Provide a list of project titles to filter.
@@ -158,16 +155,6 @@ Configure the action by customizing the following parameters based on your needs
     ```yaml
     with:
       projects-title-filter: ["Community Outreach Initiatives", "Health Data Analysis"]
-    ```
-
-### Page generator options 
-- **milestones-as-chapters** (optional, `default: false`)
-  - **Description**: When set to **true**, milestones in the projects will be treated as chapters in the generated documentation.
-  - **Usage**: Set to **true** to enable this feature.
-  - **Example**:
-    ```yaml
-    with:
-      milestones-as-chapters: true
     ```
 
 ## Action Outputs
@@ -211,7 +198,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run scripts locally
+## Run Scripts Locally
 If you need to run the scripts locally, follow these steps:
 
 ### Create the shell script
@@ -231,36 +218,26 @@ Also make sure that the GITHUB_TOKEN is configured in your environment variables
 export GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
 export PROJECT_STATE_MINING="true"
 export PROJECTS_TITLE_FILTER="[]"
-export MILESTONES_AS_CHAPTERS="true"
 export REPOSITORIES='[
             {
-              "orgName": "OrgName",
-              "repoName": "example-project",
-              "queryLabels": ["feature", "bug"]
+              "owner": "Organization Name",
+              "repo-name": "example-project",
+              "query-labels": ["feature", "bug"]
             }
           ]'
+export OUTPUT_DIRECTORY="/output/directory/path
 ```
 
-### Running the GH action locally
-For running the whole GitHub action, add the following commands to the shell script:
+### Running the script locally
+For running the GitHub action incorporate these commands into the shell script and save it.
 ```
 cd src || exit 1
 
 python3 controller.py --github-token "$GITHUB_TOKEN" \
             --project-state-mining "$PROJECT_STATE_MINING" \
             --projects-title-filter "$PROJECTS_TITLE_FILTER" \
-            --milestones-as-chapters "$MILESTONES_AS_CHAPTERS" \
-            --repositories "$REPOSITORIES"
-
-cd .. || exit 1
-```
-
-### Running single script locally
-For running just one script at the time, add the following commands to the shell script:
-```
-cd src || exit 1
-
-python3 github_query_project_state.py
+            --repositories "$REPOSITORIES" \
+            --output-directory "$OUTPUT_DIRECTORY"
 
 cd .. || exit 1
 ```
@@ -339,8 +316,6 @@ This feature allows you to define which projects should be included in the livin
 The goal is to provide a straightforward view of all issues in a single table, making it easy to see the overall status and details of issues across repositories.
 
 - **Default Behavior**: By default, the action generates a single table that lists all issues from the defined repositories.
-- **Non-default Example**: Use available options to customize the output, such as grouping issues by milestone.
-  - `milestones-as-chapters: true` controls whether milestones are treated as chapters in the generated documentation.
 
 ---
 ## Contribution Guidelines
