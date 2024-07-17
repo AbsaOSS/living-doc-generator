@@ -18,9 +18,6 @@ OUTPUT_DIRECTORY = "../data/fetched_data/issue_data"
 
 
 def main() -> None:
-    # Configure logging
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
     logging.info("Script for downloading issues from GitHub API started.")
 
     # Load action inputs from the environment

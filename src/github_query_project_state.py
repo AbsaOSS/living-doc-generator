@@ -18,9 +18,6 @@ OUTPUT_DIRECTORY = "../data/fetched_data/project_data"
 
 
 def main() -> None:
-    # Configure logging
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
     logging.info("Script for downloading project data from GitHub GraphQL started.")
 
     # Load action inputs from the environment
@@ -55,10 +52,10 @@ def main() -> None:
 
         # Fetch all projects attached to the repository
         projects_title_filter = action_inputs.projects_title_filter
-        projects.extend(prjts := GithubManager().fetch_repository_projects(projects_title_filter))
+        projects.extend(prjs := GithubManager().fetch_repository_projects(projects_title_filter))
 
         # Update every project with project issue related data
-        for project in prjts:
+        for project in prjs:
             project_issues.extend(GithubManager().fetch_project_issues(project))
 
     # Convert issue objects back into dictionary, so it can be serialized to JSON directly

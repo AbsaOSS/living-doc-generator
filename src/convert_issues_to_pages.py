@@ -240,19 +240,16 @@ def generate_index_page(issue_markdown_content: str, template_index_page: str, o
 
 
 def main() -> None:
-    # Configure logging
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
     logging.info("Script for converting consolidated issues into markdown pages started.")
 
     # Load action inputs from the environment and prepare output directory
     action_inputs = ActionInputs().load_from_environment()
-    output_directory_root = f"{action_inputs.output_directory}/liv-doc"
-    output_directory = os.path.join(output_directory_root, OUTPUT_DIRECTORY_ISSUE)
+    output_directory_root = f"../{action_inputs.output_directory}/liv-doc"
 
     # Check if the output directory exists and create it if not
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    ensure_folder_exists(os.path.join(current_dir, output_directory), current_dir)
+    output_directory = os.path.join(current_dir, output_directory_root, OUTPUT_DIRECTORY_ISSUE)
+    ensure_folder_exists(output_directory, current_dir)
 
     logging.info("Starting the markdown page generation process.")
 

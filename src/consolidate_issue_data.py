@@ -23,9 +23,6 @@ CONSOLIDATED_OUTPUT_DIRECTORY = "../data/issue_consolidation"
 
 
 def main() -> None:
-    # Configure logging
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
     logging.info("Script for consolidating issue data started.")
 
     # Load action inputs from the environment

@@ -13,6 +13,8 @@ import shutil
 from action.action_inputs import ActionInputs
 
 DATA_DIRECTORY = "../data"
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def clean_directory_content(script_dir: str, directory: str) -> None:
