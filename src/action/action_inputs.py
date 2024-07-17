@@ -3,7 +3,6 @@ import logging
 import os
 
 from action.model.config_repository import ConfigRepository
-from utils import ensure_folder_exists
 
 
 class ActionInputs:
@@ -11,7 +10,6 @@ class ActionInputs:
         self.__github_token: str = ""
         self.__is_project_state_mining_enabled: bool = True
         self.__projects_title_filter: list = []
-        self.__are_milestones_as_chapters_enabled: bool = False
         self.__repositories: list[ConfigRepository] = []
         self.__output_directory: str = "../output"
 
@@ -28,10 +26,6 @@ class ActionInputs:
         return self.__projects_title_filter
 
     @property
-    def are_milestones_as_chapters_enabled(self) -> bool:
-        return self.__are_milestones_as_chapters_enabled
-
-    @property
     def repositories(self) -> list[ConfigRepository]:
         return self.__repositories
 
@@ -43,13 +37,11 @@ class ActionInputs:
         self.__github_token = os.getenv('GITHUB_TOKEN')
         self.__is_project_state_mining_enabled = os.getenv('PROJECT_STATE_MINING').lower() == "true"
         self.__projects_title_filter = os.getenv('PROJECTS_TITLE_FILTER')
-        self.__are_milestones_as_chapters_enabled = os.getenv('MILESTONES_AS_CHAPTERS').lower() == "true"
         self.__output_directory = os.getenv('OUTPUT_DIRECTORY')
         repositories_json = os.getenv('REPOSITORIES')
 
         logging.debug(f'Is project state mining allowed: {self.__is_project_state_mining_enabled}')
         logging.debug(f'Project title filter: {self.__projects_title_filter}')
-        logging.debug(f'Are milestones used as chapters: {self.__are_milestones_as_chapters_enabled}')
         logging.debug(f'Json repositories to fetch from: {repositories_json}')
         logging.debug(f'Output directory: {self.__output_directory}')
 

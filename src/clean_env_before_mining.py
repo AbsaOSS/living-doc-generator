@@ -45,7 +45,7 @@ def main() -> None:
 
     # Load action inputs from the environment
     action_inputs = ActionInputs().load_from_environment()
-    output_directory = action_inputs.output_directory
+    output_directory = f"../{action_inputs.output_directory}"
 
     # Clean the directory content for generated data and output
     clean_directory_content(script_dir, DATA_DIRECTORY)

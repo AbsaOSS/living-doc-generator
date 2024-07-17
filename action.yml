@@ -15,10 +15,6 @@ inputs:
     description: 'Filter projects by titles. Provide a list of project titles.'
     required: false
     default: '[]'
-  milestones-as-chapters:
-    description: 'Treat milestones as chapters in the generated documentation.'
-    required: false
-    default: false
 outputs:
   documentation-path:
     description: 'Path to the generated living documentation files'

@@ -12,7 +12,6 @@ def extract_args():
     parser.add_argument('--github-token', required=True, help='GitHub token for authentication.')
     parser.add_argument('--project-state-mining', required=True, help='Enable or disable mining of project state data.')
     parser.add_argument('--projects-title-filter', required=True, help='Filter projects by titles. Provide a list of project titles.')
-    parser.add_argument('--milestones-as-chapters', required=True, help='Treat milestones as chapters in the generated documentation.')
     parser.add_argument('--repositories', required=True, help='JSON string defining the repositories to be included in the documentation generation.')
     parser.add_argument('--output-directory', type=str, required=False, default='../output', help='Output directory, which stores the generated documentation.')
 
@@ -22,7 +21,6 @@ def extract_args():
         'GITHUB_TOKEN': args.github_token,
         'PROJECT_STATE_MINING': args.project_state_mining,
         'PROJECTS_TITLE_FILTER': args.projects_title_filter,
-        'MILESTONES_AS_CHAPTERS': args.milestones_as_chapters,
         'REPOSITORIES': args.repositories,
         'OUTPUT_DIRECTORY': args.output_directory
     }
