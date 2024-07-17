@@ -7,7 +7,8 @@ def extend_args():
     env_vars = {
         'FETCH_DIRECTORY': "src/data/fetched_data",
         'CONSOLIDATION_DIRECTORY': "src/data/consolidation_data",
-        'MARKDOWN_PAGE_DIRECTORY': "src/output/markdown_pages"
+        'MARKDOWN_PAGE_DIRECTORY': "src/output/markdown_pages",
+        'OUTPUT_DIRECTORY': "output"
     }
 
     return env_vars
@@ -47,12 +48,12 @@ def main():
     run_script('github_query_project_state.py', local_env)
 
     # Consolidate all feature data together
-    run_script('consolidate_feature_data.py', local_env)
+    run_script('consolidate_issue_data.py', local_env)
 
     # Generate markdown pages
-    run_script('convert_features_to_pages.py', local_env)
+    run_script('convert_issues_to_pages.py', local_env)
 
-    # TODO ideas to consider during OOP refactoring
+    # TODO ideas to consider during next refactoring iteration
     #
     #   1. make clean script as method in this script
     #   2. can be run_script replaced by method calls? ==> reduction standalone script files to methods using OOP

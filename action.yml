@@ -36,8 +36,10 @@ runs:
       run: python3 --version
       shell: bash
 
-    - name: print PYTHONPATH env variable
-      run: echo $PYTHONPATH
+    - name: Set PROJECT_ROOT and update PYTHONPATH
+      run: |
+        ACTION_ROOT="${{ github.action_path }}"
+        export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/release_notes_generator"
       shell: bash
 
     - name: Call Living Documentation Generator
