@@ -53,14 +53,14 @@ class LivingDocumentationGenerator:
         self._clean_output_directory()
 
         # Data mine GitHub issues with defined labels from repository
-        gh_repo_issues: dict[str, list[Issue]] = self._mine_github_issues()
+        gh_repository_issues: dict[str, list[Issue]] = self._fetch_github_issues()
         # Note: got dict of list of issues for each repository (key is repository id)
 
         # Data mine GitHub project's issues
-        gh_project_issues = self._mine_github_project_issues()
+        gh_project_issues = self._fetch_github_project_issues()
 
         # Consolidate all issues data together
-        projects_issues = self._consolidate_issues_data(gh_repo_issues, gh_project_issues)
+        projects_issues = self._consolidate_issues_data(gh_repository_issues, gh_project_issues)
 
         # Generate markdown pages
         self._generate_markdown_pages(projects_issues)
@@ -70,7 +70,7 @@ class LivingDocumentationGenerator:
             shutil.rmtree(self.output_path)
         os.makedirs(self.output_path)
 
-    def _mine_github_issues(self) -> dict[str, list[Issue]]:
+    def _fetch_github_issues(self) -> dict[str, list[Issue]]:
         issues = {}
 
         # Mine issues from every config repository
@@ -83,17 +83,17 @@ class LivingDocumentationGenerator:
             logging.info(f"Downloading issues from repository `{config_repository.owner}/{config_repository.name}`.")
 
             # Load all issues from one repository (unique for each repository)
-            repo_issues = GithubManager().fetch_issues(labels=config_repository.query_labels)
-            for repo_issue in repo_issues:
-                repo_issue.repository = repository_id
+            repository_issues = GithubManager().fetch_issues(labels=config_repository.query_labels)
+            for repository_issue in repository_issues:
+                repository_issue.repository = repository_id
 
             # save list of repository issue under its repository id
             # Note: not creating OOP object instead if this dict as Issue type will be replaced in next PR
-            issues[repository_id] = repo_issues
+            issues[repository_id] = repository_issues
 
         return issues
 
-    def _mine_github_project_issues(self) -> dict[str, ProjectIssue]:
+    def _fetch_github_project_issues(self) -> dict[str, ProjectIssue]:
         if not self.project_state_mining_enabled:
             logging.info("Project data mining is not allowed. The process will not start.")
             return {}
@@ -120,17 +120,17 @@ class LivingDocumentationGenerator:
 
         return project_issues
 
-    def _consolidate_issues_data(self, gh_repo_issues: dict[str, list[Issue]],
+    def _consolidate_issues_data(self, gh_repository_issues: dict[str, list[Issue]],
                                  gh_projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
 
         consolidated_issues = {}
 
         # Create a ConsolidatedIssue object for each repository issue
-        for repository_id in gh_repo_issues.keys():
-            for repo_issue in gh_repo_issues[repository_id]:
+        for repository_id in gh_repository_issues.keys():
+            for repository_issue in gh_repository_issues[repository_id]:
                 repo_id_parts = repository_id.split("/")
-                unique_key = make_issue_key(repo_id_parts[0], repo_id_parts[1], repo_issue.number)
-                consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id, repo_issue=repo_issue)
+                unique_key = make_issue_key(repo_id_parts[0], repo_id_parts[1], repository_issue.number)
+                consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id, repository_issue=repository_issue)
 
         # Update issues with project data
         for key in consolidated_issues.keys():

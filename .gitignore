@@ -159,8 +159,7 @@ cython_debug/
 /.idea/
 
 # Generated outputs
-data/
 output/
 
 # Debugging script file
-run_script.sh
+run_me.sh
