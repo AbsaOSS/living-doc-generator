@@ -3,17 +3,6 @@ import subprocess
 import sys
 
 
-def extend_args():
-    env_vars = {
-        'FETCH_DIRECTORY': "src/data/fetched_data",
-        'CONSOLIDATION_DIRECTORY': "src/data/consolidation_data",
-        'MARKDOWN_PAGE_DIRECTORY': "src/output/markdown_pages",
-        'OUTPUT_DIRECTORY': "output"
-    }
-
-    return env_vars
-
-
 def run_script(script_name, env):
     """ Helper function to run a Python script with environment variables using subprocess """
     try:
@@ -28,13 +17,9 @@ def run_script(script_name, env):
 
 def main():
     print("Extracting arguments from command line.")
-    env_vars = extend_args()
 
     # Create a local copy of the current environment variables
     local_env = os.environ.copy()
-
-    # Add the script-specific environment variables to the local copy
-    local_env.update(env_vars)
 
     print("Starting the Living Documentation Generator - mining phase")
 
