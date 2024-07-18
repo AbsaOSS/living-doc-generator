@@ -32,7 +32,7 @@ def run():
     )).generate()
 
     # Set the output for the GitHub Action
-    set_action_output('release-notes', ldg.output_path)
+    set_action_output('documentation-path', ldg.output_path)
 
 
 if __name__ == '__main__':

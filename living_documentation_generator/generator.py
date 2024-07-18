@@ -140,36 +140,35 @@ class LivingDocumentationGenerator:
 
     def _generate_markdown_pages(self, issues: dict[str, ConsolidatedIssue]):
         with open(self.ISSUE_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as issue_page_template_file:
-            issue_page_template = issue_page_template_file.read()
+            issue_page_detail_template = issue_page_template_file.read()
 
         with open(self.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as idx_page_template_file:
             index_page_template = idx_page_template_file.read()
 
         # Process consolidated issues and generate markdown pages
-        issue_markdown_content = self._process_consolidated_issues(issues, issue_page_template)
+        issue_markdown_content = self._process_consolidated_issues(issues, issue_page_detail_template)
 
         # Generate index page
         self._generate_index_page(issue_markdown_content, index_page_template)
 
     def _process_consolidated_issues(self, consolidated_issues: dict[str, ConsolidatedIssue],
-                                     issue_page_template: str) -> str:
+                                     issue_page_detail_template: str) -> str:
 
-        issue_markdown_content = ""
+        index_page_content = ""
         table_header = """| Organization name     | Repository name | Issue 'Number - Title'  | Linked to project | Project status  |Issue URL   |
                |-----------------------|-----------------|---------------------------|---------|------|-----|
                """
 
         # Create an issue summary table for every issue
-        issue_markdown_content += "\n" + table_header
+        index_page_content += "\n" + table_header
 
-        for consolidated_issue_data in consolidated_issues:
-            consolidated_issue = ConsolidatedIssue().load_consolidated_issue(consolidated_issue_data)
-            issue_markdown_content += self._generate_markdown_line(consolidated_issue)
+        for key, consolidated_issue in consolidated_issues.items():
+            index_page_content += self._generate_markdown_line(consolidated_issue)
 
             # Generate a single issue Markdown page
-            self.generate_md_issue_page(issue_page_template, consolidated_issue)
+            self.generate_md_issue_page(issue_page_detail_template, consolidated_issue)
 
-        return issue_markdown_content
+        return index_page_content
 
     def _generate_index_page(self, issue_markdown_content: str, template_index_page: str) -> None:
         """
