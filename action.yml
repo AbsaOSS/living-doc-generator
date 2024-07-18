@@ -52,5 +52,5 @@ runs:
         INPUT_MILESTONES_AS_CHAPTERS: ${{ inputs.milestones_as_chapters }}
 
       run: |
-        python3 ${{ github.action_path }}/src/living_documentation_generator.py
+        python3 ${{ github.action_path }}/main.py
       shell: bash

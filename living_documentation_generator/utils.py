@@ -1,8 +1,8 @@
 """Utility Functions
 
-This script contains helper functions that are used across multiple src in this project.
+This script contains helper functions that are used across multiple living_documentation_generator in this project.
 
-These functions can be imported and used in other src as needed.
+These functions can be imported and used in other living_documentation_generator as needed.
 """
 
 import os
@@ -97,13 +97,22 @@ def issue_to_dict(issue: Issue, config_repository: ConfigRepository):
         "labels": issue.labels
         }
 
-
-def make_string_key(issue: dict) -> str:
+def make_issue_key(organization_name: str, repository_name: str, issue_number: int) -> str:
     """
        Creates a unique 3way string key for identifying every unique feature.
 
        @return: The unique string key for the feature.
     """
+    return f"{organization_name}/{repository_name}/{issue_number}"
+
+
+def make_string_key(issue: Issue) -> str:
+    """
+       Creates a unique 3way string key for identifying every unique feature.
+
+       @return: The unique string key for the feature.
+    """
+    repository_id = issue.
     organization_name = issue.get("organization_name")
     repository_name = issue.get("repository_name")
     number = issue.get("number")

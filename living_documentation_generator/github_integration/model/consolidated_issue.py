@@ -1,4 +1,5 @@
-from utils import sanitize_filename
+from living_documentation_generator.github_integration.model.issue import Issue
+
 
 NOT_SET_FOR_NOW = "NOT_SET_IN_THIS_VERSION"
 NO_PROJECT_ATTACHED = "---"
@@ -6,21 +7,23 @@ NO_PROJECT_MINING = "-?-"
 
 
 class ConsolidatedIssue:
-    def __init__(self):
+    def __init__(self, repository_id: str, repo_issue: Issue = None):
         # TODO: finish all the fields with newer version
         # Main issue structure
-        self.__number: int = 0
-        self.__organization_name: str = ""
-        self.__repository_name: str = ""
-        self.__title: str = ""
-        self.__state: str = ""
-        self.__url: str = ""
-        self.__body: str = ""
+        self.__number: int = repo_issue.number if repo_issue else 0
+
+        parts = repository_id.split("/")
+        self.__organization_name: str = parts[0] if len(parts) == 2 else ""
+        self.__repository_name: str = parts[1] if len(parts) == 2 else ""
+        self.__title: str = repo_issue.title if repo_issue else ""
+        self.__state: str = repo_issue.state if repo_issue else ""
+        self.__url: str = repo_issue.url if repo_issue else ""
+        self.__body: str = repo_issue.body if repo_issue else ""
         # self.created_at: str = NOT_SET_FOR_NOW
         # self.updated_at: str = NOT_SET_FOR_NOW
         # self.closed_at: str = NOT_SET_FOR_NOW
         # self.milestone: str = NOT_SET_FOR_NOW
-        self.__labels: list[str] = []
+        self.__labels: list[str] = repo_issue.labels if repo_issue else []
 
         # Extra project data
         self.__linked_to_project: bool = False

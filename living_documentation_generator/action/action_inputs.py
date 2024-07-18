@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from action.model.config_repository import ConfigRepository
+from living_documentation_generator.action.model.config_repository import ConfigRepository
 
 
 class ActionInputs:
