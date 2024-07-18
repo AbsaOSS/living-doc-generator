@@ -37,7 +37,7 @@ class ActionInputs:
         self.__github_token = os.getenv('GITHUB_TOKEN')
         self.__is_project_state_mining_enabled = os.getenv('PROJECT_STATE_MINING').lower() == "true"
         self.__projects_title_filter = os.getenv('PROJECTS_TITLE_FILTER')
-        self.__output_directory = os.getenv('OUTPUT_DIRECTORY')
+        self.__output_directory = os.getenv('OUTPUT_DIRECTORY', 'output')
         repositories_json = os.getenv('REPOSITORIES')
 
         logging.debug(f'Is project state mining allowed: {self.__is_project_state_mining_enabled}')

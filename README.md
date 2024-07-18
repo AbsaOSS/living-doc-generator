@@ -227,16 +227,6 @@ python3 living_documenation_generator.py
 cd .. || exit 1
 ```
 
-### Running single script locally
-For running just one script at the time, add the following commands to the shell script:
-```
-cd src || exit 1
-
-python3 github_query_project_state.py
-
-cd .. || exit 1
-```
-
 ### Make the Script Executable
 From the terminal that is in the root of this project, make the script executable:
 ```shell
