@@ -1,4 +1,4 @@
-from github_integration.model.github_project import GithubProject
+from living_documentation_generator.github_integration.model.github_project import GithubProject
 
 
 class ProjectIssue:

@@ -9,9 +9,5 @@ export REPOSITORIES='[
             }
           ]'
 
-cd src || exit 1
-
-python3 living_documentation_generator.py
-
-cd .. || exit 1
+python3 main.py
 

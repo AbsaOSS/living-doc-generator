@@ -1,9 +1,4 @@
 import logging
-import os
-
-from typing import Optional
-
-from github import Github, Auth
 
 from living_documentation_generator.action.action_inputs import ActionInputs
 from living_documentation_generator.generator import LivingDocumentationGenerator
@@ -18,7 +13,7 @@ ISSUES_PER_PAGE_LIMIT = 100
 
 def run():
     action_inputs = ActionInputs().load_from_environment()
-    output_path = f"../{action_inputs.output_directory}"
+    output_path = f"{action_inputs.output_directory}"
 
     GithubManager().initialize_github_instance(action_inputs.github_token, ISSUES_PER_PAGE_LIMIT)
     if action_inputs.is_project_state_mining_enabled:

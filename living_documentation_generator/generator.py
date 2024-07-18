@@ -13,8 +13,10 @@ from living_documentation_generator.utils import make_issue_key
 
 class LivingDocumentationGenerator:
 
-    ISSUE_PAGE_TEMPLATE_FILE = "../templates/issue_page_template.md"
-    INDEX_PAGE_TEMPLATE_FILE = "../templates/_index_page_template.md"
+    PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md")
+    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
 
     def __init__(self, repositories: list[ConfigRepository],
                  projects_title_filter: list[str] = None,
@@ -118,8 +120,7 @@ class LivingDocumentationGenerator:
 
         return project_issues
 
-    @staticmethod
-    def _consolidate_issues_data(gh_repo_issues: dict[str, list[Issue]],
+    def _consolidate_issues_data(self, gh_repo_issues: dict[str, list[Issue]],
                                  gh_projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
 
         consolidated_issues = {}
@@ -143,52 +144,66 @@ class LivingDocumentationGenerator:
             issue_page_detail_template = issue_page_template_file.read()
 
         with open(self.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as idx_page_template_file:
-            index_page_template = idx_page_template_file.read()
+            issue_index_page_template = idx_page_template_file.read()
 
-        # Process consolidated issues and generate markdown pages
-        issue_markdown_content = self._process_consolidated_issues(issues, issue_page_detail_template)
+        for key, consolidated_issue in issues.items():
+            self.generate_md_issue_page(issue_page_detail_template, consolidated_issue)
 
-        # Generate index page
-        self._generate_index_page(issue_markdown_content, index_page_template)
+        self._generate_index_page(issue_index_page_template, issues)
 
-    def _process_consolidated_issues(self, consolidated_issues: dict[str, ConsolidatedIssue],
-                                     issue_page_detail_template: str) -> str:
+    def generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
+        """
+            Generates a single issue Markdown page from a template.
 
-        index_page_content = ""
-        table_header = """| Organization name     | Repository name | Issue 'Number - Title'  | Linked to project | Project status  |Issue URL   |
+            @param issue_page_template: The template string for generating a single issue page.
+            @param consolidated_issue: The dictionary containing issue data.
+        """
+
+        # Get all replacements for generating single issue page from a template
+        title = consolidated_issue.title
+        date = datetime.now().strftime("%Y-%m-%d")
+        issue_content = consolidated_issue.body
+
+        # Generate a summary table for the issue
+        issue_table = self.generate_issue_summary_table(consolidated_issue)
+
+        # Initialize dictionary with replacements
+        replacements = {
+            "title": title,
+            "date": date,
+            "page_issue_title": title,
+            "issue_summary_table": issue_table,
+            "issue_content": issue_content
+        }
+
+        # Run through all replacements and update template keys with adequate content
+        issue_md_page_content = issue_page_template.format(**replacements)
+
+        # Save the single issue Markdown page
+        page_filename = consolidated_issue.generate_page_filename()
+        with open(os.path.join(self.output_path, page_filename), 'w', encoding='utf-8') as issue_file:
+            issue_file.write(issue_md_page_content)
+
+        print(f"Generated {page_filename}.")
+
+    def _generate_index_page(self, issue_index_page_template: str,
+                             consolidated_issues: dict[str, ConsolidatedIssue]):
+        issue_table = """| Organization name     | Repository name | Issue 'Number - Title'  | Linked to project | Project status  |Issue URL   |
                |-----------------------|-----------------|---------------------------|---------|------|-----|
                """
 
         # Create an issue summary table for every issue
-        index_page_content += "\n" + table_header
-
         for key, consolidated_issue in consolidated_issues.items():
-            index_page_content += self._generate_markdown_line(consolidated_issue)
-
-            # Generate a single issue Markdown page
-            self.generate_md_issue_page(issue_page_detail_template, consolidated_issue)
-
-        return index_page_content
-
-    def _generate_index_page(self, issue_markdown_content: str, template_index_page: str) -> None:
-        """
-            Generates an index summary markdown page for all features.
-
-            @param issue_markdown_content: A string containing all the generated markdown blocks for the features.
-            @param template_index_page: The string template for the index markdown page.
-            @param output_directory: The directory where the index page will be saved.
-
-            @return: None
-        """
+            issue_table += self._generate_markdown_line(consolidated_issue)
 
         # Prepare issues replacement for the index page
         replacement = {
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "issues": issue_markdown_content
+            "issues": issue_table
         }
 
         # Replace the issue placeholders in the index template
-        index_page = self.replace_template_placeholders(template_index_page, replacement)
+        index_page = issue_index_page_template.format(**replacement)
 
         # Create an index page file
         with open(os.path.join(self.output_path, "_index.md"), 'w', encoding='utf-8') as index_file:
@@ -226,65 +241,6 @@ class LivingDocumentationGenerator:
                          f" {linked_to_project} | {status} |[GitHub link]({url}) |\n")
 
         return md_issue_line
-
-    def generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
-        """
-            Generates a markdown file for a given feature using a specified template.
-
-            @param issue_page_template: The string template for the single page markdown file.
-            @param consolidated_issue: The dictionary containing feature data.
-            @param output_directory: The directory where the markdown file will be saved.
-
-            @return: None
-        """
-
-        # Get all replacements for generating single issue page from a template
-        title = consolidated_issue.title
-        date = datetime.now().strftime("%Y-%m-%d")
-        issue_content = consolidated_issue.body
-
-        # Generate a summary table for the issue
-        issue_table = self.generate_issue_summary_table(consolidated_issue)
-
-        # Initialize dictionary with replacements
-        replacements = {
-            "title": title,
-            "date": date,
-            "page_issue_title": title,
-            "issue_summary_table": issue_table,
-            "issue_content": issue_content
-        }
-
-        # Run through all replacements and update template keys with adequate content
-        issue_md_page = self.replace_template_placeholders(issue_page_template, replacements)
-
-        # Get the page filename for naming single issue output correctly
-        page_filename = consolidated_issue.generate_page_filename()
-
-        # Save the single issue Markdown page
-        with open(os.path.join(self.output_path, page_filename), 'w', encoding='utf-8') as issue_file:
-            issue_file.write(issue_md_page)
-
-        print(f"Generated {page_filename}.")
-
-    def replace_template_placeholders(self, template: str, replacement: dict[str, str]) -> str:
-        """
-            Replaces placeholders in a template ({replacement}) with corresponding values from a dictionary.
-
-            @param template: The string template containing placeholders.
-            @param replacement: The dictionary containing keys and values for replacing placeholders.
-
-            @return: The updated template string with replaced placeholders.
-        """
-
-        # Update template with values from replacement dictionary
-        for key, value in replacement.items():
-            if value is not None:
-                template = template.replace(f"{{{key}}}", value)
-            else:
-                template = template.replace(f"{{{key}}}", "")
-
-        return template
 
     def generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
         """

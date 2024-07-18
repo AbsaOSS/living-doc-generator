@@ -4,7 +4,7 @@ from typing import Optional
 
 from github.PullRequest import PullRequest as GitPullRequest
 
-from github_integration.model.commit import Commit
+from living_documentation_generator.github_integration.model.commit import Commit
 
 
 class PullRequest:

@@ -1,5 +1,6 @@
 from living_documentation_generator.github_integration.model.issue import Issue
-
+from living_documentation_generator.github_integration.model.project_issue import ProjectIssue
+from living_documentation_generator.utils import sanitize_filename
 
 NOT_SET_FOR_NOW = "NOT_SET_IN_THIS_VERSION"
 NO_PROJECT_ATTACHED = "---"
@@ -111,13 +112,13 @@ class ConsolidatedIssue:
 
         return self
 
-    def update_with_project_data(self, project_issue):
+    def update_with_project_data(self, issue: ProjectIssue):
         self.__linked_to_project = True
-        self.__project_name = project_issue["project_name"]
-        self.__status = project_issue["status"]
-        self.__priority = project_issue["priority"]
-        self.__size = project_issue["size"]
-        self.__moscow = project_issue["moscow"]
+        self.__project_name = issue.project_name
+        self.__status = issue.status
+        self.__priority = issue.priority
+        self.__size = issue.size
+        self.__moscow = issue.moscow
 
     def no_project_mining(self):
         self.__linked_to_project = NO_PROJECT_MINING
