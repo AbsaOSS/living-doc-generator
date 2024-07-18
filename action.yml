@@ -49,7 +49,6 @@ runs:
         INPUT_REPOSITORIES: ${{ inputs.repositories }}
         INPUT_PROJECT_STATE_MINING: ${{ inputs.project_state_mining }}
         INPUT_PROJECTS_TITLE_FILTER: ${{ inputs.projects_title_filter }}
-        INPUT_MILESTONES_AS_CHAPTERS: ${{ inputs.milestones_as_chapters }}
 
       run: |
         python3 ${{ github.action_path }}/src/living_documentation_generator.py
