@@ -177,18 +177,7 @@ If you need to build the action locally, follow these steps:
 
 ### Prepare the Environment
 ```
-node --version
 python3 --version
-```
-
-### Install Node.js Dependencies
-```
-npm install
-```
-
-### Compile or Prepare the JavaScript Files
-```
-npm run build
 ```
 
 ### Set Up Python Environment
@@ -233,11 +222,7 @@ For running the GitHub action incorporate these commands into the shell script a
 ```
 cd src || exit 1
 
-python3 controller.py --github-token "$GITHUB_TOKEN" \
-            --project-state-mining "$PROJECT_STATE_MINING" \
-            --projects-title-filter "$PROJECTS_TITLE_FILTER" \
-            --repositories "$REPOSITORIES" \
-            --output-directory "$OUTPUT_DIRECTORY"
+python3 living_documenation_generator.py
 
 cd .. || exit 1
 ```

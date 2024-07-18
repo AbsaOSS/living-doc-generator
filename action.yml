@@ -18,6 +18,38 @@ inputs:
 outputs:
   documentation-path:
     description: 'Path to the generated living documentation files'
+
+branding:
+  icon: 'book'
+  color: 'yellow'
+
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: 'composite'
+  steps:
+    - name: Install Python dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r ${{ github.action_path }}/requirements.txt
+      shell: bash
+
+    - name: Call command python3
+      run: python3 --version
+      shell: bash
+
+    - name: Set PROJECT_ROOT and update PYTHONPATH
+      run: |
+        ACTION_ROOT="${{ github.action_path }}"
+        export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/release_notes_generator"
+      shell: bash
+
+    - name: Call Living Documentation Generator
+      id: liv-doc-generator
+      env:
+        INPUT_GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        INPUT_REPOSITORIES: ${{ inputs.repositories }}
+        INPUT_PROJECT_STATE_MINING: ${{ inputs.project_state_mining }}
+        INPUT_PROJECTS_TITLE_FILTER: ${{ inputs.projects_title_filter }}
+
+      run: |
+        python3 ${{ github.action_path }}/src/living_documentation_generator.py
+      shell: bash
