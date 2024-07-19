@@ -4,7 +4,7 @@ This script contains helper functions that are used across multiple living_docum
 
 These functions can be imported and used in other living_documentation_generator as needed.
 """
-
+import os
 import re
 
 
@@ -35,3 +35,11 @@ def sanitize_filename(filename: str) -> str:
     sanitized_name = sanitized_name.replace(' ', '_')
 
     return sanitized_name
+
+
+def make_absolute_path(path):
+    # If the path is already absolute, return it as is
+    if os.path.isabs(path):
+        return path
+    # Otherwise, convert the relative path to an absolute path
+    return os.path.abspath(path)

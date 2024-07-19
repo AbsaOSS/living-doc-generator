@@ -3,6 +3,7 @@ import logging
 import os
 
 from living_documentation_generator.action.model.config_repository import ConfigRepository
+from living_documentation_generator.utils import make_absolute_path
 
 
 class ActionInputs:
@@ -38,7 +39,7 @@ class ActionInputs:
         self.__is_project_state_mining_enabled = os.getenv('PROJECT_STATE_MINING', "false").lower() == "true"
         self.__projects_title_filter = os.getenv('PROJECTS_TITLE_FILTER')
         out_path = os.getenv('OUTPUT_PATH', './output')
-        self.__output_directory = self._make_absolute_path(out_path)
+        self.__output_directory = make_absolute_path(out_path)
         repositories_json = os.getenv('REPOSITORIES')
 
         logging.debug(f'Is project state mining allowed: {self.is_project_state_mining_enabled}')
@@ -74,10 +75,3 @@ class ActionInputs:
         # Validate GitHub token
         if not self.__github_token:
             raise ValueError("GitHub token could not be loaded from the environment")
-
-    def _make_absolute_path(self, path):
-        # If the path is already absolute, return it as is
-        if os.path.isabs(path):
-            return path
-        # Otherwise, convert the relative path to an absolute path
-        return os.path.abspath(path)
