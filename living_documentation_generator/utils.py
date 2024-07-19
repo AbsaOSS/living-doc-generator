@@ -6,6 +6,7 @@ These functions can be imported and used in other living_documentation_generator
 """
 import os
 import re
+import sys
 
 
 def make_issue_key(organization_name: str, repository_name: str, issue_number: int) -> str:
@@ -43,3 +44,23 @@ def make_absolute_path(path):
         return path
     # Otherwise, convert the relative path to an absolute path
     return os.path.abspath(path)
+
+# Github
+
+
+def get_action_input(name: str, default: str = None) -> str:
+    return os.getenv(f"INPUT_{name}", default)
+
+
+def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt"):
+    output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
+    with open(output_file, 'a') as f:
+        # Write the multiline output to the file
+        f.write(f"{name}<<EOF\n")
+        f.write(f"{value}")
+        f.write(f"EOF\n")
+
+
+def set_action_failed(message: str):
+    print(f"::error::{message}")
+    sys.exit(1)

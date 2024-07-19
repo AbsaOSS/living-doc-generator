@@ -2,8 +2,8 @@ import logging
 
 from living_documentation_generator.action.action_inputs import ActionInputs
 from living_documentation_generator.generator import LivingDocumentationGenerator
-from living_documentation_generator.github_integration.gh_action import set_action_output
 from living_documentation_generator.github_integration.github_manager import GithubManager
+from living_documentation_generator.utils import set_action_output
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

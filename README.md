@@ -206,17 +206,17 @@ Add the shebang line at the top of the sh script file.
 Set the configuration environment variables in the shell script following the structure below. 
 Also make sure that the GITHUB_TOKEN is configured in your environment variables.
 ```
-export GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
-export PROJECT_STATE_MINING="true"
-export PROJECTS_TITLE_FILTER="[]"
-export REPOSITORIES='[
+export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
+export INPUT_PROJECT_STATE_MINING="true"
+export INPUT_PROJECTS_TITLE_FILTER="[]"
+export INPUT_REPOSITORIES='[
             {
               "owner": "Organization Name",
               "repo-name": "example-project",
               "query-labels": ["feature", "bug"]
             }
           ]'
-export OUTPUT_DIRECTORY="/output/directory/path
+export INPUT_OUTPUT_PATH="/output/directory/path
 ```
 
 ### Running the script locally
@@ -224,7 +224,7 @@ For running the GitHub action incorporate these commands into the shell script a
 ```
 cd src || exit 1
 
-python3 living_documenation_generator.py
+python3 main.py
 
 cd .. || exit 1
 ```

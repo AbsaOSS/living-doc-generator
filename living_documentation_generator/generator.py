@@ -51,14 +51,14 @@ class LivingDocumentationGenerator:
         self._clean_output_directory()
 
         # Data mine GitHub issues with defined labels from repository
-        gh_repository_issues: dict[str, list[Issue]] = self._fetch_github_issues()
+        repository_issues: dict[str, list[Issue]] = self._fetch_github_issues()
         # Note: got dict of list of issues for each repository (key is repository id)
 
         # Data mine GitHub project's issues
-        gh_project_issues = self._fetch_github_project_issues()
+        project_issues = self._fetch_github_project_issues()
 
         # Consolidate all issues data together
-        projects_issues = self._consolidate_issues_data(gh_repository_issues, gh_project_issues)
+        projects_issues = self._consolidate_issues_data(repository_issues, project_issues)
 
         # Generate markdown pages
         self._generate_markdown_pages(projects_issues)
@@ -112,14 +112,14 @@ class LivingDocumentationGenerator:
 
         return project_issues
 
-    def _consolidate_issues_data(self, gh_repository_issues: dict[str, list[Issue]],
-                                 gh_projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
+    def _consolidate_issues_data(self, repository_issues: dict[str, list[Issue]],
+                                 projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
 
         consolidated_issues = {}
 
         # Create a ConsolidatedIssue object for each repository issue
-        for repository_id in gh_repository_issues.keys():
-            for repository_issue in gh_repository_issues[repository_id]:
+        for repository_id in repository_issues.keys():
+            for repository_issue in repository_issues[repository_id]:
                 repo_id_parts = repository_id.split("/")
                 unique_key = make_issue_key(repo_id_parts[0], repo_id_parts[1], repository_issue.number)
                 consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id,
@@ -129,17 +129,17 @@ class LivingDocumentationGenerator:
 
         # Update issues with project data
         for key in consolidated_issues.keys():
-            if key in gh_projects_issues:
-                consolidated_issues[key].update_with_project_data(gh_projects_issues[key])
+            if key in projects_issues:
+                consolidated_issues[key].update_with_project_data(projects_issues[key])
 
         return consolidated_issues
 
     def _generate_markdown_pages(self, issues: dict[str, ConsolidatedIssue]):
-        with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f_issue_page_template:
-            issue_page_detail_template = f_issue_page_template.read()
+        with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f:
+            issue_page_detail_template = f.read()
 
-        with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f_index_page_template:
-            issue_index_page_template = f_index_page_template.read()
+        with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f:
+            issue_index_page_template = f.read()
 
         for key, consolidated_issue in issues.items():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
@@ -176,8 +176,8 @@ class LivingDocumentationGenerator:
 
         # Save the single issue Markdown page
         page_filename = consolidated_issue.generate_page_filename()
-        with open(os.path.join(self.output_path, page_filename), 'w', encoding='utf-8') as issue_file:
-            issue_file.write(issue_md_page_content)
+        with open(os.path.join(self.output_path, page_filename), 'w', encoding='utf-8') as f:
+            f.write(issue_md_page_content)
 
         print(f"Generated {page_filename}.")
 
@@ -207,8 +207,8 @@ class LivingDocumentationGenerator:
         index_page = issue_index_page_template.format(**replacement)
 
         # Create an index page file
-        with open(os.path.join(self.output_path, "_index.md"), 'w', encoding='utf-8') as index_file:
-            index_file.write(index_page)
+        with open(os.path.join(self.output_path, "_index.md"), 'w', encoding='utf-8') as f:
+            f.write(index_page)
 
         logging.info("Generated _index.md.")
 
