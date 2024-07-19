@@ -10,7 +10,7 @@ inputs:
   project-state-mining:
     description: 'Enable or disable mining of project state data.'
     required: false
-    default: 'true'
+    default: 'false'
   projects-title-filter:
     description: 'Filter projects by titles. Provide a list of project titles.'
     required: false

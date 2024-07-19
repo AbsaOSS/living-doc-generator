@@ -140,13 +140,13 @@ Configure the action by customizing the following parameters based on your needs
     ```
 
 ### Features de/activation
-- **project-state-mining** (optional, `default: true`)
+- **project-state-mining** (optional, `default: false`)
   - **Description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).
-  - **Usage**: Set to false to deactivate.
+  - **Usage**: Set to true to activate.
   - **Example**:
     ```yaml
     with:
-      project-state-mining: false
+      project-state-mining: true
     ```
     
 ### Features Configuration

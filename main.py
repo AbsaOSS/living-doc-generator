@@ -13,7 +13,6 @@ ISSUES_PER_PAGE_LIMIT = 100
 
 def run():
     action_inputs = ActionInputs().load_from_environment()
-    output_path = f"{action_inputs.output_directory}"
 
     GithubManager().initialize_github_instance(action_inputs.github_token, ISSUES_PER_PAGE_LIMIT)
     if action_inputs.is_project_state_mining_enabled:
@@ -23,7 +22,7 @@ def run():
         repositories=action_inputs.repositories,
         projects_title_filter=action_inputs.projects_title_filter,
         project_state_mining_enabled=action_inputs.is_project_state_mining_enabled,
-        output_path=output_path
+        output_path=action_inputs.output_directory
     )
 
     generator.generate()
