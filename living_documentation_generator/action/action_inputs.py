@@ -11,7 +11,7 @@ class ActionInputs:
         self.__is_project_state_mining_enabled: bool = True
         self.__projects_title_filter: list = []
         self.__repositories: list[ConfigRepository] = []
-        self.__output_directory: str = "output"
+        self.__output_directory: str = ""
 
     @property
     def github_token(self) -> str:

@@ -19,15 +19,17 @@ def run():
     if action_inputs.is_project_state_mining_enabled:
         GithubManager().initialize_request_session(action_inputs.github_token)
 
-    (ldg := LivingDocumentationGenerator(
+    generator = LivingDocumentationGenerator(
         repositories=action_inputs.repositories,
         projects_title_filter=action_inputs.projects_title_filter,
         project_state_mining_enabled=action_inputs.is_project_state_mining_enabled,
         output_path=output_path
-    )).generate()
+    )
+
+    generator.generate()
 
     # Set the output for the GitHub Action
-    set_action_output('documentation-path', ldg.output_path)
+    set_action_output('output-path', generator.output_path)
 
 
 if __name__ == '__main__':

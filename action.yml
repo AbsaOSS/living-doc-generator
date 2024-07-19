@@ -15,9 +15,14 @@ inputs:
     description: 'Filter projects by titles. Provide a list of project titles.'
     required: false
     default: '[]'
+  output-path:
+    description: 'Path to the generated living documentation files.'
+    required: false
+    default: '.'
 outputs:
-  documentation-path:
+  output-path:
     description: 'Path to the generated living documentation files'
+    value: ${{ steps.liv-doc-generator.outputs.output-path }}
 
 branding:
   icon: 'book'
@@ -28,12 +33,7 @@ runs:
   steps:
     - name: Install Python dependencies
       run: |
-        python3 -m pip install --upgrade pip
         python3 -m pip install -r ${{ github.action_path }}/requirements.txt
-      shell: bash
-
-    - name: Call command python3
-      run: python3 --version
       shell: bash
 
     - name: Set PROJECT_ROOT and update PYTHONPATH
@@ -49,6 +49,7 @@ runs:
         INPUT_REPOSITORIES: ${{ inputs.repositories }}
         INPUT_PROJECT_STATE_MINING: ${{ inputs.project_state_mining }}
         INPUT_PROJECTS_TITLE_FILTER: ${{ inputs.projects_title_filter }}
+        INPUT_OUTPUT_PATH: ${{ inputs.output-path }}
 
       run: |
         python3 ${{ github.action_path }}/main.py

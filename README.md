@@ -94,6 +94,7 @@ See the full example of action step definition (in example are used non-default 
         "query-labels": ["improvement"]
       }
     ]'
+    output-path: "/output/directory/path"
 ```
 
 
@@ -135,6 +136,7 @@ Configure the action by customizing the following parameters based on your needs
           "query-labels": ["improvement"]
         }
       ]'
+      output-path: "/output/directory/path"
     ```
 
 ### Features de/activation
@@ -160,7 +162,7 @@ Configure the action by customizing the following parameters based on your needs
 ## Action Outputs
 The Living Documentation Generator action provides a key output that allows users to locate and access the generated documentation easily. This output can be utilized in various ways within your CI/CD pipeline to ensure the documentation is effectively distributed and accessible.
 
-- **documentation-path**
+- **output-path**
   - **Description**: This output provides the path to the directory where the generated living documentation files are stored.
   - **Usage**: 
    ``` yaml
@@ -169,7 +171,7 @@ The Living Documentation Generator action provides a key output that allows user
       ... rest of the action definition ...
       
     - name: Output Documentation Path
-      run: echo "Generated documentation path: ${{ steps.generate_doc.outputs.documentation-path }}"            
+      run: echo "Generated documentation path: ${{ steps.generate_doc.outputs.output-path }}"            
     ```
 
 ## Project Setup
