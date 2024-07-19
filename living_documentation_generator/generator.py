@@ -58,7 +58,7 @@ class LivingDocumentationGenerator:
         gh_project_issues = self._fetch_github_project_issues()
 
         # Consolidate all issues data together
-        projects_issues = self.consolidate_issues_data(gh_repository_issues, gh_project_issues)
+        projects_issues = self._consolidate_issues_data(gh_repository_issues, gh_project_issues)
 
         # Generate markdown pages
         self._generate_markdown_pages(projects_issues)
@@ -112,9 +112,8 @@ class LivingDocumentationGenerator:
 
         return project_issues
 
-    @staticmethod
-    def consolidate_issues_data(gh_repository_issues: dict[str, list[Issue]],
-                                gh_projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
+    def _consolidate_issues_data(self, gh_repository_issues: dict[str, list[Issue]],
+                                 gh_projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
 
         consolidated_issues = {}
 
@@ -125,6 +124,8 @@ class LivingDocumentationGenerator:
                 unique_key = make_issue_key(repo_id_parts[0], repo_id_parts[1], repository_issue.number)
                 consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id,
                                                                     repository_issue=repository_issue)
+                if not self.project_state_mining_enabled:
+                    consolidated_issues[unique_key].no_project_mining()
 
         # Update issues with project data
         for key in consolidated_issues.keys():
