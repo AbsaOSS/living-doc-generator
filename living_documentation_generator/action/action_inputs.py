@@ -1,17 +1,18 @@
 import json
 import logging
-import os
 
-from action.model.config_repository import ConfigRepository
+from living_documentation_generator.action.model.config_repository import ConfigRepository
+from living_documentation_generator.utils import make_absolute_path, get_action_input
 
 
 class ActionInputs:
+
     def __init__(self):
         self.__github_token: str = ""
-        self.__is_project_state_mining_enabled: bool = True
+        self.__is_project_state_mining_enabled: bool = False
         self.__projects_title_filter: list = []
         self.__repositories: list[ConfigRepository] = []
-        self.__output_directory: str = "../output"
+        self.__output_directory: str = ""
 
     @property
     def github_token(self) -> str:
@@ -34,16 +35,17 @@ class ActionInputs:
         return self.__output_directory
 
     def load_from_environment(self, validate: bool = True) -> 'ActionInputs':
-        self.__github_token = os.getenv('GITHUB_TOKEN')
-        self.__is_project_state_mining_enabled = os.getenv('PROJECT_STATE_MINING').lower() == "true"
-        self.__projects_title_filter = os.getenv('PROJECTS_TITLE_FILTER')
-        self.__output_directory = os.getenv('OUTPUT_DIRECTORY', 'output')
-        repositories_json = os.getenv('REPOSITORIES')
+        self.__github_token = get_action_input('GITHUB_TOKEN')
+        self.__is_project_state_mining_enabled = get_action_input('PROJECT_STATE_MINING', "false").lower() == "true"
+        self.__projects_title_filter = get_action_input('PROJECTS_TITLE_FILTER', "").split(',')
+        out_path = get_action_input('OUTPUT_PATH', './output')
+        self.__output_directory = make_absolute_path(out_path)
+        repositories_json = get_action_input('REPOSITORIES', "")
 
-        logging.debug(f'Is project state mining allowed: {self.__is_project_state_mining_enabled}')
-        logging.debug(f'Project title filter: {self.__projects_title_filter}')
+        logging.debug(f'Is project state mining allowed: {self.is_project_state_mining_enabled}')
+        logging.debug(f'Project title filter: {self.projects_title_filter}')
         logging.debug(f'Json repositories to fetch from: {repositories_json}')
-        logging.debug(f'Output directory: {self.__output_directory}')
+        logging.debug(f'Output directory: {self.output_directory}')
 
         # Validate inputs
         if validate:

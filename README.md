@@ -94,6 +94,7 @@ See the full example of action step definition (in example are used non-default 
         "query-labels": ["improvement"]
       }
     ]'
+    output-path: "/output/directory/path"
 ```
 
 
@@ -135,16 +136,17 @@ Configure the action by customizing the following parameters based on your needs
           "query-labels": ["improvement"]
         }
       ]'
+      output-path: "/output/directory/path"
     ```
 
 ### Features de/activation
-- **project-state-mining** (optional, `default: true`)
+- **project-state-mining** (optional, `default: false`)
   - **Description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).
-  - **Usage**: Set to false to deactivate.
+  - **Usage**: Set to true to activate.
   - **Example**:
     ```yaml
     with:
-      project-state-mining: false
+      project-state-mining: true
     ```
     
 ### Features Configuration
@@ -160,7 +162,7 @@ Configure the action by customizing the following parameters based on your needs
 ## Action Outputs
 The Living Documentation Generator action provides a key output that allows users to locate and access the generated documentation easily. This output can be utilized in various ways within your CI/CD pipeline to ensure the documentation is effectively distributed and accessible.
 
-- **documentation-path**
+- **output-path**
   - **Description**: This output provides the path to the directory where the generated living documentation files are stored.
   - **Usage**: 
    ``` yaml
@@ -169,7 +171,7 @@ The Living Documentation Generator action provides a key output that allows user
       ... rest of the action definition ...
       
     - name: Output Documentation Path
-      run: echo "Generated documentation path: ${{ steps.generate_doc.outputs.documentation-path }}"            
+      run: echo "Generated documentation path: ${{ steps.generate_doc.outputs.output-path }}"            
     ```
 
 ## Project Setup
@@ -204,17 +206,17 @@ Add the shebang line at the top of the sh script file.
 Set the configuration environment variables in the shell script following the structure below. 
 Also make sure that the GITHUB_TOKEN is configured in your environment variables.
 ```
-export GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
-export PROJECT_STATE_MINING="true"
-export PROJECTS_TITLE_FILTER="[]"
-export REPOSITORIES='[
+export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
+export INPUT_PROJECT_STATE_MINING="true"
+export INPUT_PROJECTS_TITLE_FILTER="[]"
+export INPUT_REPOSITORIES='[
             {
               "owner": "Organization Name",
               "repo-name": "example-project",
               "query-labels": ["feature", "bug"]
             }
           ]'
-export OUTPUT_DIRECTORY="/output/directory/path
+export INPUT_OUTPUT_PATH="/output/directory/path
 ```
 
 ### Running the script locally
@@ -222,7 +224,7 @@ For running the GitHub action incorporate these commands into the shell script a
 ```
 cd src || exit 1
 
-python3 living_documenation_generator.py
+python3 main.py
 
 cd .. || exit 1
 ```

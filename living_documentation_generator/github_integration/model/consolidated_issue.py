@@ -1,4 +1,6 @@
-from utils import sanitize_filename
+from living_documentation_generator.github_integration.model.issue import Issue
+from living_documentation_generator.github_integration.model.project_issue import ProjectIssue
+from living_documentation_generator.utils import sanitize_filename
 
 NOT_SET_FOR_NOW = "NOT_SET_IN_THIS_VERSION"
 NO_PROJECT_ATTACHED = "---"
@@ -6,21 +8,23 @@ NO_PROJECT_MINING = "-?-"
 
 
 class ConsolidatedIssue:
-    def __init__(self):
+    def __init__(self, repository_id: str, repository_issue: Issue = None):
         # TODO: finish all the fields with newer version
         # Main issue structure
-        self.__number: int = 0
-        self.__organization_name: str = ""
-        self.__repository_name: str = ""
-        self.__title: str = ""
-        self.__state: str = ""
-        self.__url: str = ""
-        self.__body: str = ""
+        self.__number: int = repository_issue.number if repository_issue else 0
+
+        parts = repository_id.split("/")
+        self.__organization_name: str = parts[0] if len(parts) == 2 else ""
+        self.__repository_name: str = parts[1] if len(parts) == 2 else ""
+        self.__title: str = repository_issue.title if repository_issue else ""
+        self.__state: str = repository_issue.state if repository_issue else ""
+        self.__url: str = repository_issue.url if repository_issue else ""
+        self.__body: str = repository_issue.body if repository_issue else ""
         # self.created_at: str = NOT_SET_FOR_NOW
         # self.updated_at: str = NOT_SET_FOR_NOW
         # self.closed_at: str = NOT_SET_FOR_NOW
         # self.milestone: str = NOT_SET_FOR_NOW
-        self.__labels: list[str] = []
+        self.__labels: list[str] = repository_issue.labels if repository_issue else []
 
         # Extra project data
         self.__linked_to_project: bool = False
@@ -108,13 +112,13 @@ class ConsolidatedIssue:
 
         return self
 
-    def update_with_project_data(self, project_issue):
+    def update_with_project_data(self, issue: ProjectIssue):
         self.__linked_to_project = True
-        self.__project_name = project_issue["project_name"]
-        self.__status = project_issue["status"]
-        self.__priority = project_issue["priority"]
-        self.__size = project_issue["size"]
-        self.__moscow = project_issue["moscow"]
+        self.__project_name = issue.project_name
+        self.__status = issue.status
+        self.__priority = issue.priority
+        self.__size = issue.size
+        self.__moscow = issue.moscow
 
     def no_project_mining(self):
         self.__linked_to_project = NO_PROJECT_MINING
@@ -126,54 +130,8 @@ class ConsolidatedIssue:
 
         return self
 
-    def load_consolidated_issue(self, consolidated_issue_json):
-        self.__number = consolidated_issue_json["number"]
-        self.__organization_name = consolidated_issue_json["organization_name"]
-        self.__repository_name = consolidated_issue_json["repository_name"]
-        self.__title = consolidated_issue_json["title"]
-        self.__state = consolidated_issue_json["state"]
-        self.__url = consolidated_issue_json["url"]
-        self.__body = consolidated_issue_json["body"]
-        # self.__created_at = consolidated_issue_json["created_at"]
-        # self.__updated_at = consolidated_issue_json["updated_at"]
-        # self.__closed_at = consolidated_issue_json["closed_at"]
-        # self.__milestone = consolidated_issue_json["milestone"]
-        self.__labels = consolidated_issue_json["labels"]
-        self.__linked_to_project = consolidated_issue_json["linked_to_project"]
-        self.__project_name = consolidated_issue_json["project_name"]
-        self.__status = consolidated_issue_json["status"]
-        self.__priority = consolidated_issue_json["priority"]
-        self.__size = consolidated_issue_json["size"]
-        self.__moscow = consolidated_issue_json["moscow"]
-        self.__error = consolidated_issue_json["error"]
-
-        return self
-
     def generate_page_filename(self):
         md_filename_base = f"{self.number}_{self.title.lower()}.md"
         page_filename = sanitize_filename(md_filename_base)
 
         return page_filename
-
-    def to_dict(self):
-        return {
-            "number": self.number,
-            "organization_name": self.organization_name,
-            "repository_name": self.repository_name,
-            "title": self.title,
-            "state": self.state,
-            "url": self.url,
-            "body": self.body,
-            # "created_at": self.created_at,
-            # "updated_at": self.updated_at,
-            # "closed_at": self.closed_at,
-            # "milestone": self.milestone,
-            "labels": self.labels,
-            "linked_to_project": self.linked_to_project,
-            "project_name": self.project_name,
-            "status": self.status,
-            "priority": self.priority,
-            "size": self.size,
-            "moscow": self.moscow,
-            "error": self.error
-        }

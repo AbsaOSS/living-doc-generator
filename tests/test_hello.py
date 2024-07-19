@@ -1,6 +1,6 @@
 import unittest
 import sys
-sys.path.append('src')  # Adjust path to include the directory where hello.py is located
+sys.path.append('living_documentation_generator')  # Adjust path to include the directory where hello.py is located
 
 
 class TestHelloWorld(unittest.TestCase):

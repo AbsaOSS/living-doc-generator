@@ -1,21 +1,21 @@
 import logging
 import time
+import requests
 
 from datetime import datetime
 from typing import Optional
 
-import requests
 from github import Github, Auth
 from github.GitRelease import GitRelease
 from github.RateLimit import RateLimit
 from github.Repository import Repository
 
-from .github_project_queries import GithubProjectQueries
-from .model.commit import Commit
-from .model.issue import Issue
-from .model.pull_request import PullRequest
-from .model.github_project import GithubProject
-from .model.project_issue import ProjectIssue
+from living_documentation_generator.github_integration.github_project_queries import GithubProjectQueries
+from living_documentation_generator.github_integration.model.commit import Commit
+from living_documentation_generator.github_integration.model.github_project import GithubProject
+from living_documentation_generator.github_integration.model.issue import Issue
+from living_documentation_generator.github_integration.model.project_issue import ProjectIssue
+from living_documentation_generator.github_integration.model.pull_request import PullRequest
 
 
 def singleton(cls):

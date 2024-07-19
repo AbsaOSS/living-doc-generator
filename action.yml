@@ -10,14 +10,19 @@ inputs:
   project-state-mining:
     description: 'Enable or disable mining of project state data.'
     required: false
-    default: true
+    default: 'false'
   projects-title-filter:
     description: 'Filter projects by titles. Provide a list of project titles.'
     required: false
     default: '[]'
+  output-path:
+    description: 'Path to the generated living documentation files.'
+    required: false
+    default: './output'
 outputs:
-  documentation-path:
+  output-path:
     description: 'Path to the generated living documentation files'
+    value: ${{ steps.liv-doc-generator.outputs.output-path }}
 
 branding:
   icon: 'book'
@@ -28,18 +33,13 @@ runs:
   steps:
     - name: Install Python dependencies
       run: |
-        python3 -m pip install --upgrade pip
         python3 -m pip install -r ${{ github.action_path }}/requirements.txt
-      shell: bash
-
-    - name: Call command python3
-      run: python3 --version
       shell: bash
 
     - name: Set PROJECT_ROOT and update PYTHONPATH
       run: |
         ACTION_ROOT="${{ github.action_path }}"
-        export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/release_notes_generator"
+        export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/living-doc-generator"
       shell: bash
 
     - name: Call Living Documentation Generator
@@ -49,7 +49,8 @@ runs:
         INPUT_REPOSITORIES: ${{ inputs.repositories }}
         INPUT_PROJECT_STATE_MINING: ${{ inputs.project_state_mining }}
         INPUT_PROJECTS_TITLE_FILTER: ${{ inputs.projects_title_filter }}
+        INPUT_OUTPUT_PATH: ${{ inputs.output-path }}
 
       run: |
-        python3 ${{ github.action_path }}/src/living_documentation_generator.py
+        python3 ${{ github.action_path }}/main.py
       shell: bash

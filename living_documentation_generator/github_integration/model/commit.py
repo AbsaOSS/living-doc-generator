@@ -1,5 +1,3 @@
-from typing import Optional
-
 from github import Commit as GitCommit
 
 

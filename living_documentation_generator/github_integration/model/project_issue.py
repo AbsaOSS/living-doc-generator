@@ -1,4 +1,4 @@
-from github_integration.model.github_project import GithubProject
+from living_documentation_generator.github_integration.model.github_project import GithubProject
 
 
 class ProjectIssue:
@@ -74,15 +74,3 @@ class ProjectIssue:
                 self.__moscow = field_type
 
         return self
-
-    def to_dict(self):
-        return {
-            "number": self.__number,
-            "organization_name": self.__organization_name,
-            "repository_name": self.__repository_name,
-            "project_name": self.__project_name,
-            "status": self.__status,
-            "priority": self.__priority,
-            "size": self.__size,
-            "moscow": self.__moscow
-        }
