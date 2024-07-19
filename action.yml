@@ -39,7 +39,7 @@ runs:
     - name: Set PROJECT_ROOT and update PYTHONPATH
       run: |
         ACTION_ROOT="${{ github.action_path }}"
-        export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/release_notes_generator"
+        export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/living-doc-generator"
       shell: bash
 
     - name: Call Living Documentation Generator
