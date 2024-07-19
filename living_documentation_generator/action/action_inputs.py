@@ -7,12 +7,6 @@ from living_documentation_generator.utils import make_absolute_path, get_action_
 
 class ActionInputs:
 
-    GITHUB_TOKEN = 'GITHUB_TOKEN'
-    PROJECT_STATE_MINING = 'PROJECT_STATE_MINING'
-    PROJECTS_TITLE_FILTER = 'PROJECTS_TITLE_FILTER'
-    REPOSITORIES = 'REPOSITORIES'
-    OUTPUT_PATH = 'OUTPUT_PATH'
-
     def __init__(self):
         self.__github_token: str = ""
         self.__is_project_state_mining_enabled: bool = False
@@ -41,12 +35,12 @@ class ActionInputs:
         return self.__output_directory
 
     def load_from_environment(self, validate: bool = True) -> 'ActionInputs':
-        self.__github_token = get_action_input(self.GITHUB_TOKEN)
-        self.__is_project_state_mining_enabled = get_action_input(self.PROJECT_STATE_MINING, "false").lower() == "true"
-        self.__projects_title_filter = get_action_input(self.PROJECTS_TITLE_FILTER, "").split(',')
-        out_path = get_action_input(self.OUTPUT_PATH, './output')
+        self.__github_token = get_action_input('GITHUB_TOKEN')
+        self.__is_project_state_mining_enabled = get_action_input('PROJECT_STATE_MINING', "false").lower() == "true"
+        self.__projects_title_filter = get_action_input('PROJECTS_TITLE_FILTER', "").split(',')
+        out_path = get_action_input('OUTPUT_PATH', './output')
         self.__output_directory = make_absolute_path(out_path)
-        repositories_json = get_action_input(self.REPOSITORIES)
+        repositories_json = get_action_input('REPOSITORIES', "")
 
         logging.debug(f'Is project state mining allowed: {self.is_project_state_mining_enabled}')
         logging.debug(f'Project title filter: {self.projects_title_filter}')
