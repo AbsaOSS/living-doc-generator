@@ -18,36 +18,34 @@ class LivingDocumentationGenerator:
     ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md")
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
 
-    def __init__(self, repositories: list[ConfigRepository],
-                 projects_title_filter: list[str] = None,
-                 project_state_mining_enabled: bool = False,
-                 output_path: str = "../output"):
+    def __init__(self, repositories: list[ConfigRepository], projects_title_filter: list[str],
+                 project_state_mining_enabled: bool, output_path: str):
 
         # data
-        self._repositories: list[ConfigRepository] = repositories
-        self._projects_title_filter: list[str] = projects_title_filter      # TODO - this could be part of repository config ???
+        self.__repositories: list[ConfigRepository] = repositories
+        self.__projects_title_filter: list[str] = projects_title_filter      # TODO - this could be part of repository config ???
 
         # features control
-        self._project_state_mining_enabled: bool = project_state_mining_enabled
+        self.__project_state_mining_enabled: bool = project_state_mining_enabled
 
         # paths
-        self._output_path: str = output_path
+        self.__output_path: str = output_path
 
     @property
     def repositories(self) -> list[ConfigRepository]:
-        return self._repositories
+        return self.__repositories
 
     @property
     def projects_title_filter(self) -> list[str]:
-        return self._projects_title_filter
+        return self.__projects_title_filter
 
     @property
     def project_state_mining_enabled(self) -> bool:
-        return self._project_state_mining_enabled
+        return self.__project_state_mining_enabled
 
     @property
     def output_path(self) -> str:
-        return self._output_path
+        return self.__output_path
 
     def generate(self):
         self._clean_output_directory()
@@ -60,7 +58,7 @@ class LivingDocumentationGenerator:
         gh_project_issues = self._fetch_github_project_issues()
 
         # Consolidate all issues data together
-        projects_issues = self._consolidate_issues_data(gh_repository_issues, gh_project_issues)
+        projects_issues = self.consolidate_issues_data(gh_repository_issues, gh_project_issues)
 
         # Generate markdown pages
         self._generate_markdown_pages(projects_issues)
@@ -82,14 +80,8 @@ class LivingDocumentationGenerator:
 
             logging.info(f"Downloading issues from repository `{config_repository.owner}/{config_repository.name}`.")
 
-            # Load all issues from one repository (unique for each repository)
-            repository_issues = GithubManager().fetch_issues(labels=config_repository.query_labels)
-            for repository_issue in repository_issues:
-                repository_issue.repository = repository_id
-
-            # save list of repository issue under its repository id
-            # Note: not creating OOP object instead if this dict as Issue type will be replaced in next PR
-            issues[repository_id] = repository_issues
+            # Load all issues from one repository (unique for each repository) and save it under repository id
+            issues[repository_id] = GithubManager().fetch_issues(labels=config_repository.query_labels)
 
         return issues
 
@@ -120,8 +112,9 @@ class LivingDocumentationGenerator:
 
         return project_issues
 
-    def _consolidate_issues_data(self, gh_repository_issues: dict[str, list[Issue]],
-                                 gh_projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
+    @staticmethod
+    def consolidate_issues_data(gh_repository_issues: dict[str, list[Issue]],
+                                gh_projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
 
         consolidated_issues = {}
 
@@ -130,7 +123,8 @@ class LivingDocumentationGenerator:
             for repository_issue in gh_repository_issues[repository_id]:
                 repo_id_parts = repository_id.split("/")
                 unique_key = make_issue_key(repo_id_parts[0], repo_id_parts[1], repository_issue.number)
-                consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id, repository_issue=repository_issue)
+                consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id,
+                                                                    repository_issue=repository_issue)
 
         # Update issues with project data
         for key in consolidated_issues.keys():
@@ -140,20 +134,20 @@ class LivingDocumentationGenerator:
         return consolidated_issues
 
     def _generate_markdown_pages(self, issues: dict[str, ConsolidatedIssue]):
-        with open(self.ISSUE_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as issue_page_template_file:
-            issue_page_detail_template = issue_page_template_file.read()
+        with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f_issue_page_template:
+            issue_page_detail_template = f_issue_page_template.read()
 
-        with open(self.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as idx_page_template_file:
-            issue_index_page_template = idx_page_template_file.read()
+        with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f_index_page_template:
+            issue_index_page_template = f_index_page_template.read()
 
         for key, consolidated_issue in issues.items():
-            self.generate_md_issue_page(issue_page_detail_template, consolidated_issue)
+            self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
 
         self._generate_index_page(issue_index_page_template, issues)
 
-    def generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
+    def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
         """
-            Generates a single issue Markdown page from a template.
+            Generates a single issue Markdown page from a template and save to the output directory.
 
             @param issue_page_template: The template string for generating a single issue page.
             @param consolidated_issue: The dictionary containing issue data.
@@ -165,7 +159,7 @@ class LivingDocumentationGenerator:
         issue_content = consolidated_issue.body
 
         # Generate a summary table for the issue
-        issue_table = self.generate_issue_summary_table(consolidated_issue)
+        issue_table = self._generate_issue_summary_table(consolidated_issue)
 
         # Initialize dictionary with replacements
         replacements = {
@@ -186,8 +180,14 @@ class LivingDocumentationGenerator:
 
         print(f"Generated {page_filename}.")
 
-    def _generate_index_page(self, issue_index_page_template: str,
-                             consolidated_issues: dict[str, ConsolidatedIssue]):
+    def _generate_index_page(self, issue_index_page_template: str, consolidated_issues: dict[str, ConsolidatedIssue]) -> None:
+        """
+        Generates an index page with a summary of all issues and save it to the output directory.
+
+        :param issue_index_page_template: The template string for generating the index page.
+        :param consolidated_issues: The dictionary containing all issues data.
+        """
+
         issue_table = """| Organization name     | Repository name | Issue 'Number - Title'  | Linked to project | Project status  |Issue URL   |
                |-----------------------|-----------------|---------------------------|---------|------|-----|
                """
@@ -242,7 +242,7 @@ class LivingDocumentationGenerator:
 
         return md_issue_line
 
-    def generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
+    def _generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
         """
             Generates a string representation of feature info in a table format.
 

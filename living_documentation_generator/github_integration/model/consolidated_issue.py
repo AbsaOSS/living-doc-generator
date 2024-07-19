@@ -130,54 +130,8 @@ class ConsolidatedIssue:
 
         return self
 
-    def load_consolidated_issue(self, consolidated_issue_json):
-        self.__number = consolidated_issue_json["number"]
-        self.__organization_name = consolidated_issue_json["organization_name"]
-        self.__repository_name = consolidated_issue_json["repository_name"]
-        self.__title = consolidated_issue_json["title"]
-        self.__state = consolidated_issue_json["state"]
-        self.__url = consolidated_issue_json["url"]
-        self.__body = consolidated_issue_json["body"]
-        # self.__created_at = consolidated_issue_json["created_at"]
-        # self.__updated_at = consolidated_issue_json["updated_at"]
-        # self.__closed_at = consolidated_issue_json["closed_at"]
-        # self.__milestone = consolidated_issue_json["milestone"]
-        self.__labels = consolidated_issue_json["labels"]
-        self.__linked_to_project = consolidated_issue_json["linked_to_project"]
-        self.__project_name = consolidated_issue_json["project_name"]
-        self.__status = consolidated_issue_json["status"]
-        self.__priority = consolidated_issue_json["priority"]
-        self.__size = consolidated_issue_json["size"]
-        self.__moscow = consolidated_issue_json["moscow"]
-        self.__error = consolidated_issue_json["error"]
-
-        return self
-
     def generate_page_filename(self):
         md_filename_base = f"{self.number}_{self.title.lower()}.md"
         page_filename = sanitize_filename(md_filename_base)
 
         return page_filename
-
-    def to_dict(self):
-        return {
-            "number": self.number,
-            "organization_name": self.organization_name,
-            "repository_name": self.repository_name,
-            "title": self.title,
-            "state": self.state,
-            "url": self.url,
-            "body": self.body,
-            # "created_at": self.created_at,
-            # "updated_at": self.updated_at,
-            # "closed_at": self.closed_at,
-            # "milestone": self.milestone,
-            "labels": self.labels,
-            "linked_to_project": self.linked_to_project,
-            "project_name": self.project_name,
-            "status": self.status,
-            "priority": self.priority,
-            "size": self.size,
-            "moscow": self.moscow,
-            "error": self.error
-        }
