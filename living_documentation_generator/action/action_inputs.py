@@ -37,7 +37,8 @@ class ActionInputs:
         self.__github_token = os.getenv('GITHUB_TOKEN')
         self.__is_project_state_mining_enabled = os.getenv('PROJECT_STATE_MINING').lower() == "true"
         self.__projects_title_filter = os.getenv('PROJECTS_TITLE_FILTER')
-        self.__output_directory = os.getenv('OUTPUT_DIRECTORY', 'output')
+        out_path = os.getenv('OUTPUT_PATH', './output')
+        self.__output_directory = self._make_absolute_path(out_path)
         repositories_json = os.getenv('REPOSITORIES')
 
         logging.debug(f'Is project state mining allowed: {self.__is_project_state_mining_enabled}')
@@ -73,3 +74,10 @@ class ActionInputs:
         # Validate GitHub token
         if not self.__github_token:
             raise ValueError("GitHub token could not be loaded from the environment")
+
+    def _make_absolute_path(self, path):
+        # If the path is already absolute, return it as is
+        if os.path.isabs(path):
+            return path
+        # Otherwise, convert the relative path to an absolute path
+        return os.path.abspath(path)
