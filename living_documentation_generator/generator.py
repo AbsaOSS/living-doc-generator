@@ -1,14 +1,20 @@
 import logging
 import os
 import shutil
+
 from datetime import datetime
 
-from living_documentation_generator.action.model.config_repository import ConfigRepository
-from living_documentation_generator.github_integration.github_manager import GithubManager
-from living_documentation_generator.github_integration.model.consolidated_issue import ConsolidatedIssue
-from living_documentation_generator.github_integration.model.issue import Issue
-from living_documentation_generator.github_integration.model.project_issue import ProjectIssue
-from living_documentation_generator.utils import make_issue_key
+from github import Github
+from github.Issue import Issue
+
+from living_documentation_generator.github_projects import GithubProjects
+from living_documentation_generator.model.config_repository import ConfigRepository
+from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
+from living_documentation_generator.model.project_issue import ProjectIssue
+from living_documentation_generator.utils.constants import Constants
+from living_documentation_generator.utils.decorators import safe_call_decorator
+from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
+from living_documentation_generator.utils.utils import make_issue_key
 
 
 class LivingDocumentationGenerator:
@@ -18,8 +24,14 @@ class LivingDocumentationGenerator:
     ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md")
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
 
-    def __init__(self, repositories: list[ConfigRepository], projects_title_filter: list[str],
+    def __init__(self, github_instance: Github, github_projects_instance: GithubProjects,
+                 repositories: list[ConfigRepository], projects_title_filter: list[str],
                  project_state_mining_enabled: bool, output_path: str):
+
+        self.github_instance = github_instance
+        self.github_projects_instance = github_projects_instance
+        self.rate_limiter = GithubRateLimiter(self.github_instance)
+        self.safe_call = safe_call_decorator(self.rate_limiter)
 
         # data
         self.__repositories: list[ConfigRepository] = repositories
@@ -50,12 +62,12 @@ class LivingDocumentationGenerator:
     def generate(self):
         self._clean_output_directory()
 
-        # Data mine GitHub issues with defined labels from repository
+        # Data mine GitHub issues with defined labels from all repositories
         repository_issues: dict[str, list[Issue]] = self._fetch_github_issues()
         # Note: got dict of list of issues for each repository (key is repository id)
 
         # Data mine GitHub project's issues
-        project_issues = self._fetch_github_project_issues()
+        project_issues: dict[str, ProjectIssue] = self._fetch_github_project_issues()
 
         # Consolidate all issues data together
         projects_issues = self._consolidate_issues_data(repository_issues, project_issues)
@@ -75,13 +87,22 @@ class LivingDocumentationGenerator:
         for config_repository in self.repositories:
             repository_id = f"{config_repository.owner}/{config_repository.name}"
 
-            if GithubManager().store_repository(repository_id) is None:
+            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            if repository is None:
                 return {}
 
             logging.info(f"Downloading issues from repository `{config_repository.owner}/{config_repository.name}`.")
 
             # Load all issues from one repository (unique for each repository) and save it under repository id
-            issues[repository_id] = GithubManager().fetch_issues(labels=config_repository.query_labels)
+            if not config_repository.query_labels:
+                logging.info(f"Fetching all issues for {repository.full_name}")
+                issues[repository_id] = self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL)
+            else:
+                issues[repository_id] = []
+                for label in config_repository.query_labels:
+                    logging.info(f"Fetching issues with label {label} for {repository.full_name}")
+                    issues[repository_id].extend(self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL,
+                                                                                       labels=[label]))
 
         return issues
 
@@ -98,15 +119,18 @@ class LivingDocumentationGenerator:
         for config_repository in self.repositories:
             repository_id = f"{config_repository.owner}/{config_repository.name}"
 
-            if GithubManager().store_repository(repository_id) is None:
+            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            if repository is None:
                 return {}
 
             # Fetch all projects_buffer attached to the repository
-            projects = GithubManager().fetch_repository_projects(self.projects_title_filter)
+            projects = self.safe_call(self.github_projects_instance.get_repository_projects)(
+                repository=repository, projects_title_filter=self.projects_title_filter)
 
             # Update every project with project issue related data
             for project in projects:
-                for prj_issue in GithubManager().fetch_project_issues(project):
+                prj_issues = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
+                for prj_issue in prj_issues:
                     key = make_issue_key(prj_issue.organization_name, prj_issue.repository_name, prj_issue.number)
                     project_issues[key] = prj_issue
 

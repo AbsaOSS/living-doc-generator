@@ -31,9 +31,13 @@ branding:
 runs:
   using: 'composite'
   steps:
+    - uses: actions/setup-python@v5.1.1
+      with:
+        python-version: '3.11'
+
     - name: Install Python dependencies
       run: |
-        python3 -m pip install -r ${{ github.action_path }}/requirements.txt
+        pip install -r ${{ github.action_path }}/requirements.txt
       shell: bash
 
     - name: Set PROJECT_ROOT and update PYTHONPATH
@@ -52,5 +56,5 @@ runs:
         INPUT_OUTPUT_PATH: ${{ inputs.output-path }}
 
       run: |
-        python3 ${{ github.action_path }}/main.py
+        python ${{ github.action_path }}/main.py
       shell: bash

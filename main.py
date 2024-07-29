@@ -1,9 +1,12 @@
 import logging
 
-from living_documentation_generator.action.action_inputs import ActionInputs
+from github import Github, Auth
+
+from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.generator import LivingDocumentationGenerator
-from living_documentation_generator.github_integration.github_manager import GithubManager
-from living_documentation_generator.utils import set_action_output
+
+from living_documentation_generator.github_projects import GithubProjects
+from living_documentation_generator.utils.utils import set_action_output
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -14,11 +17,12 @@ ISSUES_PER_PAGE_LIMIT = 100
 def run():
     action_inputs = ActionInputs().load_from_environment()
 
-    GithubManager().initialize_github_instance(action_inputs.github_token, ISSUES_PER_PAGE_LIMIT)
-    if action_inputs.is_project_state_mining_enabled:
-        GithubManager().initialize_request_session(action_inputs.github_token)
+    py_github = Github(auth=Auth.Token(token=action_inputs.github_token), per_page=ISSUES_PER_PAGE_LIMIT)
+    py_github_projects = GithubProjects(token=action_inputs.github_token)
 
     generator = LivingDocumentationGenerator(
+        github_instance=py_github,
+        github_projects_instance=py_github_projects,
         repositories=action_inputs.repositories,
         projects_title_filter=action_inputs.projects_title_filter,
         project_state_mining_enabled=action_inputs.is_project_state_mining_enabled,
