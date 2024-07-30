@@ -4,7 +4,6 @@ from github import Github, Auth
 
 from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.generator import LivingDocumentationGenerator
-
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.utils.utils import set_action_output
 
