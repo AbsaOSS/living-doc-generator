@@ -1,7 +1,7 @@
 import logging
 import time
 from datetime import datetime
-from typing import Optional, Callable
+from typing import Callable, Optional, Any
 from github import Github
 
 
@@ -10,7 +10,7 @@ class GithubRateLimiter:
         self.github_client = github_client
 
     def __call__(self, method: Callable) -> Callable:
-        def wrapped_method(*args, **kwargs) -> Optional:
+        def wrapped_method(*args, **kwargs) -> Optional[Any]:
             rate_limit = self.github_client.get_rate_limit().core
             remaining_calls = rate_limit.remaining
             reset_time = rate_limit.reset.timestamp()

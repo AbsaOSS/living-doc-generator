@@ -129,10 +129,10 @@ class LivingDocumentationGenerator:
 
             # Update every project with project issue related data
             for project in projects:
-                prj_issues = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
-                for prj_issue in prj_issues:
-                    key = make_issue_key(prj_issue.organization_name, prj_issue.repository_name, prj_issue.number)
-                    project_issues[key] = prj_issue
+                project_issues = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
+                for project_issue in project_issues:
+                    key = make_issue_key(project_issue.organization_name, project_issue.repository_name, project_issue.number)
+                    project_issues[key] = project_issue
 
         return project_issues
 

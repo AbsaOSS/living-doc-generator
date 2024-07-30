@@ -26,11 +26,6 @@ class GithubProject:
     def organization_name(self) -> str:
         return self.__organization_name
 
-    # TODO - method not used - is that needed?
-    @property
-    def config_repositories(self) -> list[ConfigRepository]:
-        return self.__config_repositories
-
     @property
     def field_options(self) -> dict[str, str]:
         return self.__field_options

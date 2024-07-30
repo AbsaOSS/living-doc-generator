@@ -17,12 +17,12 @@ ISSUES_PER_PAGE_LIMIT = 100
 def run():
     action_inputs = ActionInputs().load_from_environment()
 
-    py_github = Github(auth=Auth.Token(token=action_inputs.github_token), per_page=ISSUES_PER_PAGE_LIMIT)
-    py_github_projects = GithubProjects(token=action_inputs.github_token)
+    github = Github(auth=Auth.Token(token=action_inputs.github_token), per_page=ISSUES_PER_PAGE_LIMIT)
+    github_projects = GithubProjects(token=action_inputs.github_token)
 
     generator = LivingDocumentationGenerator(
-        github_instance=py_github,
-        github_projects_instance=py_github_projects,
+        github_instance=github,
+        github_projects_instance=github_projects,
         repositories=action_inputs.repositories,
         projects_title_filter=action_inputs.projects_title_filter,
         project_state_mining_enabled=action_inputs.is_project_state_mining_enabled,
