@@ -61,7 +61,7 @@ class GithubProjects:
 
         return {}
 
-    def get_repository_projects(self, repository: Repository, projects_title_filter) -> list[GithubProject]:
+    def get_repository_projects(self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
         projects = []
 
         # Fetch the project response from the GraphQL API
@@ -73,27 +73,28 @@ class GithubProjects:
         # If response is not None, parse the project response
         if projects_from_repo_response['repository'] is not None:
             projects_from_repo_nodes = projects_from_repo_response['repository']['projectsV2']['nodes']
-            projects = []
+            repository_projects = []
 
             for project_json in projects_from_repo_nodes:
                 # Check if the project is required based on the configuration filter
                 project_title = project_json['title']
+
                 # If no filter is provided, all projects are required
-                is_project_required = (projects_title_filter == '[]') or (project_title in projects_title_filter)
+                is_project_required = True if len(projects_title_filter) else project_title in projects_title_filter
 
                 # Main project structure is loaded and added to the projects list
                 if is_project_required:
                     project = GithubProject().load_from_json(project_json, repository)
-                    projects.append(project)
+                    repository_projects.append(project)
 
             # Add the field options to the main project structure
             # TODO: Put this into load from json
-            projects = [self.update_field_options(repository, project) for project in projects]
+            projects.extend([self.update_field_options(repository, project) for project in repository_projects])
 
         else:
             logging.warning(f"'repository' key is None in response: {projects_from_repo_response}")
 
-        if not projects:
+        if len(projects) == 0:
             logging.info(f"No project attached for repository: {repository.owner.login}/{repository.name}")
 
         return projects

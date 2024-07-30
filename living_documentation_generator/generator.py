@@ -10,6 +10,7 @@ from github.Issue import Issue
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
+from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.constants import Constants
 from living_documentation_generator.utils.decorators import safe_call_decorator
@@ -114,7 +115,7 @@ class LivingDocumentationGenerator:
         logging.info("Project data mining allowed, starting the process.")
 
         # Mine project issues for every repository
-        project_issues = {}
+        all_project_issues: dict[str, ProjectIssue] = {}
 
         for config_repository in self.repositories:
             repository_id = f"{config_repository.owner}/{config_repository.name}"
@@ -129,12 +130,13 @@ class LivingDocumentationGenerator:
 
             # Update every project with project issue related data
             for project in projects:
-                project_issues = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
+                project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
                 for project_issue in project_issues:
-                    key = make_issue_key(project_issue.organization_name, project_issue.repository_name, project_issue.number)
-                    project_issues[key] = project_issue
+                    key = make_issue_key(project_issue.organization_name, project_issue.repository_name,
+                                         project_issue.number)
+                    all_project_issues[key] = project_issue
 
-        return project_issues
+        return all_project_issues
 
     def _consolidate_issues_data(self, repository_issues: dict[str, list[Issue]],
                                  projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
