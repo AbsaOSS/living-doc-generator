@@ -10,7 +10,6 @@ from github.Issue import Issue
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
-from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.constants import Constants
 from living_documentation_generator.utils.decorators import safe_call_decorator

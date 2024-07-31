@@ -100,7 +100,7 @@ class ConsolidatedIssue:
         self.__moscow = issue.moscow
 
     def no_project_mining(self):
-        self.__linked_to_project = NO_PROJECT_MINING
+        self.__linked_to_project = False
         self.__project_name = NO_PROJECT_MINING
         self.__status = NO_PROJECT_MINING
         self.__priority = NO_PROJECT_MINING
