@@ -1,4 +1,4 @@
-from living_documentation_generator.github_integration.model.github_project import GithubProject
+from living_documentation_generator.model.github_project import GithubProject
 
 
 class ProjectIssue:
@@ -8,7 +8,6 @@ class ProjectIssue:
         self.__organization_name: str = ""
         self.__repository_name: str = ""
         self.__project_name: str = ""
-        # self.__project_repositories: list[str] = []
         self.__status: str = "N/A"
         self.__priority: str = "N/A"
         self.__size: str = "N/A"
@@ -31,10 +30,6 @@ class ProjectIssue:
         return self.__project_name
 
     @property
-    def project_repositories(self) -> list[str]:
-        return self.__project_repositories
-
-    @property
     def status(self) -> str:
         return self.__status
 
@@ -55,7 +50,6 @@ class ProjectIssue:
         self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
         self.__repository_name = issue_json["content"]["repository"]["name"]
         self.__project_name = project.title
-        # self.__project_repositories = project.project_repositories
 
         field_types = []
         if 'fieldValues' in issue_json:

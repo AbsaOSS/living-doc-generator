@@ -1,8 +1,8 @@
 import json
 import logging
 
-from living_documentation_generator.action.model.config_repository import ConfigRepository
-from living_documentation_generator.utils import make_absolute_path, get_action_input
+from living_documentation_generator.model.config_repository import ConfigRepository
+from living_documentation_generator.utils.utils import get_action_input, make_absolute_path
 
 
 class ActionInputs:

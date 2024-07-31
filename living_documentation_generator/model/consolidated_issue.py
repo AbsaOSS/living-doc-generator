@@ -1,6 +1,7 @@
-from living_documentation_generator.github_integration.model.issue import Issue
-from living_documentation_generator.github_integration.model.project_issue import ProjectIssue
-from living_documentation_generator.utils import sanitize_filename
+from github.Issue import Issue
+
+from living_documentation_generator.model.project_issue import ProjectIssue
+from living_documentation_generator.utils.utils import sanitize_filename
 
 NOT_SET_FOR_NOW = "NOT_SET_IN_THIS_VERSION"
 NO_PROJECT_ATTACHED = "---"
@@ -9,24 +10,15 @@ NO_PROJECT_MINING = "-?-"
 
 class ConsolidatedIssue:
     def __init__(self, repository_id: str, repository_issue: Issue = None):
-        # TODO: finish all the fields with newer version
-        # Main issue structure
-        self.__number: int = repository_issue.number if repository_issue else 0
+        # save issue from repository (got from Github library & keep connection to repository for lazy loading)
+        # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
+        self.__issue = repository_issue
 
         parts = repository_id.split("/")
         self.__organization_name: str = parts[0] if len(parts) == 2 else ""
         self.__repository_name: str = parts[1] if len(parts) == 2 else ""
-        self.__title: str = repository_issue.title if repository_issue else ""
-        self.__state: str = repository_issue.state if repository_issue else ""
-        self.__url: str = repository_issue.url if repository_issue else ""
-        self.__body: str = repository_issue.body if repository_issue else ""
-        # self.created_at: str = NOT_SET_FOR_NOW
-        # self.updated_at: str = NOT_SET_FOR_NOW
-        # self.closed_at: str = NOT_SET_FOR_NOW
-        # self.milestone: str = NOT_SET_FOR_NOW
-        self.__labels: list[str] = repository_issue.labels if repository_issue else []
 
-        # Extra project data
+        # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
         self.__project_name: str = NO_PROJECT_ATTACHED
         self.__status: str = NO_PROJECT_ATTACHED
@@ -38,7 +30,7 @@ class ConsolidatedIssue:
 
     @property
     def number(self) -> int:
-        return self.__number
+        return self.__issue.number if self.__issue else 0
 
     @property
     def organization_name(self) -> str:
@@ -50,23 +42,26 @@ class ConsolidatedIssue:
 
     @property
     def title(self) -> str:
-        return self.__title
+        return self.__issue.title if self.__issue else ""
 
     @property
     def state(self) -> str:
-        return self.__state
+        return self.__issue.state if self.__issue else ""
 
     @property
     def url(self) -> str:
-        return self.__url
+        return self.__issue.url if self.__issue else ""
 
     @property
     def body(self) -> str:
-        return self.__body
+        return self.__issue.body if self.__issue else ""
 
     @property
     def labels(self) -> list[str]:
-        return self.__labels
+        if self.__issue:
+            return [label.name for label in self.__issue.labels]
+        else:
+            return []
 
     @property
     def linked_to_project(self) -> bool:
@@ -96,22 +91,6 @@ class ConsolidatedIssue:
     def error(self) -> str | None:
         return self.__error
 
-    def load_issue(self, issue_json):
-        self.__number = issue_json["number"]
-        self.__organization_name = issue_json["organization_name"]
-        self.__repository_name = issue_json["repository_name"]
-        self.__title = issue_json["title"]
-        self.__state = issue_json["state"]
-        self.__url = issue_json["url"]
-        self.__body = issue_json["body"]
-        # self.__created_at = issue_json["created_at"]
-        # self.__updated_at = issue_json["updated_at"]
-        # self.__closed_at = issue_json["closed_at"]
-        # self.__milestone = issue_json["milestone"]
-        self.__labels = issue_json["labels"]
-
-        return self
-
     def update_with_project_data(self, issue: ProjectIssue):
         self.__linked_to_project = True
         self.__project_name = issue.project_name
@@ -121,7 +100,6 @@ class ConsolidatedIssue:
         self.__moscow = issue.moscow
 
     def no_project_mining(self):
-        self.__linked_to_project = NO_PROJECT_MINING
         self.__project_name = NO_PROJECT_MINING
         self.__status = NO_PROJECT_MINING
         self.__priority = NO_PROJECT_MINING
