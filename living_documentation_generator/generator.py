@@ -257,10 +257,13 @@ class LivingDocumentationGenerator:
         url = consolidated_issue.url
 
         # Change the bool values to more user-friendly characters
-        if consolidated_issue.linked_to_project:
-            linked_to_project = "🟢"
+        if self.__project_state_mining_enabled:
+            if consolidated_issue.linked_to_project:
+                linked_to_project = "🟢"
+            else:
+                linked_to_project = "🔴"
         else:
-            linked_to_project = "🔴"
+            linked_to_project = "❌"
 
         # Generate the markdown line for the issue
         md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
