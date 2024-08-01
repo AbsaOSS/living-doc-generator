@@ -91,6 +91,7 @@ class GithubProjects:
 
             # Add the field options to the main project structure
             # TODO: Put this into load from json
+            logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
             projects.extend([self.update_field_options(repository, project) for project in repository_projects])
 
         else:

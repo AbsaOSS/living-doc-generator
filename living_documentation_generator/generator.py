@@ -67,9 +67,9 @@ class LivingDocumentationGenerator:
 
         # Data mine GitHub issues with defined labels from all repositories
         logger.info("Fetching repository GitHub issues - started.")
-        repository_issues, total_issues_number = self._fetch_github_issues()
+        repository_issues: dict[str, Issue] = self._fetch_github_issues()
         # Note: got dict of list of issues for each repository (key is repository id)
-        logger.info("Fetching repository GitHub issues - finished, fetched `%s` issues in total.", total_issues_number)
+        logger.info("Fetching repository GitHub issues - finished.")
 
         # Data mine GitHub project's issues
         logger.info("Fetching GitHub project data - started.")
@@ -92,7 +92,7 @@ class LivingDocumentationGenerator:
             shutil.rmtree(self.output_path)
         os.makedirs(self.output_path)
 
-    def _fetch_github_issues(self) -> tuple[dict[str, list[Issue]], int]:
+    def _fetch_github_issues(self) -> dict[str, list[Issue]]:
         issues = {}
         total_issues_number = 0
 
@@ -111,7 +111,7 @@ class LivingDocumentationGenerator:
                 logger.debug("Fetching all issues in the repository")
                 issues[repository_id] = self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL)
                 amount_of_issues_per_repo = len(issues[repository_id])
-                logger.debug("Loaded `%s` issues (%s)`.", amount_of_issues_per_repo, repository.full_name)
+                logger.debug("Fetched `%s` repository issues (%s)`.", amount_of_issues_per_repo, repository.full_name)
             else:
                 issues[repository_id] = []
                 logger.debug("Labels to be fetched from: %s.", config_repository.query_labels)
@@ -123,10 +123,11 @@ class LivingDocumentationGenerator:
 
             # Accumulate the count of issues
             total_issues_number += amount_of_issues_per_repo
-            logger.info("Fetching repository GitHub issues - loaded `%s` issues (%s).",
+            logger.info("Fetching repository GitHub issues - fetched `%s` repository issues (%s).",
                         amount_of_issues_per_repo, repository.full_name)
 
-        return issues, total_issues_number
+        logger.info("Fetching repository GitHub issues - loaded `%s` repository issues in total.", total_issues_number)
+        return issues
 
     def _fetch_github_project_issues(self) -> dict[str, ProjectIssue]:
         if not self.project_state_mining_enabled:
@@ -153,13 +154,14 @@ class LivingDocumentationGenerator:
             for project in projects:
                 logger.info("Fetching GitHub project data - from `%s`.", project.title)
                 project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
-                logger.debug("Loaded `%s` project issues from `%s`.", len(project_issues), project.title)
+                logger.info("Fetching GitHub project data - fetched `%s` project issues (%s).", len(project_issues), project.title)
 
                 for project_issue in project_issues:
                     key = make_issue_key(project_issue.organization_name, project_issue.repository_name,
                                          project_issue.number)
                     all_project_issues[key] = project_issue
 
+        logger.info("Fetching GitHub project data - loaded `%s` project issues in total.", len(all_project_issues))
         return all_project_issues
 
     def _consolidate_issues_data(self, repository_issues: dict[str, list[Issue]],
