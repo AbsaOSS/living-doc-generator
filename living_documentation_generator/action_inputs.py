@@ -47,7 +47,6 @@ class ActionInputs:
         logger.debug('Is PROJECT STATE MINING allowed: %s.', self.is_project_state_mining_enabled)
         logger.debug('PROJECT TITLE FILTER: %s.', self.projects_title_filter)
         logger.debug('Json REPOSITORIES to fetch from: %s.', repositories_json)
-        logger.debug('Is VERBOSE LOGGING allowed: %s.', self.is_verbose_logging)
         logger.debug('OUTPUT DIRECTORY: %s.', self.output_directory)
 
         # Validate inputs

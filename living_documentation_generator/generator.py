@@ -109,14 +109,20 @@ class LivingDocumentationGenerator:
             if not config_repository.query_labels:
                 logger.info("Fetching all issues in the repository")
                 issues[repository_id] = self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL)
-                logger.info("Loaded `%s` repository issues.", len(issues[repository_id]))
+                logger.info("Loaded `%s` issues for `%s`.", len(issues[repository_id]), repository.name)
             else:
                 issues[repository_id] = []
+                logger.debug("Labels to be fetched from: %s.", config_repository.query_labels)
                 for label in config_repository.query_labels:
-                    logger.info("Fetching issues with label: `%s`.", label)
-                    issues[repository_id].extend(self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL,
-                                                                                       labels=[label]))
-                logger.info("Loaded `%s` repository issues.", len(issues[repository_id]))
+                    logger.info("Fetching issues with label `%s`.", label)
+                    paginated_response = self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL, labels=[label])
+
+                    # Convert PaginatedList to a list by iterating through it if necessary
+                    response: list[Issue] = [issue for issue in paginated_response]
+                    issues[repository_id].extend(response)
+                    logger.info("Amount of `%s` issues: %s.", label, len(response))
+
+                logger.info("Loaded `%s` issues for `%s`.", len(issues[repository_id]), repository.name)
 
         return issues
 
@@ -145,6 +151,8 @@ class LivingDocumentationGenerator:
             for project in projects:
                 logger.info("Fetching project issues for `%s`.", project.title)
                 project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
+                logger.info("Loaded `%s` project issues from `%s`.", len(project_issues), project.title)
+
                 for project_issue in project_issues:
                     key = make_issue_key(project_issue.organization_name, project_issue.repository_name,
                                          project_issue.number)
