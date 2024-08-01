@@ -147,6 +147,7 @@ class LivingDocumentationGenerator:
                 return {}
 
             # Fetch all projects_buffer attached to the repository
+            logger.info("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
             projects = self.safe_call(self.github_projects_instance.get_repository_projects)(
                 repository=repository, projects_title_filter=self.projects_title_filter)
 
@@ -154,14 +155,13 @@ class LivingDocumentationGenerator:
             for project in projects:
                 logger.info("Fetching GitHub project data - from `%s`.", project.title)
                 project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
-                logger.info("Fetching GitHub project data - fetched `%s` project issues (%s).", len(project_issues), project.title)
 
                 for project_issue in project_issues:
                     key = make_issue_key(project_issue.organization_name, project_issue.repository_name,
                                          project_issue.number)
                     all_project_issues[key] = project_issue
+                logger.info("Fetching GitHub project data - fetched project data (%s).", project.title)
 
-        logger.info("Fetching GitHub project data - loaded `%s` project issues in total.", len(all_project_issues))
         return all_project_issues
 
     def _consolidate_issues_data(self, repository_issues: dict[str, list[Issue]],
@@ -186,6 +186,8 @@ class LivingDocumentationGenerator:
             if key in projects_issues:
                 consolidated_issues[key].update_with_project_data(projects_issues[key])
 
+        logging.info("Issue and project data consolidation - consolidated `%s` repository issues with extra project data.",
+                     len(consolidated_issues))
         return consolidated_issues
 
     def _generate_markdown_pages(self, issues: dict[str, ConsolidatedIssue]):
