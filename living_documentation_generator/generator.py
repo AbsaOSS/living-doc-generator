@@ -67,7 +67,7 @@ class LivingDocumentationGenerator:
 
         # Data mine GitHub issues with defined labels from all repositories
         logger.info("Fetching repository GitHub issues - started.")
-        repository_issues: dict[str, Issue] = self._fetch_github_issues()
+        repository_issues: dict[str, list[Issue]] = self._fetch_github_issues()
         # Note: got dict of list of issues for each repository (key is repository id)
         logger.info("Fetching repository GitHub issues - finished.")
 
