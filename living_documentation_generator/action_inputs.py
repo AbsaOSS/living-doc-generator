@@ -4,6 +4,8 @@ import logging
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.utils.utils import get_action_input, make_absolute_path
 
+logger = logging.getLogger(__name__)
+
 
 class ActionInputs:
 
@@ -42,10 +44,10 @@ class ActionInputs:
         self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input('REPOSITORIES', "")
 
-        logging.debug(f'Is project state mining allowed: {self.is_project_state_mining_enabled}')
-        logging.debug(f'Project title filter: {self.projects_title_filter}')
-        logging.debug(f'Json repositories to fetch from: {repositories_json}')
-        logging.debug(f'Output directory: {self.output_directory}')
+        logger.debug('Is project state mining allowed: %s.', self.is_project_state_mining_enabled)
+        logger.debug('Project title filter: %s.', self.projects_title_filter)
+        logger.debug('JSON repositories to fetch from: %s.', repositories_json)
+        logger.debug('Output directory: %s.', self.output_directory)
 
         # Validate inputs
         if validate:
@@ -55,7 +57,7 @@ class ActionInputs:
         try:
             repositories_json = json.loads(repositories_json)
         except json.JSONDecodeError as e:
-            logging.error(f"Error parsing json repositories: {e}")
+            logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
             exit(1)
 
         for repository_json in repositories_json:
@@ -70,8 +72,10 @@ class ActionInputs:
         try:
             json.loads(repositories_json)
         except json.JSONDecodeError:
-            raise ValueError("Input attr `repositories_json` is not a valid JSON string")
+            logger.error("Input attr `repositories_json` is not a valid JSON string.", exc_info=True)
+            exit(1)
 
         # Validate GitHub token
         if not self.__github_token:
-            raise ValueError("GitHub token could not be loaded from the environment")
+            logger.error("GitHub token could not be loaded from the environment.", exc_info=True)
+            exit(1)

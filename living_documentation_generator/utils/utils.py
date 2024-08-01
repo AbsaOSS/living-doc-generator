@@ -7,6 +7,9 @@ These functions can be imported and used in other living_documentation_generator
 import os
 import re
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def make_issue_key(organization_name: str, repository_name: str, issue_number: int) -> str:
@@ -62,5 +65,6 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
 
 
 def set_action_failed(message: str):
-    print(f"::error::{message}")
+    # TODO: might need a print value to work: check again at Integration testing
+    logger.error("::error:: %s", message)
     sys.exit(1)
