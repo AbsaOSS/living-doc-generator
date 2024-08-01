@@ -65,5 +65,6 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
 
 
 def set_action_failed(message: str):
+    # TODO: might need a print value to work: check again at Integration testing
     logger.error("::error:: %s", message)
     sys.exit(1)
