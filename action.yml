@@ -15,6 +15,10 @@ inputs:
     description: 'Filter projects by titles. Provide a list of project titles.'
     required: false
     default: '[]'
+  verbose-logging:
+    description: 'Enable or disable verbose logging.'
+    required: false
+    default: 'false'
   output-path:
     description: 'Path to the generated living documentation files.'
     required: false
@@ -53,6 +57,7 @@ runs:
         INPUT_REPOSITORIES: ${{ inputs.repositories }}
         INPUT_PROJECT_STATE_MINING: ${{ inputs.project_state_mining }}
         INPUT_PROJECTS_TITLE_FILTER: ${{ inputs.projects_title_filter }}
+        INPUT_VERBOSE: ${{ inputs.verbose-logging }}
         INPUT_OUTPUT_PATH: ${{ inputs.output-path }}
 
       run: |

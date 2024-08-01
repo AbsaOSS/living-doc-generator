@@ -5,6 +5,8 @@ from functools import wraps
 
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 
+logger = logging.getLogger(__name__)
+
 
 def debug_log_decorator(method: Callable) -> Callable:
     """
@@ -12,9 +14,9 @@ def debug_log_decorator(method: Callable) -> Callable:
     """
     @wraps(method)
     def wrapped(*args, **kwargs) -> Optional[Any]:
-        logging.debug(f"Calling method {method.__name__} with args: {args} and kwargs: {kwargs}")
+        logger.debug("Calling method %s with args: %s and kwargs: %s.", method.__name__, args, kwargs)
         result = method(*args, **kwargs)
-        logging.debug(f"Method {method.__name__} returned {result}")
+        logger.debug("Method %s returned %s.", method.__name__, result)
         return result
     return wrapped
 
@@ -32,7 +34,7 @@ def safe_call_decorator(rate_limiter: GithubRateLimiter):
             try:
                 return method(*args, **kwargs)
             except Exception as e:
-                logging.error(f"Error calling {method.__name__}: {e}", exc_info=True)
+                logger.error("Error calling %s: %s", method.__name__, e, exc_info=True)
                 return None
         return wrapped
     return decorator

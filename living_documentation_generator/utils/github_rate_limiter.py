@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Callable, Optional, Any
 from github import Github
 
+logger = logging.getLogger(__name__)
+
 
 class GithubRateLimiter:
     def __init__(self, github_client: Github):
@@ -16,7 +18,7 @@ class GithubRateLimiter:
             reset_time = rate_limit.reset.timestamp()
 
             if remaining_calls < 5:
-                logging.info("Rate limit almost reached. Sleeping until reset time.")
+                logger.info("Rate limit almost reached. Sleeping until reset time.")
                 sleep_time = reset_time - (now := time.time())
                 while sleep_time <= 0:
                     # Note: received values can be in the past, so the time shift to 1st positive value is needed
@@ -27,7 +29,7 @@ class GithubRateLimiter:
                 hours, remainder = divmod(total_sleep_time, 3600)
                 minutes, seconds = divmod(remainder, 60)
 
-                logging.info(f"Sleeping for {int(hours)} hours, {int(minutes)} minutes, and {int(seconds)} seconds until {datetime.fromtimestamp(reset_time).strftime('%Y-%m-%d %H:%M:%S')}.")
+                logger.info("Sleeping for %s hours, %s minutes, and %s seconds until %s.", int(hours), int(minutes), int(seconds), datetime.fromtimestamp(reset_time).strftime('%Y-%m-%d %H:%M:%S'))
                 time.sleep(sleep_time + 5)  # Sleep for the calculated time plus 5 seconds
 
             return method(*args, **kwargs)

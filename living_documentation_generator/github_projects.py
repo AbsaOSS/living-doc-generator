@@ -1,11 +1,13 @@
 import logging
-
 import requests
+
 from github.Repository import Repository
 
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.github_project_queries import GithubProjectQueries
+
+logger = logging.getLogger(__name__)
 
 
 class GithubProjects:
@@ -54,10 +56,10 @@ class GithubProjects:
 
         # Specific error handling for HTTP errors
         except requests.HTTPError as http_err:
-            print(f"HTTP error occurred: {http_err}")
+            logger.error("HTTP error occurred: %s.", http_err, exc_info=True)
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error("An error occurred: %s.", e, exc_info=True)
 
         return {}
 
@@ -92,10 +94,10 @@ class GithubProjects:
             projects.extend([self.update_field_options(repository, project) for project in repository_projects])
 
         else:
-            logging.warning(f"'repository' key is None in response: {projects_from_repo_response}")
+            logger.warning("'repository' key is None in response: %s.", projects_from_repo_response)
 
         if len(projects) == 0:
-            logging.info(f"No project attached for repository: {repository.owner.login}/{repository.name}")
+            logger.info("No project attached for repository: %s/%s.", repository.owner.login, repository.name)
 
         return projects
 
@@ -107,7 +109,7 @@ class GithubProjects:
         field_option_response = self.send_graphql_query(project_field_options_query)
 
         if field_option_response is None:
-            logging.warning(f"Field option response is None for query: {project_field_options_query}")
+            logger.warning("Field option response is None for query: %s.", project_field_options_query)
 
         # Parse the field options from the response
         field_options_nodes = field_option_response['repository']['projectV2']['fields']['nodes']
@@ -151,7 +153,7 @@ class GithubProjects:
 
             # Extend project issues list per every page during pagination
             project_issues_raw.extend(project_issue_data)
-            logging.info(f"Loaded `{len(project_issue_data)}` issues.")
+            logger.debug("Loaded `%s` issues from project: %s.", len(project_issue_data), project.title)
 
             # Check for closing the pagination process
             if not page_info['hasNextPage']:

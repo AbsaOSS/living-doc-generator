@@ -16,6 +16,8 @@ from living_documentation_generator.utils.decorators import safe_call_decorator
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 from living_documentation_generator.utils.utils import make_issue_key
 
+logger = logging.getLogger(__name__)
+
 
 class LivingDocumentationGenerator:
 
@@ -61,19 +63,29 @@ class LivingDocumentationGenerator:
 
     def generate(self):
         self._clean_output_directory()
+        logger.debug("Output directory cleaned.")
 
         # Data mine GitHub issues with defined labels from all repositories
+        logger.info("Starting: Fetching repository GitHub issues.")
         repository_issues: dict[str, list[Issue]] = self._fetch_github_issues()
         # Note: got dict of list of issues for each repository (key is repository id)
+        logger.info("Finished: Fetching repository GitHub issues.")
 
         # Data mine GitHub project's issues
+        logger.info("Starting: Fetching GitHub project issue data.")
         project_issues: dict[str, ProjectIssue] = self._fetch_github_project_issues()
+        # Note: got dict of project issues with unique string key defying the issue
+        logger.info("Finished: Fetching GitHub project issue data.")
 
         # Consolidate all issues data together
+        logger.info("Starting: Issue data consolidation.")
         projects_issues = self._consolidate_issues_data(repository_issues, project_issues)
+        logger.info("Finished: Issue data consolidation.")
 
         # Generate markdown pages
+        logger.info("Starting: Markdown pages generation.")
         self._generate_markdown_pages(projects_issues)
+        logger.info("Finished: Markdown pages generation.")
 
     def _clean_output_directory(self):
         if os.path.exists(self.output_path):
@@ -91,27 +103,29 @@ class LivingDocumentationGenerator:
             if repository is None:
                 return {}
 
-            logging.info(f"Downloading issues from repository `{config_repository.owner}/{config_repository.name}`.")
+            logger.info("Fetching repository issues for `%s`.", repository.full_name)
 
             # Load all issues from one repository (unique for each repository) and save it under repository id
             if not config_repository.query_labels:
-                logging.info(f"Fetching all issues for {repository.full_name}")
+                logger.info("Fetching all issues in the repository")
                 issues[repository_id] = self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL)
+                logger.info("Loaded `%s` repository issues.", len(issues[repository_id]))
             else:
                 issues[repository_id] = []
                 for label in config_repository.query_labels:
-                    logging.info(f"Fetching issues with label {label} for {repository.full_name}")
+                    logger.info("Fetching issues with label: `%s`.", label)
                     issues[repository_id].extend(self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL,
                                                                                        labels=[label]))
+                logger.info("Loaded `%s` repository issues.", len(issues[repository_id]))
 
         return issues
 
     def _fetch_github_project_issues(self) -> dict[str, ProjectIssue]:
         if not self.project_state_mining_enabled:
-            logging.info("Project data mining is not allowed. The process will not start.")
+            logger.info("Project data mining is not allowed.")
             return {}
 
-        logging.info("Project data mining allowed, starting the process.")
+        logger.debug("Project data mining allowed.")
 
         # Mine project issues for every repository
         all_project_issues: dict[str, ProjectIssue] = {}
@@ -129,6 +143,7 @@ class LivingDocumentationGenerator:
 
             # Update every project with project issue related data
             for project in projects:
+                logger.info("Fetching project issues for `%s`.", project.title)
                 project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
                 for project_issue in project_issues:
                     key = make_issue_key(project_issue.organization_name, project_issue.repository_name,
@@ -150,9 +165,11 @@ class LivingDocumentationGenerator:
                 consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id,
                                                                     repository_issue=repository_issue)
                 if not self.project_state_mining_enabled:
+                    logger.debug("Updating consolidated issues with project data is not allowed information.")
                     consolidated_issues[unique_key].no_project_mining()
 
         # Update issues with project data
+        logger.debug("Updating consolidated issue structure with project data.")
         for key in consolidated_issues.keys():
             if key in projects_issues:
                 consolidated_issues[key].update_with_project_data(projects_issues[key])
@@ -204,7 +221,7 @@ class LivingDocumentationGenerator:
         with open(os.path.join(self.output_path, page_filename), 'w', encoding='utf-8') as f:
             f.write(issue_md_page_content)
 
-        print(f"Generated {page_filename}.")
+        logger.info("Generated: %s.", page_filename)
 
     def _generate_index_page(self, issue_index_page_template: str, consolidated_issues: dict[str, ConsolidatedIssue]) -> None:
         """
@@ -235,7 +252,7 @@ class LivingDocumentationGenerator:
         with open(os.path.join(self.output_path, "_index.md"), 'w', encoding='utf-8') as f:
             f.write(index_page)
 
-        logging.info("Generated _index.md.")
+        logger.info("Generated: _index.md.")
 
     def _generate_markdown_line(self, consolidated_issue) -> str:
         """
@@ -271,7 +288,8 @@ class LivingDocumentationGenerator:
 
         return md_issue_line
 
-    def _generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
+    @staticmethod
+    def _generate_issue_summary_table(consolidated_issue: ConsolidatedIssue) -> str:
         """
             Generates a string representation of feature info in a table format.
 
@@ -336,7 +354,7 @@ class LivingDocumentationGenerator:
             values.append(consolidated_issue.linked_to_project)
 
         # Initialize the Markdown table
-        issue_info = f"| Attribute | Content |\n|---|---|\n"
+        issue_info = "| Attribute | Content |\n|---|---|\n"
 
         # Add together all the attributes from the summary table in Markdown format
         for attribute, content in zip(headers, values):

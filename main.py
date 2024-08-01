@@ -6,14 +6,16 @@ from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.generator import LivingDocumentationGenerator
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.utils.utils import set_action_output
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from living_documentation_generator.utils.logging_config import setup_logging
 
 ISSUES_PER_PAGE_LIMIT = 100
 
 
 def run():
+    setup_logging()
+    logger = logging.getLogger(__name__)
+
+    logger.info("Starting Living Documentation generation.")
     action_inputs = ActionInputs().load_from_environment()
 
     github = Github(auth=Auth.Token(token=action_inputs.github_token), per_page=ISSUES_PER_PAGE_LIMIT)
@@ -33,8 +35,8 @@ def run():
     # Set the output for the GitHub Action
     set_action_output('output-path', generator.output_path)
 
+    logger.info("Living Documentation generation completed.")
+
 
 if __name__ == '__main__':
-    print("Starting Living Documentation generation.")
     run()
-    print("Living Documentation generation completed.")
