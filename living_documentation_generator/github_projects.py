@@ -97,7 +97,7 @@ class GithubProjects:
             logger.warning("'repository' key is None in response: %s.", projects_from_repo_response)
 
         if len(projects) == 0:
-            logger.info("No project attached for repository: %s/%s.", repository.owner.login, repository.name)
+            logger.info("Fetching GitHub project data - no project data for repository `%s`.", repository.full_name)
 
         return projects
 
