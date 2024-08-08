@@ -12,7 +12,6 @@ class ActionInputs:
     def __init__(self):
         self.__github_token: str = ""
         self.__is_project_state_mining_enabled: bool = False
-        self.__projects_title_filter: list = []
         self.__repositories: list[ConfigRepository] = []
         self.__output_directory: str = ""
 
@@ -25,10 +24,6 @@ class ActionInputs:
         return self.__is_project_state_mining_enabled
 
     @property
-    def projects_title_filter(self) -> list:
-        return self.__projects_title_filter
-
-    @property
     def repositories(self) -> list[ConfigRepository]:
         return self.__repositories
 
@@ -39,13 +34,11 @@ class ActionInputs:
     def load_from_environment(self, validate: bool = True) -> 'ActionInputs':
         self.__github_token = get_action_input('GITHUB_TOKEN')
         self.__is_project_state_mining_enabled = get_action_input('PROJECT_STATE_MINING', "false").lower() == "true"
-        self.__projects_title_filter = get_action_input('PROJECTS_TITLE_FILTER', "").split(',')
         out_path = get_action_input('OUTPUT_PATH', './output')
         self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input('REPOSITORIES', "")
 
         logger.debug('Is project state mining allowed: %s.', self.is_project_state_mining_enabled)
-        logger.debug('Project title filter: %s.', self.projects_title_filter)
         logger.debug('JSON repositories to fetch from: %s.', repositories_json)
         logger.debug('Output directory: %s.', self.output_directory)
 

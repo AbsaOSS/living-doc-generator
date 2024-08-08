@@ -16,7 +16,7 @@ class GithubProjects:
         self.__token = token
         self.__session = None
 
-    def _initialize_request_session(self):
+    def __initialize_request_session(self):
         """
         Initializes the request Session and updates the headers.
 
@@ -34,7 +34,7 @@ class GithubProjects:
 
         return self.__session
 
-    def _send_graphql_query(self, query: str) -> dict[str, dict] | None:
+    def __send_graphql_query(self, query: str) -> dict[str, dict] | None:
         """
         Sends a GraphQL query to the GitHub API and returns the response.
         If an HTTP error occurs, it prints the error and returns an empty dictionary.
@@ -45,7 +45,7 @@ class GithubProjects:
         """
         try:
             if self.__session is None:
-                self._initialize_request_session()
+                self.__initialize_request_session()
 
             # Fetch the response from the API
             response = self.__session.post('https://api.github.com/graphql', json={'query': query})
@@ -67,10 +67,10 @@ class GithubProjects:
         projects = []
 
         # Fetch the project response from the GraphQL API
-        projects_from_repo_query = GithubProjectQueries.get_projects_from_repo_query(repository.owner.login,
-                                                                                     repository.name)
+        projects_from_repo_query = GithubProjectQueries.get_projects_from_repo_query(organization_name=repository.owner.login,
+                                                                                     repository_name=repository.name)
 
-        projects_from_repo_response = self._send_graphql_query(projects_from_repo_query)
+        projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
 
         if projects_from_repo_response is None:
             logger.warning("Project response is None for repository `%s`.", repository.full_name)
@@ -79,24 +79,28 @@ class GithubProjects:
         # If response is not None, parse the project response
         if projects_from_repo_response['repository'] is not None:
             projects_from_repo_nodes = projects_from_repo_response['repository']['projectsV2']['nodes']
-            repository_projects = []
 
             for project_json in projects_from_repo_nodes:
                 # Check if the project is required based on the configuration filter
                 project_title = project_json['title']
+                project_number = project_json['number']
 
                 # If no filter is provided, all projects are required
-                is_project_required = True if projects_title_filter else project_title in projects_title_filter
+                is_project_required = True if not projects_title_filter else project_title in projects_title_filter
 
                 # Main project structure is loaded and added to the projects list
                 if is_project_required:
-                    project = GithubProject().load_from_json(project_json, repository)
-                    repository_projects.append(project)
+                    # Fetch the project field options from the GraphQL API
+                    project_field_options_query = GithubProjectQueries.get_project_field_options_query(
+                        organization_name=repository.owner.login,
+                        repository_name=repository.name,
+                        project_number=project_number)
+                    field_option_response = self.__send_graphql_query(project_field_options_query)
 
-            # Add the field options to the main project structure
-            # TODO: Put this into load from json
-            logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
-            projects.extend([self._update_field_options(repository, project) for project in repository_projects])
+                    project = GithubProject().load_from_json(project_json, repository, field_option_response)
+
+                    if project not in projects:
+                        projects.append(project)
 
         else:
             logger.warning("'repository' key is None in response: %s.", projects_from_repo_response)
@@ -105,29 +109,6 @@ class GithubProjects:
             logger.info("Fetching GitHub project data - no project data for repository `%s`.", repository.full_name)
 
         return projects
-
-    def _update_field_options(self, repository: Repository, project: GithubProject):
-        # Fetch the project field options from the GraphQL API
-        project_field_options_query = GithubProjectQueries.get_project_field_options_query(repository.owner.login,
-                                                                                           repository.name,
-                                                                                           project.number)
-        field_option_response = self._send_graphql_query(project_field_options_query)
-
-        if field_option_response is None:
-            logger.warning("Field option response is None for query: %s.", project_field_options_query)
-            return project
-
-        # Parse the field options from the response
-        field_options_nodes = field_option_response['repository']['projectV2']['fields']['nodes']
-        for field_option in field_options_nodes:
-            if "name" in field_option and "options" in field_option:
-                field_name = field_option["name"]
-                options = [option["name"] for option in field_option["options"]]
-
-                # Update the project structure with field options
-                project.field_options.update({field_name: options})
-
-        return project
 
     def get_project_issues(self, project: GithubProject) -> list[ProjectIssue]:
         """
@@ -144,10 +125,10 @@ class GithubProjects:
             after_argument = f'after: "{cursor}"' if cursor else ''
 
             # Fetch project issues via GraphQL query
-            issues_from_project_query = GithubProjectQueries.get_issues_from_project_query(project.id,
-                                                                                           after_argument)
+            issues_from_project_query = GithubProjectQueries.get_issues_from_project_query(project_id=project.id,
+                                                                                           after_argument=after_argument)
 
-            project_issues_response = self._send_graphql_query(issues_from_project_query)
+            project_issues_response = self.__send_graphql_query(issues_from_project_query)
 
             # Return empty list, if project has no issues attached
             if not project_issues_response:

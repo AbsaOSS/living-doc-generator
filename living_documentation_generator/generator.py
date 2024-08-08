@@ -27,8 +27,7 @@ class LivingDocumentationGenerator:
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
 
     def __init__(self, github_instance: Github, github_projects_instance: GithubProjects,
-                 repositories: list[ConfigRepository], projects_title_filter: list[str],
-                 project_state_mining_enabled: bool, output_path: str):
+                 repositories: list[ConfigRepository], project_state_mining_enabled: bool, output_path: str):
 
         self.github_instance = github_instance
         self.github_projects_instance = github_projects_instance
@@ -37,7 +36,6 @@ class LivingDocumentationGenerator:
 
         # data
         self.__repositories: list[ConfigRepository] = repositories
-        self.__projects_title_filter: list[str] = projects_title_filter      # TODO - this could be part of repository config ???
 
         # features control
         self.__project_state_mining_enabled: bool = project_state_mining_enabled
@@ -48,10 +46,6 @@ class LivingDocumentationGenerator:
     @property
     def repositories(self) -> list[ConfigRepository]:
         return self.__repositories
-
-    @property
-    def projects_title_filter(self) -> list[str]:
-        return self.__projects_title_filter
 
     @property
     def project_state_mining_enabled(self) -> bool:
@@ -98,7 +92,7 @@ class LivingDocumentationGenerator:
 
         # Mine issues from every config repository
         for config_repository in self.repositories:
-            repository_id = f"{config_repository.owner}/{config_repository.name}"
+            repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
             repository = self.safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
@@ -140,7 +134,9 @@ class LivingDocumentationGenerator:
         all_project_issues: dict[str, ProjectIssue] = {}
 
         for config_repository in self.repositories:
-            repository_id = f"{config_repository.owner}/{config_repository.name}"
+            repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
+            projects_title_filter = config_repository.projects_title_filter
+            logger.debug("Filtering projects: %s. If filter is empty, fetching all.", projects_title_filter)
 
             repository = self.safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
@@ -149,7 +145,7 @@ class LivingDocumentationGenerator:
             # Fetch all projects_buffer attached to the repository
             logger.info("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
             projects = self.safe_call(self.github_projects_instance.get_repository_projects)(
-                repository=repository, projects_title_filter=self.projects_title_filter)
+                repository=repository, projects_title_filter=projects_title_filter)
 
             # Update every project with project issue related data
             for project in projects:

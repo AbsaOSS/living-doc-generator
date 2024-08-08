@@ -2,7 +2,7 @@ class GithubProjectQueries:
     ISSUES_PER_PAGE_LIMIT = 100
     PROJECTS_FROM_REPO_QUERY = """
                 query {{
-                  repository(owner: "{owner}", name: "{name}") {{
+                  repository(owner: "{organization_name}", name: "{repository_name}") {{
                     projectsV2(first: 100) {{
                       nodes {{
                         id
@@ -52,7 +52,7 @@ class GithubProjectQueries:
         """
     PROJECT_FIELD_OPTIONS_QUERY = """
             query {{
-              repository(owner: "{owner}", name: "{name}") {{
+              repository(owner: "{organization_name}", name: "{repository_name}") {{
                 projectV2(number: {project_number}) {{
                   title
                   fields(first: 100) {{
@@ -71,9 +71,9 @@ class GithubProjectQueries:
             """
 
     @staticmethod
-    def get_projects_from_repo_query(owner: str, name: str) -> str:
-        return GithubProjectQueries.PROJECTS_FROM_REPO_QUERY.format(owner=owner,
-                                                                    name=name)
+    def get_projects_from_repo_query(organization_name: str, repository_name: str) -> str:
+        return GithubProjectQueries.PROJECTS_FROM_REPO_QUERY.format(organization_name=organization_name,
+                                                                    repository_name=repository_name)
 
     @staticmethod
     def get_issues_from_project_query(project_id: str, after_argument: str) -> str:
@@ -82,7 +82,7 @@ class GithubProjectQueries:
                                                                      after_argument=after_argument)
 
     @staticmethod
-    def get_project_field_options_query(owner: str, name: str, project_number: int) -> str:
-        return GithubProjectQueries.PROJECT_FIELD_OPTIONS_QUERY.format(owner=owner,
-                                                                       name=name,
+    def get_project_field_options_query(organization_name: str, repository_name: str, project_number: int) -> str:
+        return GithubProjectQueries.PROJECT_FIELD_OPTIONS_QUERY.format(organization_name=organization_name,
+                                                                       repository_name=repository_name,
                                                                        project_number=project_number)

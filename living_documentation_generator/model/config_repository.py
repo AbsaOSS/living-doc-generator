@@ -1,22 +1,28 @@
 class ConfigRepository:
     def __init__(self):
-        self.__owner: str = ""
-        self.__name: str = ""
+        self.__organization_name: str = ""
+        self.__repository_name: str = ""
         self.__query_labels: list[str | None] = [None]
+        self.__projects_title_filter: list[str | None] = [None]
 
     @property
-    def owner(self) -> str:
-        return self.__owner
+    def organization_name(self) -> str:
+        return self.__organization_name
 
     @property
-    def name(self) -> str:
-        return self.__name
+    def repository_name(self) -> str:
+        return self.__repository_name
 
     @property
     def query_labels(self) -> list[str]:
         return self.__query_labels if self.__query_labels is not None else []
 
+    @property
+    def projects_title_filter(self) -> list[str]:
+        return self.__projects_title_filter if self.__projects_title_filter is not None else []
+
     def load_from_json(self, repository_json: dict):
-        self.__owner = repository_json["owner"]
-        self.__name = repository_json["repo-name"]
+        self.__organization_name = repository_json["organization-name"]
+        self.__repository_name = repository_json["repository-name"]
         self.__query_labels = repository_json["query-labels"]
+        self.__projects_title_filter = repository_json["projects-title-filter"]
