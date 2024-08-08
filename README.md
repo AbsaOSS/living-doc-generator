@@ -10,6 +10,9 @@
     - [Features de/activation](#features-deactivation)
     - [Features Configuration](#features-configuration)
 - [Action Outputs](#action-outputs)
+- [Expected Output](#expected-output)
+    - [Index page example](#index-page-example)
+    - [Issue page example](#issue-page-example)
 - [Project Setup](#project-setup)
 - [Run Scripts Locally](#run-scripts-locally)
 - [Run unit test](#run-unit-test)
@@ -173,6 +176,53 @@ The Living Documentation Generator action provides a key output that allows user
     - name: Output Documentation Path
       run: echo "Generated documentation path: ${{ steps.generate_doc.outputs.output-path }}"            
     ```
+  
+## Expected Output
+The Living Documentation Generator is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
+
+### Index page example
+```markdown
+# Issue Summary page
+
+Our project is designed with a myriad of issues to ensure seamless user experience, top-tier functionality, and efficient operations.
+Here, you'll find a summarized list of all these issues, their brief descriptions, and links to their detailed documentation.
+
+## Issue Overview
+| Organization name| Repository name            | Issue 'Number - Title'                        | Linked to project | Project Status | Issue URL  |
+|------------------|----------------------------|-----------------------------------------------|-------------------|----------------|------------|
+|AbsaOSS           | living-doc-example-project | [#89 - Test issue 2](89_test_issue_2.md)      | 🔴                | ---            |[GitHub](#) |
+|AbsaOSS           | living-doc-example-project | [#88 - Test issue](88_test_issue.md)          | 🟢                | Todo           |[GitHub](#) |
+|AbsaOSS           | living-doc-example-project | [#41 - Initial commit.](41_initial_commit.md) | 🟢                | Done           |[GitHub](#) |
+|AbsaOSS           | living-doc-example-project | [#33 - Example bugfix](33_example_bugfix.md)  | 🔴                | ---            |[GitHub](#) |
+```
+
+### Issue page example
+
+```markdown
+# FEAT: Advanced Book Search
+| Attribute         | Content                               |
+|-------------------|---------------------------------------|
+| Organization name | AbsaOSS                               |
+| Repository name   | living-doc-example-project            |
+| Issue number      | 17                                    |
+| State             | open                                  |
+| Issue URL         | [GitHub link](#)                      |
+| Created at        | 2023-12-12 11:34:52                   |
+| Updated at        | 2023-12-13 10:24:58                   |
+| Closed at         | None                                  |
+| Labels            | feature                               |
+| Project title     | Book Store Living Doc Example project |
+| Status            | Todo                                  |
+| Priority          | P1                                    |
+| Size              | S                                     |
+| MoSCoW            | N/A                                   |
+
+## Issue Content
+Users often struggle to find specific books in a large catalog. An advanced search feature would streamline this process, enhancing user experience.
+
+### Background
+...
+```
 
 ## Project Setup
 If you need to build the action locally, follow these steps:
