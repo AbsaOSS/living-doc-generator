@@ -292,9 +292,9 @@ class LivingDocumentationGenerator:
         # Change the bool values to more user-friendly characters
         if self.__project_state_mining_enabled:
             if consolidated_issue.linked_to_project:
-                linked_to_project = "🟢"
+                linked_to_project = Constants.LINKED_TO_PROJECT_TRUE
             else:
-                linked_to_project = "🔴"
+                linked_to_project = Constants.LINKED_TO_PROJECT_FALSE
 
             # Generate the Markdown issue line WITH extra project data
             md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
@@ -368,7 +368,8 @@ class LivingDocumentationGenerator:
                 ])
             else:
                 headers.append("Linked to project")
-                linked_to_project = "✅" if consolidated_issue.linked_to_project else "❌"
+                linked_to_project = Constants.LINKED_TO_PROJECT_TRUE \
+                    if consolidated_issue.linked_to_project else Constants.LINKED_TO_PROJECT_FALSE
                 values.append(linked_to_project)
 
         # Initialize the Markdown table

@@ -2,9 +2,7 @@ from github.Issue import Issue
 
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.utils import sanitize_filename
-
-NOT_SET_FOR_NOW = "NOT_SET_IN_THIS_VERSION"
-NO_PROJECT_ATTACHED = "---"
+from living_documentation_generator.utils.constants import Constants
 
 
 class ConsolidatedIssue:
@@ -19,11 +17,11 @@ class ConsolidatedIssue:
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
-        self.__project_name: str = NO_PROJECT_ATTACHED
-        self.__status: str = NO_PROJECT_ATTACHED
-        self.__priority: str = NO_PROJECT_ATTACHED
-        self.__size: str = NO_PROJECT_ATTACHED
-        self.__moscow: str = NO_PROJECT_ATTACHED
+        self.__project_name: str = Constants.NO_PROJECT_ATTACHED
+        self.__status: str = Constants.NO_PROJECT_ATTACHED
+        self.__priority: str = Constants.NO_PROJECT_ATTACHED
+        self.__size: str = Constants.NO_PROJECT_ATTACHED
+        self.__moscow: str = Constants.NO_PROJECT_ATTACHED
 
         self.__error: str | None = None
 

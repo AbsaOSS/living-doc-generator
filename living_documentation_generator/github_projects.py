@@ -5,7 +5,7 @@ from github.Repository import Repository
 
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.project_issue import ProjectIssue
-from living_documentation_generator.github_project_queries import GithubProjectQueries
+from living_documentation_generator.utils.github_project_queries import GithubProjectQueries
 
 logger = logging.getLogger(__name__)
 
