@@ -25,7 +25,6 @@ def run():
         github_instance=github,
         github_projects_instance=github_projects,
         repositories=action_inputs.repositories,
-        projects_title_filter=action_inputs.projects_title_filter,
         project_state_mining_enabled=action_inputs.is_project_state_mining_enabled,
         output_path=action_inputs.output_directory
     )
