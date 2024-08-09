@@ -8,7 +8,6 @@
     - [Environment Variables](#environment-variables)
     - [Inputs](#inputs)
     - [Features de/activation](#features-deactivation)
-    - [Features Configuration](#features-configuration)
 - [Action Outputs](#action-outputs)
 - [Expected Output](#expected-output)
     - [Index page example](#index-page-example)
@@ -47,19 +46,22 @@ See the default action step definition:
   with:
     repositories: '[
       {
-        "owner": "fin-services",
-        "repo-name": "investment-app",
-        "query-labels": ["feature", "enhancement"]
+        "organization-name": "fin-services",
+        "repository-name": "investment-app",
+        "query-labels": ["feature", "enhancement"],
+        "projects-title-filter": []
       },
       {
-        "owner": "health-analytics",
-        "repo-name": "patient-data-analysis",
-        "query-labels": ["functionality"]
+        "organization-name": "health-analytics",
+        "repository-name": "patient-data-analysis",
+        "query-labels": ["functionality"],
+        "projects-title-filter": ["Health Data Analysis Project"]
       },
       {
-        "owner": "open-source-initiative",
-        "repo-name": "community-driven-project",
-        "query-labels": ["improvement"]
+        "organization-name": "open-source-initiative",
+        "repository-name": "community-driven-project",
+        "query-labels": ["improvement"],
+        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"]
       }
     ]'
   ```
@@ -76,25 +78,28 @@ See the full example of action step definition (in example are used non-default 
     # project state mining de/activation
     project-state-mining: true
     
-    # feature to filter projects 
-    projects-title-filter": ["Community Outreach Initiatives", "Health Data Analysis"]
+    # project verbose (debug) logging de/activation
+    verbose-logging: true
 
-    # inputs
+    # input repositories + feature to filter projects
     repositories: '[
       {
-        "owner": "fin-services",
-        "repo-name": "investment-app",
-        "query-labels": ["feature", "enhancement"]
+        "organization-name": "fin-services",
+        "repository-name": "investment-app",
+        "query-labels": ["feature", "enhancement"],
+        "projects-title-filter": []
       },
       {
-        "owner": "health-analytics",
-        "repo-name": "patient-data-analysis",
-        "query-labels": ["functionality"]
+        "organization-name": "health-analytics",
+        "repository-name": "patient-data-analysis",
+        "query-labels": ["functionality"],
+        "projects-title-filter": ["Health Data Analysis Project"]
       },
       {
-        "owner": "open-source-initiative",
-        "repo-name": "community-driven-project",
-        "query-labels": ["improvement"]
+        "organization-name": "open-source-initiative",
+        "repository-name": "community-driven-project",
+        "query-labels": ["improvement"],
+        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
       }
     ]'
     output-path: "/output/directory/path"
@@ -118,28 +123,30 @@ Configure the action by customizing the following parameters based on your needs
 ### Inputs
 - **repositories** (required)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
-  - **Usage**: List each repository with its organization name, repository name, and query labels.
+  - **Usage**: List each repository with its organization name, repository name, query labels and attached projects you want to filter if any. Only projects with these titles will be considered. For no filtering projects, leave the list empty.
   - **Example**:
     ```yaml
     with:
       repositories: '[
-        {
-          "owner": "fin-services",
-          "repo-name": "investment-app",
-          "query-labels": ["feature", "enhancement"]
-        },
-        {
-          "owner": "health-analytics",
-          "repo-name": "patient-data-analysis",
-          "query-labels": ["functionality"]
-        },
-        {
-          "owner": "open-source-initiative",
-          "repo-name": "community-driven-project",
-          "query-labels": ["improvement"]
-        }
-      ]'
-      output-path: "/output/directory/path"
+      {
+        "organization-name": "fin-services",
+        "repository-name": "investment-app",
+        "query-labels": ["feature", "enhancement"],
+        "projects-title-filter": []
+      },
+      {
+        "organization-name": "health-analytics",
+        "repository-name": "patient-data-analysis",
+        "query-labels": ["functionality"],
+        "projects-title-filter": ["Health Data Analysis Project"]
+      },
+      {
+        "organization-name": "open-source-initiative",
+        "repository-name": "community-driven-project",
+        "query-labels": ["improvement"],
+        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
+      }
+    ]'
     ```
 
 ### Features de/activation
@@ -152,14 +159,13 @@ Configure the action by customizing the following parameters based on your needs
       project-state-mining: true
     ```
     
-### Features Configuration
-- **projects-title-filter** (optional, `default: []`)
-  - **Description**: Filters the projects by titles. Only projects with these titles will be considered.
-  - **Usage**: Provide a list of project titles to filter.
+- **verbose-logging** (optional, `default: false`)
+  - **Description**: Enables or disables verbose (debug) logging.
+  - **Usage**: Set to true to activate.
   - **Example**:
     ```yaml
     with:
-      projects-title-filter: ["Community Outreach Initiatives", "Health Data Analysis"]
+      verbose-logging: true
     ```
 
 ## Action Outputs
@@ -258,12 +264,13 @@ Also make sure that the GITHUB_TOKEN is configured in your environment variables
 ```
 export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
 export INPUT_PROJECT_STATE_MINING="true"
-export INPUT_PROJECTS_TITLE_FILTER="[]"
+export INPUT_VERBOSE_LOGGING="true"
 export INPUT_REPOSITORIES='[
             {
-              "owner": "Organization Name",
-              "repo-name": "example-project",
-              "query-labels": ["feature", "bug"]
+              "organization-name": "Organization Name",
+              "repository-name": "example-project",
+              "query-labels": ["feature", "bug"],
+              "projects-title-filter": ["Project Title 1"]
             }
           ]'
 export INPUT_OUTPUT_PATH="/output/directory/path
@@ -346,7 +353,15 @@ This feature allows you to define which projects should be included in the livin
 - **Default Behavior**: By default, the action will include all projects defined in the repositories. This information is provided by the GitHub API.
 - **Non-default Example**: Use available options to customize which projects are included in the documentation.
   - `project-state-mining: false` deactivates the mining of project state data from GitHub Projects. If set to **false**, project state data will not be included in the generated documentation and project related configuration options will be ignored. 
-  - `projects-title-filter: ["Community Outreach Initiatives", "Health Data Analysis"]` filters the projects by titles, including only projects with these titles.
+  - `projects-title-filter: []` filters the repository attached projects by titles, if list is empty all projects are used.
+      ```json
+        {
+          "organization-name": "absa-group",
+          "repository-name": "living-doc-example-project",
+          "query-labels": ["feature", "bug"],
+          "projects-title-filter": ["Community Outreach Initiatives", "Health Data Analysis"]
+         }
+      ```
 
 ### Living Documentation Page Generation
 

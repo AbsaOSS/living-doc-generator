@@ -3,7 +3,6 @@ from living_documentation_generator.model.github_project import GithubProject
 
 class ProjectIssue:
     def __init__(self):
-        # TODO: I dont know which attributes I want in my final class
         self.__number: int = 0
         self.__organization_name: str = ""
         self.__repository_name: str = ""
