@@ -2,9 +2,8 @@ from typing import Optional
 
 from github.Issue import Issue
 
-from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.utils import sanitize_filename
-from living_documentation_generator.utils.constants import NO_PROJECT_ATTACHED
+from living_documentation_generator.model.project_status import ProjectStatus
 
 
 class ConsolidatedIssue:
@@ -19,11 +18,7 @@ class ConsolidatedIssue:
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
-        self.__project_name: str = NO_PROJECT_ATTACHED
-        self.__status: str = NO_PROJECT_ATTACHED
-        self.__priority: str = NO_PROJECT_ATTACHED
-        self.__size: str = NO_PROJECT_ATTACHED
-        self.__moscow: str = NO_PROJECT_ATTACHED
+        self.__project_status: ProjectStatus = ProjectStatus()
 
         self.__error: Optional[str] = None
 
@@ -80,37 +75,21 @@ class ConsolidatedIssue:
         return self.__linked_to_project
 
     @property
-    def project_name(self) -> str:
-        return self.__project_name
-
-    @property
-    def status(self) -> str:
-        return self.__status
-
-    @property
-    def priority(self) -> str:
-        return self.__priority
-
-    @property
-    def size(self) -> str:
-        return self.__size
-
-    @property
-    def moscow(self) -> str:
-        return self.__moscow
+    def project_status(self) -> ProjectStatus:
+        return self.__project_status
 
     # Error property
     @property
     def error(self) -> Optional[str]:
         return self.__error
 
-    def update_with_project_data(self, issue: ProjectIssue):
+    def update_with_project_data(self, project_status: ProjectStatus):
         self.__linked_to_project = True
-        self.__project_name = issue.project_status.project_title
-        self.__status = issue.project_status.status
-        self.__priority = issue.project_status.priority
-        self.__size = issue.project_status.size
-        self.__moscow = issue.project_status.moscow
+        self.__project_status.project_title = project_status.project_title
+        self.__project_status.status = project_status.status
+        self.__project_status.priority = project_status.priority
+        self.__project_status.size = project_status.size
+        self.__project_status.moscow = project_status.moscow
 
     def generate_page_filename(self):
         md_filename_base = f"{self.number}_{self.title.lower()}.md"

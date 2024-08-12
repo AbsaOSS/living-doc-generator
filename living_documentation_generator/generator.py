@@ -181,7 +181,7 @@ class LivingDocumentationGenerator:
         logger.debug("Updating consolidated issue structure with project data.")
         for key, consolidated_issue in consolidated_issues.items():
             if key in projects_issues:
-                consolidated_issue.update_with_project_data(projects_issues[key])
+                consolidated_issue.update_with_project_data(projects_issues[key].project_status)
 
         logging.info("Issue and project data consolidation - consolidated `%s` repository issues"
                      " with extra project data.",
@@ -291,7 +291,7 @@ class LivingDocumentationGenerator:
         title = consolidated_issue.title
         title = title.replace("|", " _ ")
         page_filename = consolidated_issue.generate_page_filename()
-        status = consolidated_issue.status
+        status = consolidated_issue.project_status.status
         url = consolidated_issue.html_url
         state = consolidated_issue.state
 
@@ -356,6 +356,8 @@ class LivingDocumentationGenerator:
 
         # Update the summary table, based on the project data mining situation
         if self.__project_state_mining_enabled:
+            project_status = consolidated_issue.project_status
+
             if consolidated_issue.linked_to_project:
                 headers.extend([
                     "Project title",
@@ -366,11 +368,11 @@ class LivingDocumentationGenerator:
                 ])
 
                 values.extend([
-                    consolidated_issue.project_name,
-                    consolidated_issue.status,
-                    consolidated_issue.priority,
-                    consolidated_issue.size,
-                    consolidated_issue.moscow
+                    project_status.project_title,
+                    project_status.status,
+                    project_status.priority,
+                    project_status.size,
+                    project_status.moscow
                 ])
             else:
                 headers.append("Linked to project")

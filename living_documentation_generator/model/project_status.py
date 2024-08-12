@@ -1,13 +1,13 @@
-from living_documentation_generator.utils.constants import NOT_AVAILABLE
+from living_documentation_generator.utils.constants import NO_PROJECT_DATA
 
 
 class ProjectStatus:
     def __init__(self):
         self.__project_title: str = ""
-        self.__status: str = NOT_AVAILABLE
-        self.__priority: str = NOT_AVAILABLE
-        self.__size: str = NOT_AVAILABLE
-        self.__moscow: str = NOT_AVAILABLE
+        self.__status: str = NO_PROJECT_DATA
+        self.__priority: str = NO_PROJECT_DATA
+        self.__size: str = NO_PROJECT_DATA
+        self.__moscow: str = NO_PROJECT_DATA
 
     @property
     def project_title(self) -> str:
