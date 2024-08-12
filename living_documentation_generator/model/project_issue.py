@@ -1,16 +1,18 @@
 from living_documentation_generator.model.github_project import GithubProject
+from living_documentation_generator.utils.constants import Constants
 
 
+# pylint: disable=too-many-instance-attributes
 class ProjectIssue:
     def __init__(self):
         self.__number: int = 0
         self.__organization_name: str = ""
         self.__repository_name: str = ""
         self.__project_name: str = ""
-        self.__status: str = "N/A"
-        self.__priority: str = "N/A"
-        self.__size: str = "N/A"
-        self.__moscow: str = "N/A"
+        self.__status: str = Constants.NOT_AVAILABLE
+        self.__priority: str = Constants.NOT_AVAILABLE
+        self.__size: str = Constants.NOT_AVAILABLE
+        self.__moscow: str = Constants.NOT_AVAILABLE
 
     @property
     def number(self) -> int:

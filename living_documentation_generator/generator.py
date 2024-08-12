@@ -4,7 +4,7 @@ import shutil
 
 from datetime import datetime
 
-from github import Github
+from github import Github, Auth
 from github.Issue import Issue
 
 from living_documentation_generator.github_projects import GithubProjects
@@ -26,11 +26,11 @@ class LivingDocumentationGenerator:
     ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md")
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
 
-    def __init__(self, github_instance: Github, github_projects_instance: GithubProjects,
-                 repositories: list[ConfigRepository], project_state_mining_enabled: bool, output_path: str):
+    def __init__(self, github_token: str, repositories: list[ConfigRepository], project_state_mining_enabled: bool,
+                 output_path: str):
 
-        self.github_instance = github_instance
-        self.github_projects_instance = github_projects_instance
+        self.github_instance = Github(auth=Auth.Token(token=github_token), per_page=Constants.ISSUES_PER_PAGE_LIMIT)
+        self.github_projects_instance = GithubProjects(token=github_token)
         self.rate_limiter = GithubRateLimiter(self.github_instance)
         self.safe_call = safe_call_decorator(self.rate_limiter)
 
@@ -150,7 +150,8 @@ class LivingDocumentationGenerator:
             # Update every project with project issue related data
             for project in projects:
                 logger.info("Fetching GitHub project data - from `%s`.", project.title)
-                project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(project=project)
+                project_issues: list[ProjectIssue] = (self.safe_call(self.github_projects_instance.get_project_issues)
+                                                      (project=project))
 
                 for project_issue in project_issues:
                     key = make_issue_key(project_issue.organization_name, project_issue.repository_name,
@@ -176,11 +177,12 @@ class LivingDocumentationGenerator:
 
         # Update issues with project data
         logger.debug("Updating consolidated issue structure with project data.")
-        for key in consolidated_issues.keys():
+        for key, consolidated_issue in consolidated_issues.items():
             if key in projects_issues:
-                consolidated_issues[key].update_with_project_data(projects_issues[key])
+                consolidated_issue.update_with_project_data(projects_issues[key])
 
-        logging.info("Issue and project data consolidation - consolidated `%s` repository issues with extra project data.",
+        logging.info("Issue and project data consolidation - consolidated `%s` repository issues"
+                     " with extra project data.",
                      len(consolidated_issues))
         return consolidated_issues
 
@@ -191,7 +193,7 @@ class LivingDocumentationGenerator:
         with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f:
             issue_index_page_template = f.read()
 
-        for key, consolidated_issue in issues.items():
+        for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
         logger.info("Markdown page generation - generated `%s` issue pages.", len(issues))
 
@@ -232,7 +234,8 @@ class LivingDocumentationGenerator:
 
         logger.debug("Generated Markdown page: %s.", page_filename)
 
-    def _generate_index_page(self, issue_index_page_template: str, consolidated_issues: dict[str, ConsolidatedIssue]) -> None:
+    def _generate_index_page(self, issue_index_page_template: str, consolidated_issues: dict[str, ConsolidatedIssue])\
+            -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
 
@@ -242,16 +245,17 @@ class LivingDocumentationGenerator:
 
         # Initializing the issue table header based on the project mining state
         if self.__project_state_mining_enabled:
-            issue_table = """| Organization name | Repository name | Issue 'Number - Title' | Linked to project | Project status | Issue URL |
-                             |-------------------|-----------------|------------------------|-------------------|----------------|-----------|
-                          """
+            issue_table = ("| Organization name | Repository name | Issue 'Number - Title' |"
+                           " Linked to project | Project status | Issue URL |\n"
+                           "|-------------------|-----------------|------------------------|"
+                           "-------------------|----------------|-----------|\n")
         else:
             issue_table = """| Organization name | Repository name | Issue 'Number - Title' | Issue state | Issue URL |
                              |-------------------|-----------------|------------------------|-------------|-----------|
                           """
 
         # Create an issue summary table for every issue
-        for key, consolidated_issue in consolidated_issues.items():
+        for consolidated_issue in consolidated_issues.values():
             issue_table += self._generate_markdown_line(consolidated_issue)
 
         # Prepare issues replacement for the index page

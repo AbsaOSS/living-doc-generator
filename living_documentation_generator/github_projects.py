@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 import requests
 
 from github.Repository import Repository
@@ -34,7 +35,7 @@ class GithubProjects:
 
         return self.__session
 
-    def __send_graphql_query(self, query: str) -> dict[str, dict] | None:
+    def __send_graphql_query(self, query: str) -> Optional[dict[str, dict]]:
         """
         Sends a GraphQL query to the GitHub API and returns the response.
         If an HTTP error occurs, it prints the error and returns an empty dictionary.
@@ -58,17 +59,18 @@ class GithubProjects:
         except requests.HTTPError as http_err:
             logger.error("HTTP error occurred: %s.", http_err, exc_info=True)
 
-        except Exception as e:
-            logger.error("An error occurred: %s.", e, exc_info=True)
+        except requests.RequestException as req_err:
+            logger.error("An error occurred: %s.", req_err, exc_info=True)
 
-        return
+        return None
 
     def get_repository_projects(self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
         projects = []
 
         # Fetch the project response from the GraphQL API
-        projects_from_repo_query = GithubProjectQueries.get_projects_from_repo_query(organization_name=repository.owner.login,
-                                                                                     repository_name=repository.name)
+        projects_from_repo_query = GithubProjectQueries.get_projects_from_repo_query(
+            organization_name=repository.owner.login,
+            repository_name=repository.name)
 
         projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
 
@@ -125,8 +127,9 @@ class GithubProjects:
             after_argument = f'after: "{cursor}"' if cursor else ''
 
             # Fetch project issues via GraphQL query
-            issues_from_project_query = GithubProjectQueries.get_issues_from_project_query(project_id=project.id,
-                                                                                           after_argument=after_argument)
+            issues_from_project_query = GithubProjectQueries.get_issues_from_project_query(
+                project_id=project.id,
+                after_argument=after_argument)
 
             project_issues_response = self.__send_graphql_query(issues_from_project_query)
 

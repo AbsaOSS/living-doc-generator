@@ -80,6 +80,7 @@ class Constants:
 
     # Symbol, when no project is attached to an issue
     NO_PROJECT_ATTACHED = '---'
+    NOT_AVAILABLE = 'N/A'
 
     # Constant to symbolize if issue is linked to a project
     LINKED_TO_PROJECT_TRUE = '🟢'

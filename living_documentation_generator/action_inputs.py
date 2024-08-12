@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.utils.utils import get_action_input, make_absolute_path
@@ -34,7 +35,8 @@ class ActionInputs:
 
     def load_from_environment(self, validate: bool = True) -> 'ActionInputs':
         self.__github_token = get_action_input(Constants.GITHUB_TOKEN)
-        self.__is_project_state_mining_enabled = get_action_input(Constants.PROJECT_STATE_MINING, "false").lower() == "true"
+        self.__is_project_state_mining_enabled = (get_action_input(Constants.PROJECT_STATE_MINING, "false")
+                                                  .lower() == "true")
         out_path = get_action_input(Constants.OUTPUT_PATH, './output')
         self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input(Constants.REPOSITORIES, "")
@@ -52,7 +54,7 @@ class ActionInputs:
             repositories_json = json.loads(repositories_json)
         except json.JSONDecodeError as e:
             logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            exit(1)
+            sys.exit(1)
 
         for repository_json in repositories_json:
             config_repository = ConfigRepository()
@@ -67,9 +69,9 @@ class ActionInputs:
             json.loads(repositories_json)
         except json.JSONDecodeError:
             logger.error("Input attr `repositories_json` is not a valid JSON string.", exc_info=True)
-            exit(1)
+            sys.exit(1)
 
         # Validate GitHub token
         if not self.__github_token:
             logger.error("GitHub token could not be loaded from the environment.", exc_info=True)
-            exit(1)
+            sys.exit(1)
