@@ -7,14 +7,16 @@ from datetime import datetime
 from github import Github, Auth
 from github.Issue import Issue
 
+
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_generator.model.project_issue import ProjectIssue
-from living_documentation_generator.utils.constants import Constants
 from living_documentation_generator.utils.decorators import safe_call_decorator
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 from living_documentation_generator.utils.utils import make_issue_key
+from living_documentation_generator.utils.constants import (ISSUES_PER_PAGE_LIMIT, ISSUE_STATE_ALL,
+                                                            LINKED_TO_PROJECT_TRUE, LINKED_TO_PROJECT_FALSE)
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ class LivingDocumentationGenerator:
     def __init__(self, github_token: str, repositories: list[ConfigRepository], project_state_mining_enabled: bool,
                  output_path: str):
 
-        self.github_instance = Github(auth=Auth.Token(token=github_token), per_page=Constants.ISSUES_PER_PAGE_LIMIT)
+        self.github_instance = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
         self.github_projects_instance = GithubProjects(token=github_token)
         self.rate_limiter = GithubRateLimiter(self.github_instance)
         self.safe_call = safe_call_decorator(self.rate_limiter)
@@ -103,7 +105,7 @@ class LivingDocumentationGenerator:
             # Load all issues from one repository (unique for each repository) and save it under repository id
             if not config_repository.query_labels:
                 logger.debug("Fetching all issues in the repository")
-                issues[repository_id] = self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL)
+                issues[repository_id] = self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
                 amount_of_issues_per_repo = len(issues[repository_id])
                 logger.debug("Fetched `%s` repository issues (%s)`.", amount_of_issues_per_repo, repository.full_name)
             else:
@@ -111,7 +113,7 @@ class LivingDocumentationGenerator:
                 logger.debug("Labels to be fetched from: %s.", config_repository.query_labels)
                 for label in config_repository.query_labels:
                     logger.debug("Fetching issues with label `%s`.", label)
-                    issues[repository_id].extend(self.safe_call(repository.get_issues)(state=Constants.ISSUE_STATE_ALL,
+                    issues[repository_id].extend(self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL,
                                                                                        labels=[label]))
                 amount_of_issues_per_repo = len(issues[repository_id])
 
@@ -296,9 +298,9 @@ class LivingDocumentationGenerator:
         # Change the bool values to more user-friendly characters
         if self.__project_state_mining_enabled:
             if consolidated_issue.linked_to_project:
-                linked_to_project = Constants.LINKED_TO_PROJECT_TRUE
+                linked_to_project = LINKED_TO_PROJECT_TRUE
             else:
-                linked_to_project = Constants.LINKED_TO_PROJECT_FALSE
+                linked_to_project = LINKED_TO_PROJECT_FALSE
 
             # Generate the Markdown issue line WITH extra project data
             md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
@@ -372,8 +374,8 @@ class LivingDocumentationGenerator:
                 ])
             else:
                 headers.append("Linked to project")
-                linked_to_project = Constants.LINKED_TO_PROJECT_TRUE \
-                    if consolidated_issue.linked_to_project else Constants.LINKED_TO_PROJECT_FALSE
+                linked_to_project = LINKED_TO_PROJECT_TRUE \
+                    if consolidated_issue.linked_to_project else LINKED_TO_PROJECT_FALSE
                 values.append(linked_to_project)
 
         # Initialize the Markdown table

@@ -57,13 +57,14 @@ def get_action_input(name: str, default: str = None) -> str:
 
 def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt"):
     output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
-    with open(output_file, 'a') as f:
+    with open(output_file, 'a', encoding='utf-8') as f:
         # Write the multiline output to the file
         f.write(f"{name}<<EOF\n")
         f.write(f"{value}")
-        f.write(f"EOF\n")
+        f.write("EOF\n")
 
 
+# pylint: disable=fixme
 def set_action_failed(message: str):
     # TODO: might need a print value to work: check again at Integration testing
     logger.error("::error:: %s", message)

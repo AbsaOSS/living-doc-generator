@@ -1,8 +1,10 @@
+from typing import Optional
+
 from github.Issue import Issue
 
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.utils import sanitize_filename
-from living_documentation_generator.utils.constants import Constants
+from living_documentation_generator.utils.constants import NO_PROJECT_ATTACHED
 
 
 class ConsolidatedIssue:
@@ -17,13 +19,13 @@ class ConsolidatedIssue:
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
-        self.__project_name: str = Constants.NO_PROJECT_ATTACHED
-        self.__status: str = Constants.NO_PROJECT_ATTACHED
-        self.__priority: str = Constants.NO_PROJECT_ATTACHED
-        self.__size: str = Constants.NO_PROJECT_ATTACHED
-        self.__moscow: str = Constants.NO_PROJECT_ATTACHED
+        self.__project_name: str = NO_PROJECT_ATTACHED
+        self.__status: str = NO_PROJECT_ATTACHED
+        self.__priority: str = NO_PROJECT_ATTACHED
+        self.__size: str = NO_PROJECT_ATTACHED
+        self.__moscow: str = NO_PROJECT_ATTACHED
 
-        self.__error: str | None = None
+        self.__error: Optional[str] = None
 
     # Issue properties
     @property
@@ -70,8 +72,7 @@ class ConsolidatedIssue:
     def labels(self) -> list[str]:
         if self.__issue:
             return [label.name for label in self.__issue.labels]
-        else:
-            return []
+        return []
 
     # Project properties
     @property
@@ -100,7 +101,7 @@ class ConsolidatedIssue:
 
     # Error property
     @property
-    def error(self) -> str | None:
+    def error(self) -> Optional[str]:
         return self.__error
 
     def update_with_project_data(self, issue: ProjectIssue):
