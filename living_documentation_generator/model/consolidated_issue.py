@@ -106,11 +106,11 @@ class ConsolidatedIssue:
 
     def update_with_project_data(self, issue: ProjectIssue):
         self.__linked_to_project = True
-        self.__project_name = issue.project_name
-        self.__status = issue.status
-        self.__priority = issue.priority
-        self.__size = issue.size
-        self.__moscow = issue.moscow
+        self.__project_name = issue.project_status.project_title
+        self.__status = issue.project_status.status
+        self.__priority = issue.project_status.priority
+        self.__size = issue.project_status.size
+        self.__moscow = issue.project_status.moscow
 
     def generate_page_filename(self):
         md_filename_base = f"{self.number}_{self.title.lower()}.md"

@@ -177,7 +177,7 @@ class LivingDocumentationGenerator:
                 consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id,
                                                                     repository_issue=repository_issue)
 
-        # Update issues with project data
+        # Update consolidated issue structures with project data
         logger.debug("Updating consolidated issue structure with project data.")
         for key, consolidated_issue in consolidated_issues.items():
             if key in projects_issues:
