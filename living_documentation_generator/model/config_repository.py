@@ -19,7 +19,11 @@ class ConfigRepository:
 
     @property
     def projects_title_filter(self) -> list[str]:
-        return self.__projects_title_filter if self.__projects_title_filter is not None else []
+        return (
+            self.__projects_title_filter
+            if self.__projects_title_filter is not None
+            else []
+        )
 
     def load_from_json(self, repository_json: dict):
         self.__organization_name = repository_json["organization-name"]

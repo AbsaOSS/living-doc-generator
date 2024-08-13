@@ -32,19 +32,19 @@ class ProjectIssue:
         self.__project_status.project_title = project.title
 
         field_types = []
-        if 'fieldValues' in issue_json:
-            for node in issue_json['fieldValues']['nodes']:
-                if node['__typename'] == 'ProjectV2ItemFieldSingleSelectValue':
-                    field_types.append(node['name'])
+        if "fieldValues" in issue_json:
+            for node in issue_json["fieldValues"]["nodes"]:
+                if node["__typename"] == "ProjectV2ItemFieldSingleSelectValue":
+                    field_types.append(node["name"])
 
         for field_type in field_types:
-            if field_type in project.field_options.get('Status', []):
+            if field_type in project.field_options.get("Status", []):
                 self.__project_status.status = field_type
-            elif field_type in project.field_options.get('Priority', []):
+            elif field_type in project.field_options.get("Priority", []):
                 self.__project_status.priority = field_type
-            elif field_type in project.field_options.get('Size', []):
+            elif field_type in project.field_options.get("Size", []):
                 self.__project_status.size = field_type
-            elif field_type in project.field_options.get('MoSCoW', []):
+            elif field_type in project.field_options.get("MoSCoW", []):
                 self.__project_status.moscow = field_type
 
         return self

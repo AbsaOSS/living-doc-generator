@@ -41,14 +41,19 @@ class GithubProject:
         self.__organization_name = repository.owner.login
         self.__config_repositories.append(repository.name)
 
-        logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
+        logger.debug(
+            "Updating field options for projects in repository `%s`.",
+            repository.full_name,
+        )
         self.__update_field_options(field_option_response)
 
         return self
 
     def __update_field_options(self, field_option_response: dict):
         # Parse the field options from the response
-        field_options_nodes = field_option_response['repository']['projectV2']['fields']['nodes']
+        field_options_nodes = field_option_response["repository"]["projectV2"][
+            "fields"
+        ]["nodes"]
         for field_option in field_options_nodes:
             if "name" in field_option and "options" in field_option:
                 field_name = field_option["name"]

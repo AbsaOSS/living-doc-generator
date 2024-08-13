@@ -1,12 +1,12 @@
 # Action inputs environment variables
-GITHUB_TOKEN = 'GITHUB_TOKEN'
-PROJECT_STATE_MINING = 'PROJECT_STATE_MINING'
-REPOSITORIES = 'REPOSITORIES'
-OUTPUT_PATH = 'OUTPUT_PATH'
+GITHUB_TOKEN = "GITHUB_TOKEN"
+PROJECT_STATE_MINING = "PROJECT_STATE_MINING"
+REPOSITORIES = "REPOSITORIES"
+OUTPUT_PATH = "OUTPUT_PATH"
 
 # GitHub API constants
 ISSUES_PER_PAGE_LIMIT = 100
-ISSUE_STATE_ALL = 'all'
+ISSUE_STATE_ALL = "all"
 PROJECTS_FROM_REPO_QUERY = """
                 query {{
                   repository(owner: "{organization_name}", name: "{repository_name}") {{
@@ -78,8 +78,8 @@ PROJECT_FIELD_OPTIONS_QUERY = """
             """
 
 # Symbol, when no project is attached to an issue
-NO_PROJECT_DATA = '---'
+NO_PROJECT_DATA = "---"
 
 # Constant to symbolize if issue is linked to a project
-LINKED_TO_PROJECT_TRUE = '🟢'
-LINKED_TO_PROJECT_FALSE = '🔴'
+LINKED_TO_PROJECT_TRUE = "🟢"
+LINKED_TO_PROJECT_FALSE = "🔴"

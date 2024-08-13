@@ -4,6 +4,7 @@ This script contains helper functions that are used across multiple living_docum
 
 These functions can be imported and used in other living_documentation_generator as needed.
 """
+
 import os
 import re
 import sys
@@ -12,11 +13,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def make_issue_key(organization_name: str, repository_name: str, issue_number: int) -> str:
+def make_issue_key(
+    organization_name: str, repository_name: str, issue_number: int
+) -> str:
     """
-       Creates a unique 3way string key for identifying every unique feature.
+    Creates a unique 3way string key for identifying every unique feature.
 
-       @return: The unique string key for the feature.
+    @return: The unique string key for the feature.
     """
     return f"{organization_name}/{repository_name}/{issue_number}"
 
@@ -30,13 +33,13 @@ def sanitize_filename(filename: str) -> str:
     @return: The sanitized filename.
     """
     # Remove invalid characters for Windows filenames
-    sanitized_name = re.sub(r'[<>:"/|?*`]', '', filename)
+    sanitized_name = re.sub(r'[<>:"/|?*`]', "", filename)
     # Reduce consecutive periods
-    sanitized_name = re.sub(r'\.{2,}', '.', sanitized_name)
+    sanitized_name = re.sub(r"\.{2,}", ".", sanitized_name)
     # Reduce consecutive spaces to a single space
-    sanitized_name = re.sub(r' {2,}', ' ', sanitized_name)
+    sanitized_name = re.sub(r" {2,}", " ", sanitized_name)
     # Replace space with '_'
-    sanitized_name = sanitized_name.replace(' ', '_')
+    sanitized_name = sanitized_name.replace(" ", "_")
 
     return sanitized_name
 
@@ -48,6 +51,7 @@ def make_absolute_path(path):
     # Otherwise, convert the relative path to an absolute path
     return os.path.abspath(path)
 
+
 # Github
 
 
@@ -55,9 +59,11 @@ def get_action_input(name: str, default: str = None) -> str:
     return os.getenv(f"INPUT_{name}", default)
 
 
-def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt"):
+def set_action_output(
+    name: str, value: str, default_output_path: str = "default_output.txt"
+):
     output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
-    with open(output_file, 'a', encoding='utf-8') as f:
+    with open(output_file, "a", encoding="utf-8") as f:
         # Write the multiline output to the file
         f.write(f"{name}<<EOF\n")
         f.write(f"{value}")
