@@ -38,25 +38,31 @@ class ConfigRepository:
 
     @property
     def organization_name(self) -> str:
+        """Getter of the repository organization name."""
         return self.__organization_name
 
     @property
     def repository_name(self) -> str:
+        """Getter of the repository name."""
         return self.__repository_name
 
     @property
     def query_labels(self) -> list[str]:
-        return self.__query_labels if self.__query_labels is not None else []
+        """Getter of the query labels."""
+        return self.__query_labels
 
     @property
     def projects_title_filter(self) -> list[str]:
-        return (
-            self.__projects_title_filter
-            if self.__projects_title_filter is not None
-            else []
-        )
+        """Getter of the project title filter."""
+        return self.__projects_title_filter
 
-    def load_from_json(self, repository_json: dict):
+    def load_from_json(self, repository_json: dict) -> None:
+        """
+        Load the configuration from a JSON object.
+
+        Args:
+            repository_json (dict): The JSON object containing the repo configuration.
+        """
         self.__organization_name = repository_json["organization-name"]
         self.__repository_name = repository_json["repository-name"]
         self.__query_labels = repository_json["query-labels"]

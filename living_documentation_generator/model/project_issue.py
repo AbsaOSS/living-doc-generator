@@ -41,32 +41,45 @@ class ProjectIssue:
 
     @property
     def number(self) -> int:
+        """Getter of the project issue number."""
         return self.__number
 
     @property
     def organization_name(self) -> str:
+        """Getter of the organization where the issue was fetched from."""
         return self.__organization_name
 
     @property
     def repository_name(self) -> str:
+        """Getter of the repository name where the issue was fetched from."""
         return self.__repository_name
 
     @property
     def project_status(self) -> ProjectStatus:
+        """Getter of the project issue status."""
         return self.__project_status
 
-    def load_from_json(self, issue_json: dict, project: GithubProject):
+    def loads(self, issue_json: dict, project: GithubProject) -> 'ProjectIssue':
+        """
+        Loads the project issue data from the provided JSON and GithubProject object.
+
+        Args:
+            issue_json (dict): The JSON data of the project issue.
+            project (GithubProject): The GithubProject object representing the project the issue belongs to.
+        """
         self.__number = issue_json["content"]["number"]
         self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
         self.__repository_name = issue_json["content"]["repository"]["name"]
         self.__project_status.project_title = project.title
 
+        # Parse the field types from the response
         field_types = []
         if "fieldValues" in issue_json:
             for node in issue_json["fieldValues"]["nodes"]:
                 if node["__typename"] == "ProjectV2ItemFieldSingleSelectValue":
                     field_types.append(node["name"])
 
+        # Update the project status with the field type values
         for field_type in field_types:
             if field_type in project.field_options.get("Status", []):
                 self.__project_status.status = field_type

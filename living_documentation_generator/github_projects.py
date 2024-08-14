@@ -47,13 +47,9 @@ class GithubProjects:
         self.__token = token
         self.__session = None
 
-    def __initialize_request_session(self):
+    def __initialize_request_session(self) -> requests.Session:
         """
         Initializes the request Session and updates the headers.
-
-        @param github_token: The GitHub user token for authentication.
-
-        @return: A configured request session.
         """
 
         self.__session = requests.Session()
@@ -67,12 +63,11 @@ class GithubProjects:
 
     def __send_graphql_query(self, query: str) -> Optional[dict[str, dict]]:
         """
-        Sends a GraphQL query to the GitHub API and returns the response.
-        If an HTTP error occurs, it prints the error and returns an empty dictionary.
+        Send a GraphQL query to the GitHub API and returns the response.
+        If an HTTP error occurs, it prints the error and returns None instead.
 
-        @param query: The GraphQL query to be sent in f string format.
-
-        @return: The response from the GitHub GraphQL API in a dictionary format.
+        Args:
+            query (str): The formated GraphQL query to send to the GitHub API.
         """
         try:
             if self.__session is None:
@@ -94,21 +89,28 @@ class GithubProjects:
 
         return None
 
-    def get_repository_projects(
-            self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
+    def get_repository_projects(self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
+        """
+        Fetch all projects attached to a given repository using a GraphQL query. Based on the response create
+        GitHub project objects and return them in a list.
+
+        Args:
+            repository (Repository): The repository object to fetch projects from.
+            projects_title_filter (list[str]): The list of project titles to filter for.
+        """
         projects = []
 
-        # Fetch the project response from the GraphQL API
+        # Format the GraphQL query
         projects_from_repo_query = GithubProjectQueries.get_projects_from_repo_query(
-            organization_name=repository.owner.login, repository_name=repository.name
+            organization_name=repository.owner.login,
+            repository_name=repository.name,
         )
 
+        # Fetch the projects attached to the repository
         projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
 
         if projects_from_repo_response is None:
-            logger.warning(
-                "Project response is None for repository `%s`.", repository.full_name
-            )
+            logger.warning("Project response is None for repository `%s`.", repository.full_name)
             return projects
 
         # If response is not None, parse the project response
@@ -121,26 +123,21 @@ class GithubProjects:
                 project_number = project_json["number"]
 
                 # If no filter is provided, all projects are required
-                is_project_required = (
-                    True
-                    if not projects_title_filter
-                    else project_title in projects_title_filter
-                )
+                is_project_required = (True if not projects_title_filter else project_title in projects_title_filter)
 
                 # Main project structure is loaded and added to the projects list
                 if is_project_required:
-                    # Fetch the project field options from the GraphQL API
-                    project_field_options_query = (
-                        GithubProjectQueries.get_project_field_options_query(
-                            organization_name=repository.owner.login,
-                            repository_name=repository.name,
-                            project_number=project_number,
-                        )
-                    )
+                    # Format the GraphQL query
+                    project_field_options_query = (GithubProjectQueries.get_project_field_options_query(
+                        organization_name=repository.owner.login,
+                        repository_name=repository.name,
+                        project_number=project_number,
+                    ))
+                    # Fetch the project field options
                     field_option_response = self.__send_graphql_query(project_field_options_query)
 
-                    project = GithubProject().load_from_json(project_json, repository, field_option_response)
-
+                    # Create the GitHub project object and add it to the output list
+                    project = GithubProject().loads(project_json, repository, field_option_response)
                     if project not in projects:
                         projects.append(project)
 
@@ -157,10 +154,12 @@ class GithubProjects:
 
     def get_project_issues(self, project: GithubProject) -> list[ProjectIssue]:
         """
-        Fetches all issues from a given project using a GraphQL query.
-        The issues are fetched supported by pagination.
+        Fetch all issues that are attached to a GitHub Project using a GraphQL query.
+        Fetching is supported by pagination. Based on the response create project issue objects
+        and return them in a list.
 
-        @return: The list of all issues in the project.
+        Args:
+            project (GithubProject): The GitHub project object to fetch issues from.
         """
         project_issues_raw = []
         cursor = None
@@ -171,9 +170,9 @@ class GithubProjects:
 
             # Fetch project issues via GraphQL query
             issues_from_project_query = (GithubProjectQueries.get_issues_from_project_query(
-                project_id=project.id, after_argument=after_argument
-                )
-            )
+                project_id=project.id,
+                after_argument=after_argument,
+            ))
 
             project_issues_response = self.__send_graphql_query(issues_from_project_query)
 
@@ -189,8 +188,7 @@ class GithubProjects:
             project_issues_raw.extend(project_issue_data)
             logger.debug(
                 "Loaded `%s` issues from project: %s.",
-                len(project_issue_data),
-                project.title
+                len(project_issue_data), project.title,
             )
 
             # Check for closing the pagination process
@@ -199,7 +197,7 @@ class GithubProjects:
             cursor = page_info["endCursor"]
 
         project_issues = [
-            ProjectIssue().load_from_json(issue_json, project)
+            ProjectIssue().loads(issue_json, project)
             for issue_json in project_issues_raw
         ]
 

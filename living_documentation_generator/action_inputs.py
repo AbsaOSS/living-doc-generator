@@ -56,21 +56,31 @@ class ActionInputs:
 
     @property
     def github_token(self) -> str:
+        """Getter of the GitHub authorization token."""
         return self.__github_token
 
     @property
     def is_project_state_mining_enabled(self) -> bool:
+        """Getter of the project state mining switch."""
         return self.__is_project_state_mining_enabled
 
     @property
     def repositories(self) -> list[ConfigRepository]:
+        """Getter of the list of repositories to fetch from."""
         return self.__repositories
 
     @property
     def output_directory(self) -> str:
+        """Getter of the output directory."""
         return self.__output_directory
 
     def load_from_environment(self, validate: bool = True) -> "ActionInputs":
+        """
+        Load the action inputs from the environment variables and validate them if needed.
+
+        Args:
+            validate (bool): Switch indicating if the inputs should be validated.
+        """
         self.__github_token = get_action_input(GITHUB_TOKEN)
         self.__is_project_state_mining_enabled = (
             get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
@@ -79,9 +89,7 @@ class ActionInputs:
         self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input(REPOSITORIES, "")
 
-        logger.debug(
-            "Is project state mining allowed: %s.", self.is_project_state_mining_enabled
-        )
+        logger.debug("Is project state mining allowed: %s.", self.is_project_state_mining_enabled)
         logger.debug("JSON repositories to fetch from: %s.", repositories_json)
         logger.debug("Output directory: %s.", self.output_directory)
 
@@ -104,18 +112,21 @@ class ActionInputs:
         return self
 
     def validate_inputs(self, repositories_json: str) -> None:
+        """
+        Validate the input attributes of the action.
+
+        Args:
+            repositories_json(str): The JSON string containing the repositories to fetch.
+        """
+
         # Validate correct format of input repositories_json
         try:
             json.loads(repositories_json)
         except json.JSONDecodeError:
-            logger.error(
-                "Input attr `repositories_json` is not a valid JSON string.", exc_info=True
-            )
+            logger.error("Input attr `repositories_json` is not a valid JSON string.", exc_info=True)
             sys.exit(1)
 
         # Validate GitHub token
         if not self.__github_token:
-            logger.error(
-                "GitHub token could not be loaded from the environment.", exc_info=True
-            )
+            logger.error("GitHub token could not be loaded from the environment.", exc_info=True)
             sys.exit(1)

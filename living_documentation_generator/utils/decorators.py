@@ -30,9 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def debug_log_decorator(method: Callable) -> Callable:
-    """
-    Decorator to add debug logging for a method call.
-    """
+    """Decorator to add debug logging for a method call."""
 
     @wraps(method)
     def wrapped(*args, **kwargs) -> Optional[Any]:
@@ -50,9 +48,7 @@ def debug_log_decorator(method: Callable) -> Callable:
 
 
 def safe_call_decorator(rate_limiter: GithubRateLimiter):
-    """
-    Decorator factory to create a rate-limited safe call function.
-    """
+    """Decorator factory to create a rate-limited safe call function."""
 
     def decorator(method: Callable) -> Callable:
         # Note: Keep log decorator first to log correct method name.

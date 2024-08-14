@@ -21,6 +21,8 @@ fetching project field options, along with properties to access project specific
 
 import logging
 
+from github.Repository import Repository
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,43 +46,55 @@ class GithubProject:
 
     @property
     def id(self) -> str:
+        """Getter of the project ID."""
         return self.__id
 
     @property
     def number(self) -> int:
+        """Getter of the project number."""
         return self.__number
 
     @property
     def title(self) -> str:
+        """Getter of the project title."""
         return self.__title
 
     @property
     def organization_name(self) -> str:
+        """Getter of the organization name."""
         return self.__organization_name
 
     @property
     def field_options(self) -> dict[str, str]:
+        """Getter of the project field options."""
         return self.__field_options
 
-    def load_from_json(self, project_json, repository, field_option_response):
+    def loads(self,
+              project_json: dict,
+              repository: Repository,
+              field_option_response: dict) -> 'GithubProject':
+        """
+        Load the project data from several inputs.
+
+        Args:
+            project_json (dict): The JSON object containing the data about the project.
+            repository (Repository): The GH repository object where the project is located.
+            field_option_response (dict): The response containing the field options for the project.
+        """
         self.__id = project_json["id"]
         self.__number = project_json["number"]
         self.__title = project_json["title"]
         self.__organization_name = repository.owner.login
 
-        logger.debug(
-            "Updating field options for projects in repository `%s`.",
-            repository.full_name,
-        )
+        logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
         self.__update_field_options(field_option_response)
 
         return self
 
-    def __update_field_options(self, field_option_response: dict):
-        # Parse the field options from the response
-        field_options_nodes = field_option_response["repository"]["projectV2"][
-            "fields"
-        ]["nodes"]
+    def __update_field_options(self, field_option_response: dict) -> None:
+        """Parse and update the field options of the project from a JSON response."""
+        field_options_nodes = field_option_response["repository"]["projectV2"]["fields"]["nodes"]
+
         for field_option in field_options_nodes:
             if "name" in field_option and "options" in field_option:
                 field_name = field_option["name"]

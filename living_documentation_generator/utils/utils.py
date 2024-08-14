@@ -28,21 +28,18 @@ logger = logging.getLogger(__name__)
 
 def make_issue_key(organization_name: str, repository_name: str, issue_number: int) -> str:
     """
-    Creates a unique 3way string key for identifying every unique feature.
+    Create a unique string key for identifying the issue.
 
-    @return: The unique string key for the feature.
+    Args:
+        organization_name (str): The name of the organization where issue is located at.
+        repository_name (str): The name of the repository where issue is located at.
+        issue_number (int): The number of the issue.
     """
     return f"{organization_name}/{repository_name}/{issue_number}"
 
 
 def sanitize_filename(filename: str) -> str:
-    """
-    Sanitizes the provided filename by removing invalid characters and replacing spaces with underscores.
-
-    @param filename: The filename to be sanitized.
-
-    @return: The sanitized filename.
-    """
+    """Sanitize the provided filename by removing invalid characters."""
     # Remove invalid characters for Windows filenames
     sanitized_name = re.sub(r'[<>:"/|?*`]', "", filename)
     # Reduce consecutive periods
@@ -55,7 +52,8 @@ def sanitize_filename(filename: str) -> str:
     return sanitized_name
 
 
-def make_absolute_path(path):
+def make_absolute_path(path: str) -> str:
+    """Convert the provided path to an absolute path."""
     # If the path is already absolute, return it as is
     if os.path.isabs(path):
         return path
@@ -65,12 +63,13 @@ def make_absolute_path(path):
 
 # Github
 def get_action_input(name: str, default: str = None) -> str:
+    """Get the input value from the environment variables."""
     return os.getenv(f"INPUT_{name}", default)
 
 
-def set_action_output(
-    name: str, value: str, default_output_path: str = "default_output.txt"
-):
+# pylint: disable=fixme
+def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:
+    """TODO: IDK"""
     output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
     with open(output_file, "a", encoding="utf-8") as f:
         # Write the multiline output to the file
@@ -79,8 +78,8 @@ def set_action_output(
         f.write("EOF\n")
 
 
-# pylint: disable=fixme
 def set_action_failed(message: str):
+    """Set the action as failed with the provided message."""
     # TODO: might need a print value to work: check again at Integration testing
     logger.error("::error:: %s", message)
     sys.exit(1)

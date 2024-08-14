@@ -43,6 +43,7 @@ class GithubRateLimiter:
 
     @property
     def github_client(self) -> Github:
+        """Getter of the GitHub client."""
         return self.__github_client
 
     def __call__(self, method: Callable) -> Callable:

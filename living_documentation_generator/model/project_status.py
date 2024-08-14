@@ -41,6 +41,7 @@ class ProjectStatus:
 
     @property
     def project_title(self) -> str:
+        """Getter of the issue attached project title."""
         return self.__project_title
 
     @project_title.setter
@@ -49,6 +50,7 @@ class ProjectStatus:
 
     @property
     def status(self) -> str:
+        """Getter of the issue project status."""
         return self.__status
 
     @status.setter
@@ -57,6 +59,7 @@ class ProjectStatus:
 
     @property
     def priority(self) -> str:
+        """Getter of the issue project priority."""
         return self.__priority
 
     @priority.setter
@@ -65,6 +68,7 @@ class ProjectStatus:
 
     @property
     def size(self) -> str:
+        """Getter of the issue project difficulty."""
         return self.__size
 
     @size.setter
@@ -73,6 +77,7 @@ class ProjectStatus:
 
     @property
     def moscow(self) -> str:
+        """Getter of the issue project MoSCoW prioritization."""
         return self.__moscow
 
     @moscow.setter

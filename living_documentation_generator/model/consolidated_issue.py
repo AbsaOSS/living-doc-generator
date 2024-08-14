@@ -58,46 +58,57 @@ class ConsolidatedIssue:
     # Issue properties
     @property
     def number(self) -> int:
+        """Getter of the issue number."""
         return self.__issue.number if self.__issue else 0
 
     @property
     def organization_name(self) -> str:
+        """Getter of the organization where the issue was fetched from."""
         return self.__organization_name
 
     @property
     def repository_name(self) -> str:
+        """Getter of the repository name where the issue was fetched from."""
         return self.__repository_name
 
     @property
     def title(self) -> str:
+        """Getter of the issue title."""
         return self.__issue.title if self.__issue else ""
 
     @property
     def state(self) -> str:
+        """Getter of the issue state."""
         return self.__issue.state if self.__issue else ""
 
     @property
     def created_at(self) -> str:
+        """Getter of the info when issue was created."""
         return self.__issue.created_at if self.__issue else ""
 
     @property
     def updated_at(self) -> str:
+        """Getter of the info when issue was updated"""
         return self.__issue.updated_at if self.__issue else ""
 
     @property
     def closed_at(self) -> str:
+        """Getter of the info when issue was closed."""
         return self.__issue.closed_at if self.__issue else ""
 
     @property
     def html_url(self) -> str:
+        """Getter of the issue GitHub html URL."""
         return self.__issue.html_url if self.__issue else ""
 
     @property
     def body(self) -> str:
+        """Getter of the issue description."""
         return self.__issue.body if self.__issue else ""
 
     @property
     def labels(self) -> list[str]:
+        """Getter of the issue labels."""
         if self.__issue:
             return [label.name for label in self.__issue.labels]
         return []
@@ -105,18 +116,27 @@ class ConsolidatedIssue:
     # Project properties
     @property
     def linked_to_project(self) -> bool:
+        """Getter of the info if the issue is linked to a project."""
         return self.__linked_to_project
 
     @property
     def project_status(self) -> ProjectStatus:
+        """Getter of the project status."""
         return self.__project_status
 
     # Error property
     @property
     def error(self) -> Optional[str]:
+        """Getter of the error message."""
         return self.__error
 
-    def update_with_project_data(self, project_status: ProjectStatus):
+    def update_with_project_data(self, project_status: ProjectStatus) -> None:
+        """
+        Update the consolidated issue with attached project data.
+
+        Args:
+            project_status (ProjectStatus): The extra issue project data.
+        """
         self.__linked_to_project = True
         self.__project_status.project_title = project_status.project_title
         self.__project_status.status = project_status.status
@@ -124,7 +144,8 @@ class ConsolidatedIssue:
         self.__project_status.size = project_status.size
         self.__project_status.moscow = project_status.moscow
 
-    def generate_page_filename(self):
+    def generate_page_filename(self) -> str:
+        """Generate a filename page naming based on the issue number and title."""
         md_filename_base = f"{self.number}_{self.title.lower()}.md"
         page_filename = sanitize_filename(md_filename_base)
 
