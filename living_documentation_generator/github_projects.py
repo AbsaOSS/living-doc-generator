@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# The `github_projects.py` is a script to store key logic to generate Living Documentation.
-#
+
+"""
+This module contains the GithubProjects class which is responsible for mining data for GitHub Projects.
+
+The GithubProjects class handles the logic of initializing request session, sending GraphQL queries
+and processes the responses.
+"""
 
 import logging
 from typing import Optional

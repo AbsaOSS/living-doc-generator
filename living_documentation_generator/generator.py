@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# The `generator.py` is a script to store key logic to generate Living Documentation.
-#
+
+"""
+This module contains the LivingDocumentationGenerator class which is responsible for generating
+the Living Documentation output.
+
+The class uses several helper methods to fetch required data from GitHub, consolidate the data
+and generate the markdown pages as the output of Living Documentation action.
+"""
 
 import logging
 import os

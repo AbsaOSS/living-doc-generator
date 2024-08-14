@@ -15,7 +15,8 @@
 #
 
 """
-
+This module contains the ActionInputs class which is responsible for loading, managing and validating the inputs
+required for running the GH Action.
 """
 
 import json
