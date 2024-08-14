@@ -7,11 +7,22 @@ from github import Github
 logger = logging.getLogger(__name__)
 
 
-# pylint: disable=too-few-public-methods
-# It is fine to have a single method in this class, since we use it as a callable class
 class GithubRateLimiter:
+    """
+    A class that acts as a rate limiter for GitHub API calls.
+
+    Attributes:
+        __github_client (GitHub): The GitHub client used to make API calls.
+
+    Note:
+        This class is used as a callable class, hence the `__call__` method.
+    """
     def __init__(self, github_client: Github):
-        self.github_client = github_client
+        self.__github_client: Github = github_client
+
+    @property
+    def github_client(self) -> Github:
+        return self.__github_client
 
     def __call__(self, method: Callable) -> Callable:
         def wrapped_method(*args, **kwargs) -> Optional[Any]:

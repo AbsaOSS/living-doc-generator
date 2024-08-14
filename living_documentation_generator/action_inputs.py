@@ -1,3 +1,23 @@
+#
+# Copyright 2024 ABSA Group Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+"""
+
+"""
+
 import json
 import logging
 import sys
@@ -18,7 +38,15 @@ logger = logging.getLogger(__name__)
 
 
 class ActionInputs:
+    """
+    A class representing all inputs that are essential for running the GH action.
 
+    Attributes:
+        __github_token (str): The GitHub token used for authentication.
+        __is_project_state_mining_enabled (bool): Switch indicating if project state mining is enabled.
+        __repositories (list[ConfigRepository]): List of config repositories to fetch from.
+        __output_directory (str): The directory where the markdown pages will be stored.
+    """
     def __init__(self):
         self.__github_token: str = ""
         self.__is_project_state_mining_enabled: bool = False
@@ -80,8 +108,7 @@ class ActionInputs:
             json.loads(repositories_json)
         except json.JSONDecodeError:
             logger.error(
-                "Input attr `repositories_json` is not a valid JSON string.",
-                exc_info=True,
+                "Input attr `repositories_json` is not a valid JSON string.", exc_info=True
             )
             sys.exit(1)
 

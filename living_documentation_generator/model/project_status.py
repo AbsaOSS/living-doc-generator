@@ -2,6 +2,16 @@ from living_documentation_generator.utils.constants import NO_PROJECT_DATA
 
 
 class ProjectStatus:
+    """
+    A class representing the project status of a issue.
+
+    Attributes:
+        __project_title (str): The title of the project.
+        __status (str): The status of the issue in the project.
+        __priority (str): The priority of the issue in the project.
+        __size (str): The difficulty of the issue in the project.
+        __moscow (str): The MoSCoW prioritization of the issue in the project.
+    """
     def __init__(self):
         self.__project_title: str = ""
         self.__status: str = NO_PROJECT_DATA

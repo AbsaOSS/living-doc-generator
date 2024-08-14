@@ -1,3 +1,20 @@
+# Copyright 2024 ABSA Group Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# The `github_projects.py` is a script to store key logic to generate Living Documentation.
+#
+
 import logging
 from typing import Optional
 import requests
@@ -14,7 +31,13 @@ logger = logging.getLogger(__name__)
 
 
 class GithubProjects:
+    """
+    A class representing all the logic for mining data for GitHub Projects.
 
+    Attributes:
+        __token (str): The GitHub token used for authentication.
+        __session (requests.Session): The session for making graphQL requests.
+    """
     def __init__(self, token: str):
         self.__token = token
         self.__session = None
@@ -51,9 +74,7 @@ class GithubProjects:
                 self.__initialize_request_session()
 
             # Fetch the response from the API
-            response = self.__session.post(
-                "https://api.github.com/graphql", json={"query": query}
-            )
+            response = self.__session.post("https://api.github.com/graphql", json={"query": query})
             # Check if the request was successful
             response.raise_for_status()
 
@@ -69,8 +90,7 @@ class GithubProjects:
         return None
 
     def get_repository_projects(
-        self, repository: Repository, projects_title_filter: list[str]
-    ) -> list[GithubProject]:
+            self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
         projects = []
 
         # Fetch the project response from the GraphQL API
@@ -78,9 +98,7 @@ class GithubProjects:
             organization_name=repository.owner.login, repository_name=repository.name
         )
 
-        projects_from_repo_response = self.__send_graphql_query(
-            projects_from_repo_query
-        )
+        projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
 
         if projects_from_repo_response is None:
             logger.warning(
@@ -90,9 +108,7 @@ class GithubProjects:
 
         # If response is not None, parse the project response
         if projects_from_repo_response["repository"] is not None:
-            projects_from_repo_nodes = projects_from_repo_response["repository"][
-                "projectsV2"
-            ]["nodes"]
+            projects_from_repo_nodes = projects_from_repo_response["repository"]["projectsV2"]["nodes"]
 
             for project_json in projects_from_repo_nodes:
                 # Check if the project is required based on the configuration filter
@@ -116,21 +132,15 @@ class GithubProjects:
                             project_number=project_number,
                         )
                     )
-                    field_option_response = self.__send_graphql_query(
-                        project_field_options_query
-                    )
+                    field_option_response = self.__send_graphql_query(project_field_options_query)
 
-                    project = GithubProject().load_from_json(
-                        project_json, repository, field_option_response
-                    )
+                    project = GithubProject().load_from_json(project_json, repository, field_option_response)
 
                     if project not in projects:
                         projects.append(project)
 
         else:
-            logger.warning(
-                "'repository' key is None in response: %s.", projects_from_repo_response
-            )
+            logger.warning("'repository' key is None in response: %s.", projects_from_repo_response)
 
         if not projects:
             logger.info(
@@ -155,15 +165,12 @@ class GithubProjects:
             after_argument = f'after: "{cursor}"' if cursor else ""
 
             # Fetch project issues via GraphQL query
-            issues_from_project_query = (
-                GithubProjectQueries.get_issues_from_project_query(
-                    project_id=project.id, after_argument=after_argument
+            issues_from_project_query = (GithubProjectQueries.get_issues_from_project_query(
+                project_id=project.id, after_argument=after_argument
                 )
             )
 
-            project_issues_response = self.__send_graphql_query(
-                issues_from_project_query
-            )
+            project_issues_response = self.__send_graphql_query(issues_from_project_query)
 
             # Return empty list, if project has no issues attached
             if not project_issues_response:
@@ -178,7 +185,7 @@ class GithubProjects:
             logger.debug(
                 "Loaded `%s` issues from project: %s.",
                 len(project_issue_data),
-                project.title,
+                project.title
             )
 
             # Check for closing the pagination process

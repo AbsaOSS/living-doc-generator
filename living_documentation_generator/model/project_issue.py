@@ -3,6 +3,15 @@ from living_documentation_generator.model.project_status import ProjectStatus
 
 
 class ProjectIssue:
+    """
+    A class representing a Project Issue.
+
+    Attributes:
+        __number (int): The number of the project issue.
+        __organization_name (str): The name of the repo organization where the issue is located.
+        __repository_name (str): The name of the repository where the issue is located.
+        __project_status (ProjectStatus): The status of the project issue in the project.
+    """
     def __init__(self):
         self.__number: int = 0
         self.__organization_name: str = ""

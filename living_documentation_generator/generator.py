@@ -1,3 +1,20 @@
+# Copyright 2024 ABSA Group Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# The `generator.py` is a script to store key logic to generate Living Documentation.
+#
+
 import logging
 import os
 import shutil
@@ -26,15 +43,22 @@ logger = logging.getLogger(__name__)
 
 
 class LivingDocumentationGenerator:
+    """
+    A class representing the Living Documentation Generator.
+
+    Attributes:
+        __github_instance (GitHub): The GitHub instance used for authentication and requests.
+        __github_projects_instance (GithubProjects): The GithubProjects instance used for project related operations.
+        __rate_limiter (GithubRateLimiter): The rate limiter used to control the rate of API calls.
+        __repositories (list[ConfigRepository]): List of config repositories to fetch from.
+        __project_state_mining_enabled (bool): Switch indicating if project state mining is enabled.
+        __output_path (str): The directory where the markdown pages will be stored.
+    """
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(
-        PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md"
-    )
-    INDEX_PAGE_TEMPLATE_FILE = os.path.join(
-        PROJECT_ROOT, "..", "templates", "_index_page_template.md"
-    )
+    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md")
+    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
 
     def __init__(
         self,
@@ -44,12 +68,10 @@ class LivingDocumentationGenerator:
         output_path: str,
     ):
 
-        self.github_instance = Github(
-            auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT
-        )
-        self.github_projects_instance = GithubProjects(token=github_token)
-        self.rate_limiter = GithubRateLimiter(self.github_instance)
-        self.safe_call = safe_call_decorator(self.rate_limiter)
+        self.__github_instance = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
+        self.__github_projects_instance = GithubProjects(token=github_token)
+        self.__rate_limiter = GithubRateLimiter(self.__github_instance)
+        self.__safe_call = safe_call_decorator(self.__rate_limiter)
 
         # data
         self.__repositories: list[ConfigRepository] = repositories
@@ -59,6 +81,10 @@ class LivingDocumentationGenerator:
 
         # paths
         self.__output_path: str = output_path
+
+    @property
+    def github_instance(self) -> Github:
+        return self.__github_instance
 
     @property
     def repositories(self) -> list[ConfigRepository]:
@@ -113,7 +139,7 @@ class LivingDocumentationGenerator:
         for config_repository in self.repositories:
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
-            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.__safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
@@ -124,7 +150,7 @@ class LivingDocumentationGenerator:
             # Load all issues from one repository (unique for each repository) and save it under repository id
             if not config_repository.query_labels:
                 logger.debug("Fetching all issues in the repository")
-                issues[repository_id] = self.safe_call(repository.get_issues)(
+                issues[repository_id] = self.__safe_call(repository.get_issues)(
                     state=ISSUE_STATE_ALL
                 )
                 amount_of_issues_per_repo = len(issues[repository_id])
@@ -141,7 +167,7 @@ class LivingDocumentationGenerator:
                 for label in config_repository.query_labels:
                     logger.debug("Fetching issues with label `%s`.", label)
                     issues[repository_id].extend(
-                        self.safe_call(repository.get_issues)(
+                        self.__safe_call(repository.get_issues)(
                             state=ISSUE_STATE_ALL, labels=[label]
                         )
                     )
@@ -179,7 +205,7 @@ class LivingDocumentationGenerator:
                 projects_title_filter,
             )
 
-            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.__safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
@@ -188,15 +214,15 @@ class LivingDocumentationGenerator:
                 "Fetching GitHub project data - looking for repository `%s` projects.",
                 repository_id,
             )
-            projects = self.safe_call(
-                self.github_projects_instance.get_repository_projects
+            projects = self.__safe_call(
+                self.__github_projects_instance.get_repository_projects
             )(repository=repository, projects_title_filter=projects_title_filter)
 
             # Update every project with project issue related data
             for project in projects:
                 logger.info("Fetching GitHub project data - from `%s`.", project.title)
-                project_issues: list[ProjectIssue] = self.safe_call(
-                    self.github_projects_instance.get_project_issues
+                project_issues: list[ProjectIssue] = self.__safe_call(
+                    self.__github_projects_instance.get_project_issues
                 )(project=project)
 
                 for project_issue in project_issues:

@@ -6,12 +6,21 @@ logger = logging.getLogger(__name__)
 
 
 class GithubProject:
+    """
+    A class representing GitHub Project in the Living Documentation.
+
+    Attributes:
+        __id (str): The ID of the project.
+        __number (int): The number of the project.
+        __title (str): The title of the project.
+        __organization_name (str): The name of the organization that owns the project.
+        __field_options (dict[str, str]): Field options, that can be used to describe a project issue.
+    """
     def __init__(self):
         self.__id: str = ""
         self.__number: int = 0
         self.__title: str = ""
         self.__organization_name: str = ""
-        self.__config_repositories: list[ConfigRepository] = []
         self.__field_options: dict[str, str] = {}
 
     @property
@@ -39,7 +48,6 @@ class GithubProject:
         self.__number = project_json["number"]
         self.__title = project_json["title"]
         self.__organization_name = repository.owner.login
-        self.__config_repositories.append(repository.name)
 
         logger.debug(
             "Updating field options for projects in repository `%s`.",

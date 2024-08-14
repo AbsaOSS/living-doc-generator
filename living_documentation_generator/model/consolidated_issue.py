@@ -7,6 +7,17 @@ from living_documentation_generator.model.project_status import ProjectStatus
 
 
 class ConsolidatedIssue:
+    """
+    A class representing a consolidated issue from the repository and project data.
+
+    Attributes:
+        __issue (Issue): The issue from the repository.
+        __organization_name (str): The name of the organization that owns the repository.
+        __repository_name (str): The name of the repository.
+        __linked_to_project (bool): Switch indicating if the issue is linked to a project.
+        __project_status (ProjectStatus): The status of the project issue in the project.
+        __error (Optional[str]): Any error that occurred while processing the issue.
+    """
     def __init__(self, repository_id: str, repository_issue: Issue = None):
         # save issue from repository (got from GitHub library & keep connection to repository for lazy loading)
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage

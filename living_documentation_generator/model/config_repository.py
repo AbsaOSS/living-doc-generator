@@ -1,4 +1,13 @@
 class ConfigRepository:
+    """
+    A class representing the configuration for a GH repository to fetch data from.
+
+    Attributes:
+        __organization_name (str): The name of the organization that owns the repository.
+        __repository_name (str): The name of the repository.
+        __query_labels (list[str | None]): List of labels to query for.
+        __projects_title_filter (list[str | None]): List of project titles to filter for.
+    """
     def __init__(self):
         self.__organization_name: str = ""
         self.__repository_name: str = ""

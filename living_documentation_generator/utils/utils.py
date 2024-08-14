@@ -13,9 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def make_issue_key(
-    organization_name: str, repository_name: str, issue_number: int
-) -> str:
+def make_issue_key(organization_name: str, repository_name: str, issue_number: int) -> str:
     """
     Creates a unique 3way string key for identifying every unique feature.
 
