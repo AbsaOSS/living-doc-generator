@@ -109,8 +109,6 @@ See the full example of action step definition (in example are used non-default 
     
 ```
 
-
-
 ## Action Configuration
 Configure the action by customizing the following parameters based on your needs:
 
