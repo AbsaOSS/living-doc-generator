@@ -297,11 +297,11 @@ class LivingDocumentationGenerator:
                 linked_to_project = "🔴"
 
             # Generate the Markdown issue line WITH extra project data
-            md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
                              f" {linked_to_project} | {status} |[GitHub link]({url}) |\n")
         else:
             # Generate the Markdown issue line WITHOUT project data
-            md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
                              f" {state} |[GitHub link]({url}) |\n")
 
         return md_issue_line

@@ -73,11 +73,20 @@ class GithubProjects:
         projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
 
         if projects_from_repo_response is None:
-            logger.warning("Project response is None for repository `%s`.", repository.full_name)
+            logger.warning("Fetching GitHub project data - no project data for repository %s. No data received.",
+                           repository.full_name
+                           )
             return projects
 
+        # This will return `None` at any point if a key is missing or if the data is not found
+        projects_from_repo_nodes = (
+            projects_from_repo_response
+            .get("repository", {})
+            .get("projectsV2", {})
+            .get("nodes"))
+
         # If response is not None, parse the project response
-        if projects_from_repo_response['repository'] is not None:
+        if projects_from_repo_nodes is not None:
             projects_from_repo_nodes = projects_from_repo_response['repository']['projectsV2']['nodes']
 
             for project_json in projects_from_repo_nodes:
@@ -87,6 +96,9 @@ class GithubProjects:
 
                 # If no filter is provided, all projects are required
                 is_project_required = True if not projects_title_filter else project_title in projects_title_filter
+
+                if not is_project_required:
+                    logger.debug("Project `%s` is not required based on the filter.", project_title)
 
                 # Main project structure is loaded and added to the projects list
                 if is_project_required:
@@ -103,7 +115,7 @@ class GithubProjects:
                         projects.append(project)
 
         else:
-            logger.warning("'repository' key is None in response: %s.", projects_from_repo_response)
+            logger.warning("Repository information is not present in the response")
 
         if not projects:
             logger.info("Fetching GitHub project data - no project data for repository `%s`.", repository.full_name)
