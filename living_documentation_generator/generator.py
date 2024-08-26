@@ -368,7 +368,7 @@ class LivingDocumentationGenerator:
                 ])
             else:
                 headers.append("Linked to project")
-                linked_to_project = "✅" if consolidated_issue.linked_to_project else "❌"
+                linked_to_project = "❌"
                 values.append(linked_to_project)
 
         # Initialize the Markdown table

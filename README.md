@@ -208,10 +208,9 @@ Here, you'll find a summarized list of all these issues, their brief description
 | AbsaOSS          | living-doc-example-project | [#33 - Example bugfix](33_example_bugfix.md)  | 🔴 | ---            |[GitHub](#) |
 ```
 
-**Project Status** can have various values depending on the project, such as: Todo, Done, Closed, In Progress, In Review, Blocked, etc. 
+- **Project Status** can have various values depending on the project, such as: Todo, Done, Closed, In Progress, In Review, Blocked, etc. 
 These values can vary from project to project.
-
-The `---` symbol is used to indicate that an issue has no required project data.
+- The `---` symbol is used to indicate that an issue has no required project data.
 
 ### Issue page example
 
