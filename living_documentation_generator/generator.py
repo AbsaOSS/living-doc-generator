@@ -7,7 +7,6 @@ from datetime import datetime
 from github import Github, Auth
 from github.Issue import Issue
 
-
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
@@ -303,11 +302,11 @@ class LivingDocumentationGenerator:
                 linked_to_project = LINKED_TO_PROJECT_FALSE
 
             # Generate the Markdown issue line WITH extra project data
-            md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
                              f" {linked_to_project} | {status} |[GitHub link]({url}) |\n")
         else:
             # Generate the Markdown issue line WITHOUT project data
-            md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
                              f" {state} |[GitHub link]({url}) |\n")
 
         return md_issue_line
@@ -376,8 +375,7 @@ class LivingDocumentationGenerator:
                 ])
             else:
                 headers.append("Linked to project")
-                linked_to_project = LINKED_TO_PROJECT_TRUE \
-                    if consolidated_issue.linked_to_project else LINKED_TO_PROJECT_FALSE
+                linked_to_project = LINKED_TO_PROJECT_FALSE
                 values.append(linked_to_project)
 
         # Initialize the Markdown table

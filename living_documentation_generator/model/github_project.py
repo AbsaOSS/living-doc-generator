@@ -47,8 +47,15 @@ class GithubProject:
         return self
 
     def __update_field_options(self, field_option_response: dict):
-        # Parse the field options from the response
-        field_options_nodes = field_option_response['repository']['projectV2']['fields']['nodes']
+        try:
+            field_options_nodes = field_option_response["repository"]["projectV2"]["fields"]["nodes"]
+        except KeyError:
+            logger.error("There is no expected response structure for field options fetched from project: %s",
+                         self.title,
+                         exc_info=True
+                         )
+            return
+
         for field_option in field_options_nodes:
             if "name" in field_option and "options" in field_option:
                 field_name = field_option["name"]
