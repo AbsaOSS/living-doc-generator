@@ -105,7 +105,6 @@ See the full example of action step definition (in example are used non-default 
     
     # project verbose (debug) logging feature de/activation
     verbose-logging: true
-    
 ```
 
 ## Action Configuration
@@ -188,6 +187,7 @@ The Living Documentation Generator action provides a key output that allows user
 The Living Documentation Generator is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
 
 ### Index page example
+
 ```markdown
 # Issue Summary page
 
