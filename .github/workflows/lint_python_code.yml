@@ -1,0 +1,42 @@
+name: Lint Python Code
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Analyze code with Pylint
+      id: analyze-code
+      run: |
+        pylint_score=$(pylint $(git ls-files '*.py') | tee /dev/tty | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p')
+        echo "PYLINT_SCORE=$pylint_score" >> $GITHUB_ENV
+
+    - name: Check Pylint score
+      run: |
+        if (( $(echo "$PYLINT_SCORE < 9.5" | bc -l) )); then
+          echo 'Failure: Pylint score is below 9.5'
+          exit 1
+        else
+          echo 'Success: Pylint score is above 9.5'
+        fi
