@@ -75,12 +75,6 @@ See the full example of action step definition (in example are used non-default 
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
   with:
-    # project state mining de/activation
-    project-state-mining: true
-    
-    # project verbose (debug) logging de/activation
-    verbose-logging: true
-
     # input repositories + feature to filter projects
     repositories: '[
       {
@@ -102,10 +96,17 @@ See the full example of action step definition (in example are used non-default 
         "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
       }
     ]'
+    
+    # output directory path for generated documentation
     output-path: "/output/directory/path"
+
+    # project state mining feature de/activation
+    project-state-mining: true
+    
+    # project verbose (debug) logging feature de/activation
+    verbose-logging: true
+    
 ```
-
-
 
 ## Action Configuration
 Configure the action by customizing the following parameters based on your needs:
@@ -194,13 +195,18 @@ Our project is designed with a myriad of issues to ensure seamless user experien
 Here, you'll find a summarized list of all these issues, their brief descriptions, and links to their detailed documentation.
 
 ## Issue Overview
-| Organization name| Repository name            | Issue 'Number - Title'                        | Linked to project | Project Status | Issue URL  |
-|------------------|----------------------------|-----------------------------------------------|-------------------|----------------|------------|
-|AbsaOSS           | living-doc-example-project | [#89 - Test issue 2](89_test_issue_2.md)      | 🔴                | ---            |[GitHub](#) |
-|AbsaOSS           | living-doc-example-project | [#88 - Test issue](88_test_issue.md)          | 🟢                | Todo           |[GitHub](#) |
-|AbsaOSS           | living-doc-example-project | [#41 - Initial commit.](41_initial_commit.md) | 🟢                | Done           |[GitHub](#) |
-|AbsaOSS           | living-doc-example-project | [#33 - Example bugfix](33_example_bugfix.md)  | 🔴                | ---            |[GitHub](#) |
+
+| Organization name| Repository name            | Issue 'Number - Title'         | Linked to project | Project Status | Issue URL  |
+|------------------|----------------------------|--------------------------------|-------------------|----------------|------------|
+| AbsaOSS          | living-doc-example-project | [#89 - Test issue 2](89_test_issue_2.md)      | 🔴 | ---            |[GitHub](#) |
+| AbsaOSS          | living-doc-example-project | [#88 - Test issue](88_test_issue.md)          | 🟢 | Todo           |[GitHub](#) |
+| AbsaOSS          | living-doc-example-project | [#41 - Initial commit.](41_initial_commit.md) | 🟢 | Done           |[GitHub](#) |
+| AbsaOSS          | living-doc-example-project | [#33 - Example bugfix](33_example_bugfix.md)  | 🔴 | ---            |[GitHub](#) |
 ```
+
+- **Project Status** can have various values depending on the project, such as: Todo, Done, Closed, In Progress, In Review, Blocked, etc. 
+These values can vary from project to project.
+- The `---` symbol is used to indicate that an issue has no required project data.
 
 ### Issue page example
 
@@ -263,8 +269,6 @@ Set the configuration environment variables in the shell script following the st
 Also make sure that the GITHUB_TOKEN is configured in your environment variables.
 ```
 export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
-export INPUT_PROJECT_STATE_MINING="true"
-export INPUT_VERBOSE_LOGGING="true"
 export INPUT_REPOSITORIES='[
             {
               "organization-name": "Organization Name",
@@ -274,6 +278,8 @@ export INPUT_REPOSITORIES='[
             }
           ]'
 export INPUT_OUTPUT_PATH="/output/directory/path
+export INPUT_PROJECT_STATE_MINING="true"
+export INPUT_VERBOSE_LOGGING="true"
 ```
 
 ### Running the script locally
