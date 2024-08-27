@@ -5,7 +5,11 @@ from github.Repository import Repository
 
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.project_issue import ProjectIssue
-from living_documentation_generator.github_project_queries import GithubProjectQueries
+from living_documentation_generator.utils.github_project_queries import (
+    get_projects_from_repo_query,
+    get_project_field_options_query,
+    get_issues_from_project_query,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +71,8 @@ class GithubProjects:
         projects = []
 
         # Fetch the project response from the GraphQL API
-        projects_from_repo_query = GithubProjectQueries.get_projects_from_repo_query(organization_name=repository.owner.login,
-                                                                                     repository_name=repository.name)
+        projects_from_repo_query = get_projects_from_repo_query(organization_name=repository.owner.login,
+                                                                repository_name=repository.name)
 
         projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
 
@@ -103,7 +107,7 @@ class GithubProjects:
                 # Main project structure is loaded and added to the projects list
                 if is_project_required:
                     # Fetch the project field options from the GraphQL API
-                    project_field_options_query = GithubProjectQueries.get_project_field_options_query(
+                    project_field_options_query = get_project_field_options_query(
                         organization_name=repository.owner.login,
                         repository_name=repository.name,
                         project_number=project_number)
@@ -137,8 +141,8 @@ class GithubProjects:
             after_argument = f'after: "{cursor}"' if cursor else ''
 
             # Fetch project issues via GraphQL query
-            issues_from_project_query = GithubProjectQueries.get_issues_from_project_query(project_id=project.id,
-                                                                                           after_argument=after_argument)
+            issues_from_project_query = get_issues_from_project_query(project_id=project.id,
+                                                                      after_argument=after_argument)
 
             project_issues_response = self.__send_graphql_query(issues_from_project_query)
 

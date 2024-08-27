@@ -105,8 +105,6 @@ See the full example of action step definition (in example are used non-default 
     
     # project verbose (debug) logging feature de/activation
     verbose-logging: true
-
-    
 ```
 
 ## Action Configuration
