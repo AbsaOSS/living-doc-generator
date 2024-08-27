@@ -1,4 +1,4 @@
-name: PyLint Python Code
+name: PyLint Code Check
 
 on: [push]
 
