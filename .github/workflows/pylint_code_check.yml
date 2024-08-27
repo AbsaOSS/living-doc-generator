@@ -23,7 +23,7 @@ jobs:
     - name: Analyze code with Pylint
       id: analyze-code
       run: |
-        pylint_score=$(pylint $(git ls-files '*.py'))
+        pylint_score=$(pylint $(git ls-files '*.py')| grep 'rated at' | awk '{print $7}' | cut -d'/' -f1)
         echo "PYLINT_SCORE=$pylint_score" >> $GITHUB_ENV
         
     - name: Check Pylint score
