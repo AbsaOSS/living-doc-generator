@@ -5,12 +5,11 @@ from living_documentation_generator.utils.utils import sanitize_filename
 
 NOT_SET_FOR_NOW = "NOT_SET_IN_THIS_VERSION"
 NO_PROJECT_ATTACHED = "---"
-NO_PROJECT_MINING = "-?-"
 
 
 class ConsolidatedIssue:
     def __init__(self, repository_id: str, repository_issue: Issue = None):
-        # save issue from repository (got from Github library & keep connection to repository for lazy loading)
+        # save issue from repository (got from GitHub library & keep connection to repository for lazy loading)
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue = repository_issue
 
@@ -28,6 +27,7 @@ class ConsolidatedIssue:
 
         self.__error: str | None = None
 
+    # Issue properties
     @property
     def number(self) -> int:
         return self.__issue.number if self.__issue else 0
@@ -49,8 +49,20 @@ class ConsolidatedIssue:
         return self.__issue.state if self.__issue else ""
 
     @property
-    def url(self) -> str:
-        return self.__issue.url if self.__issue else ""
+    def created_at(self) -> str:
+        return self.__issue.created_at if self.__issue else ""
+
+    @property
+    def updated_at(self) -> str:
+        return self.__issue.updated_at if self.__issue else ""
+
+    @property
+    def closed_at(self) -> str:
+        return self.__issue.closed_at if self.__issue else ""
+
+    @property
+    def html_url(self) -> str:
+        return self.__issue.html_url if self.__issue else ""
 
     @property
     def body(self) -> str:
@@ -63,6 +75,7 @@ class ConsolidatedIssue:
         else:
             return []
 
+    # Project properties
     @property
     def linked_to_project(self) -> bool:
         return self.__linked_to_project
@@ -87,6 +100,7 @@ class ConsolidatedIssue:
     def moscow(self) -> str:
         return self.__moscow
 
+    # Error property
     @property
     def error(self) -> str | None:
         return self.__error
@@ -98,15 +112,6 @@ class ConsolidatedIssue:
         self.__priority = issue.priority
         self.__size = issue.size
         self.__moscow = issue.moscow
-
-    def no_project_mining(self):
-        self.__project_name = NO_PROJECT_MINING
-        self.__status = NO_PROJECT_MINING
-        self.__priority = NO_PROJECT_MINING
-        self.__size = NO_PROJECT_MINING
-        self.__moscow = NO_PROJECT_MINING
-
-        return self
 
     def generate_page_filename(self):
         md_filename_base = f"{self.number}_{self.title.lower()}.md"

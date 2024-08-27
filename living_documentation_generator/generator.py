@@ -27,8 +27,7 @@ class LivingDocumentationGenerator:
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
 
     def __init__(self, github_instance: Github, github_projects_instance: GithubProjects,
-                 repositories: list[ConfigRepository], projects_title_filter: list[str],
-                 project_state_mining_enabled: bool, output_path: str):
+                 repositories: list[ConfigRepository], project_state_mining_enabled: bool, output_path: str):
 
         self.github_instance = github_instance
         self.github_projects_instance = github_projects_instance
@@ -37,7 +36,6 @@ class LivingDocumentationGenerator:
 
         # data
         self.__repositories: list[ConfigRepository] = repositories
-        self.__projects_title_filter: list[str] = projects_title_filter      # TODO - this could be part of repository config ???
 
         # features control
         self.__project_state_mining_enabled: bool = project_state_mining_enabled
@@ -48,10 +46,6 @@ class LivingDocumentationGenerator:
     @property
     def repositories(self) -> list[ConfigRepository]:
         return self.__repositories
-
-    @property
-    def projects_title_filter(self) -> list[str]:
-        return self.__projects_title_filter
 
     @property
     def project_state_mining_enabled(self) -> bool:
@@ -98,7 +92,7 @@ class LivingDocumentationGenerator:
 
         # Mine issues from every config repository
         for config_repository in self.repositories:
-            repository_id = f"{config_repository.owner}/{config_repository.name}"
+            repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
             repository = self.safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
@@ -140,7 +134,9 @@ class LivingDocumentationGenerator:
         all_project_issues: dict[str, ProjectIssue] = {}
 
         for config_repository in self.repositories:
-            repository_id = f"{config_repository.owner}/{config_repository.name}"
+            repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
+            projects_title_filter = config_repository.projects_title_filter
+            logger.debug("Filtering projects: %s. If filter is empty, fetching all.", projects_title_filter)
 
             repository = self.safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
@@ -149,7 +145,7 @@ class LivingDocumentationGenerator:
             # Fetch all projects_buffer attached to the repository
             logger.info("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
             projects = self.safe_call(self.github_projects_instance.get_repository_projects)(
-                repository=repository, projects_title_filter=self.projects_title_filter)
+                repository=repository, projects_title_filter=projects_title_filter)
 
             # Update every project with project issue related data
             for project in projects:
@@ -164,7 +160,8 @@ class LivingDocumentationGenerator:
 
         return all_project_issues
 
-    def _consolidate_issues_data(self, repository_issues: dict[str, list[Issue]],
+    @staticmethod
+    def _consolidate_issues_data(repository_issues: dict[str, list[Issue]],
                                  projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
 
         consolidated_issues = {}
@@ -176,9 +173,6 @@ class LivingDocumentationGenerator:
                 unique_key = make_issue_key(repo_id_parts[0], repo_id_parts[1], repository_issue.number)
                 consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id,
                                                                     repository_issue=repository_issue)
-                if not self.project_state_mining_enabled:
-                    logger.debug("Updating issues with information, that there is no project mining allowed`.")
-                    consolidated_issues[unique_key].no_project_mining()
 
         # Update issues with project data
         logger.debug("Updating consolidated issue structure with project data.")
@@ -246,9 +240,15 @@ class LivingDocumentationGenerator:
         :param consolidated_issues: The dictionary containing all issues data.
         """
 
-        issue_table = """| Organization name     | Repository name | Issue 'Number - Title'  | Linked to project | Project status  |Issue URL   |
-               |-----------------------|-----------------|---------------------------|---------|------|-----|
-               """
+        # Initializing the issue table header based on the project mining state
+        if self.__project_state_mining_enabled:
+            issue_table = """| Organization name | Repository name | Issue 'Number - Title' | Linked to project | Project status | Issue URL |
+                             |-------------------|-----------------|------------------------|-------------------|----------------|-----------|
+                          """
+        else:
+            issue_table = """| Organization name | Repository name | Issue 'Number - Title' | Issue state | Issue URL |
+                             |-------------------|-----------------|------------------------|-------------|-----------|
+                          """
 
         # Create an issue summary table for every issue
         for key, consolidated_issue in consolidated_issues.items():
@@ -269,7 +269,7 @@ class LivingDocumentationGenerator:
 
         logger.info("Markdown page generation - generated `_index.md`.")
 
-    def _generate_markdown_line(self, consolidated_issue) -> str:
+    def _generate_markdown_line(self, consolidated_issue: ConsolidatedIssue) -> str:
         """
             Generates a markdown summary line for a given feature.
 
@@ -286,7 +286,8 @@ class LivingDocumentationGenerator:
         title = title.replace("|", " _ ")
         page_filename = consolidated_issue.generate_page_filename()
         status = consolidated_issue.status
-        url = consolidated_issue.url
+        url = consolidated_issue.html_url
+        state = consolidated_issue.state
 
         # Change the bool values to more user-friendly characters
         if self.__project_state_mining_enabled:
@@ -294,17 +295,18 @@ class LivingDocumentationGenerator:
                 linked_to_project = "🟢"
             else:
                 linked_to_project = "🔴"
-        else:
-            linked_to_project = "❌"
 
-        # Generate the markdown line for the issue
-        md_issue_line = (f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
-                         f" {linked_to_project} | {status} |[GitHub link]({url}) |\n")
+            # Generate the Markdown issue line WITH extra project data
+            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+                             f" {linked_to_project} | {status} |[GitHub link]({url}) |\n")
+        else:
+            # Generate the Markdown issue line WITHOUT project data
+            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+                             f" {state} |[GitHub link]({url}) |\n")
 
         return md_issue_line
 
-    @staticmethod
-    def _generate_issue_summary_table(consolidated_issue: ConsolidatedIssue) -> str:
+    def _generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
         """
             Generates a string representation of feature info in a table format.
 
@@ -317,20 +319,19 @@ class LivingDocumentationGenerator:
         labels = ', '.join(labels) if labels else None
 
         # Format issue URL as a Markdown link
-        issue_url = consolidated_issue.url
+        issue_url = consolidated_issue.html_url
         issue_url = f"[GitHub link]({issue_url})" if issue_url else None
 
         # Define the header for the issue summary table
-        # TODO: Does not support all the fields for now, have to update later
         headers = [
             "Organization name",
             "Repository name",
             "Issue number",
             "State",
             "Issue URL",
-            # "Created at",
-            # "Updated at",
-            # "Closed at",
+            "Created at",
+            "Updated at",
+            "Closed at",
             "Labels"
         ]
 
@@ -341,32 +342,34 @@ class LivingDocumentationGenerator:
             consolidated_issue.number,
             consolidated_issue.state.lower(),
             issue_url,
-            # consolidated_issue.created_at,
-            # consolidated_issue.updated_at,
-            # consolidated_issue.closed_at,
+            consolidated_issue.created_at,
+            consolidated_issue.updated_at,
+            consolidated_issue.closed_at,
             labels
         ]
 
-        # Update the summary table, if issue is linked to the project
-        if consolidated_issue.linked_to_project:
-            headers.extend([
-                "Project title",
-                "Status",
-                "Priority",
-                "Size",
-                "MoSCoW"
-            ])
+        # Update the summary table, based on the project data mining situation
+        if self.__project_state_mining_enabled:
+            if consolidated_issue.linked_to_project:
+                headers.extend([
+                    "Project title",
+                    "Status",
+                    "Priority",
+                    "Size",
+                    "MoSCoW"
+                ])
 
-            values.extend([
-                consolidated_issue.project_name,
-                consolidated_issue.status,
-                consolidated_issue.priority,
-                consolidated_issue.size,
-                consolidated_issue.moscow
-            ])
-        else:
-            headers.append("Linked to project")
-            values.append(consolidated_issue.linked_to_project)
+                values.extend([
+                    consolidated_issue.project_name,
+                    consolidated_issue.status,
+                    consolidated_issue.priority,
+                    consolidated_issue.size,
+                    consolidated_issue.moscow
+                ])
+            else:
+                headers.append("Linked to project")
+                linked_to_project = "❌"
+                values.append(linked_to_project)
 
         # Initialize the Markdown table
         issue_info = "| Attribute | Content |\n|---|---|\n"
