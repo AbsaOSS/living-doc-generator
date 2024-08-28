@@ -22,15 +22,21 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pylint
 
-      - name: Analysing the code with pylint
+      - name: Analyze code with Pylint
+        id: analyze-code
         run: |
-          pylint \
-            --fail-under=6.0 \
-            --ignore-patterns=test_.*?py \
-            --max-line-length=180 \
-            $(git ls-files '*.py')  
+          pylint_score=$(pylint $(git ls-files '*.py')| grep 'rated at' | awk '{print $7}' | cut -d'/' -f1)
+          echo "PYLINT_SCORE=$pylint_score" >> $GITHUB_ENV
+
+      - name: Check Pylint score
+        run: |
+          if (( $(echo "$PYLINT_SCORE < 9.5" | bc -l) )); then
+            echo "Failure: Pylint score is below 9.5 (project score: $PYLINT_SCORE)"
+            exit 1
+          else
+            echo "Success: Pylint score is above 9.5 (project score: $PYLINT_SCORE)"
+          fi
 
   python-tests:
     runs-on: ubuntu-latest
