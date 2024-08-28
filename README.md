@@ -14,6 +14,7 @@
     - [Issue page example](#issue-page-example)
 - [Project Setup](#project-setup)
 - [Run Scripts Locally](#run-scripts-locally)
+- [Run Pylint Check Locally](#run-pylint-check-locally)
 - [Run unit test](#run-unit-test)
 - [Deployment](#deployment)
 - [Features](#features)
@@ -240,12 +241,12 @@ Users often struggle to find specific books in a large catalog. An advanced sear
 If you need to build the action locally, follow these steps:
 
 ### Prepare the Environment
-```
+```shell
 python3 --version
 ```
 
 ### Set Up Python Environment
-```
+```shell
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -302,6 +303,40 @@ chmod +x run_script.sh
 ```shell
 ./run_script.sh
 ```
+
+## Run Pylint Check Locally
+This project uses Pylint tool for static code analysis.
+Pylint analyses your code without actually running it.
+It checks for errors, enforces, coding standards, looks for code smells etc. 
+
+Pylint displays a global evaluation score for the code, rated out of a maximum score of 10.0.
+We are aiming to keep our code quality high above the score 9.5.
+
+Follow these steps to run Pylint check locally:
+
+### Set Up Python Environment
+From terminal in the root of the project, run the following command:
+
+```shell
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+This command will also install a Pylint tool, since it is listed in the project requirements.
+
+### Run Pylint
+Run Pylint on all files that are currently tracked by Git in the project.
+```shell
+pylint $(git ls-files '*.py')
+```
+
+To run Pylint on a specific file, follow the pattern `pylint <path_to_file>/<name_of_file>.py`.
+
+Example:
+```shell
+pylint living_documentation_generator/generator.py
+``` 
 
 ## Run unit test
 TODO - check this chapter and update by latest state

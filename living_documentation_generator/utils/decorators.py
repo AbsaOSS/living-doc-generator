@@ -33,7 +33,7 @@ def safe_call_decorator(rate_limiter: GithubRateLimiter):
         def wrapped(*args, **kwargs) -> Optional[Any]:
             try:
                 return method(*args, **kwargs)
-            except Exception as e:
+            except (ValueError, TypeError) as e:
                 logger.error("Error calling %s: %s", method.__name__, e, exc_info=True)
                 return None
         return wrapped

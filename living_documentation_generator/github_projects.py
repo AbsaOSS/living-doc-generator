@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 import requests
 
 from github.Repository import Repository
@@ -38,7 +39,7 @@ class GithubProjects:
 
         return self.__session
 
-    def __send_graphql_query(self, query: str) -> dict[str, dict] | None:
+    def __send_graphql_query(self, query: str) -> Optional[dict[str, dict]]:
         """
         Sends a GraphQL query to the GitHub API and returns the response.
         If an HTTP error occurs, it prints the error and returns an empty dictionary.
@@ -62,10 +63,10 @@ class GithubProjects:
         except requests.HTTPError as http_err:
             logger.error("HTTP error occurred: %s.", http_err, exc_info=True)
 
-        except Exception as e:
-            logger.error("An error occurred: %s.", e, exc_info=True)
+        except requests.RequestException as req_err:
+            logger.error("An error occurred: %s.", req_err, exc_info=True)
 
-        return
+        return None
 
     def get_repository_projects(self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
         projects = []
