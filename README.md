@@ -14,6 +14,7 @@
     - [Issue page example](#issue-page-example)
 - [Project Setup](#project-setup)
 - [Run Scripts Locally](#run-scripts-locally)
+- [Run Pylint Check Locally](#run-pylint-check-locally)
 - [Run unit test](#run-unit-test)
 - [Deployment](#deployment)
 - [Features](#features)
@@ -75,12 +76,6 @@ See the full example of action step definition (in example are used non-default 
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
   with:
-    # project state mining de/activation
-    project-state-mining: true
-    
-    # project verbose (debug) logging de/activation
-    verbose-logging: true
-
     # input repositories + feature to filter projects
     repositories: '[
       {
@@ -102,10 +97,16 @@ See the full example of action step definition (in example are used non-default 
         "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
       }
     ]'
+    
+    # output directory path for generated documentation
     output-path: "/output/directory/path"
+
+    # project state mining feature de/activation
+    project-state-mining: true
+    
+    # project verbose (debug) logging feature de/activation
+    verbose-logging: true
 ```
-
-
 
 ## Action Configuration
 Configure the action by customizing the following parameters based on your needs:
@@ -187,6 +188,7 @@ The Living Documentation Generator action provides a key output that allows user
 The Living Documentation Generator is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
 
 ### Index page example
+
 ```markdown
 # Issue Summary page
 
@@ -194,13 +196,18 @@ Our project is designed with a myriad of issues to ensure seamless user experien
 Here, you'll find a summarized list of all these issues, their brief descriptions, and links to their detailed documentation.
 
 ## Issue Overview
-| Organization name| Repository name            | Issue 'Number - Title'                        | Linked to project | Project Status | Issue URL  |
-|------------------|----------------------------|-----------------------------------------------|-------------------|----------------|------------|
-|AbsaOSS           | living-doc-example-project | [#89 - Test issue 2](89_test_issue_2.md)      | 🔴                | ---            |[GitHub](#) |
-|AbsaOSS           | living-doc-example-project | [#88 - Test issue](88_test_issue.md)          | 🟢                | Todo           |[GitHub](#) |
-|AbsaOSS           | living-doc-example-project | [#41 - Initial commit.](41_initial_commit.md) | 🟢                | Done           |[GitHub](#) |
-|AbsaOSS           | living-doc-example-project | [#33 - Example bugfix](33_example_bugfix.md)  | 🔴                | ---            |[GitHub](#) |
+
+| Organization name| Repository name            | Issue 'Number - Title'         | Linked to project | Project Status | Issue URL  |
+|------------------|----------------------------|--------------------------------|-------------------|----------------|------------|
+| AbsaOSS          | living-doc-example-project | [#89 - Test issue 2](89_test_issue_2.md)      | 🔴 | ---            |[GitHub](#) |
+| AbsaOSS          | living-doc-example-project | [#88 - Test issue](88_test_issue.md)          | 🟢 | Todo           |[GitHub](#) |
+| AbsaOSS          | living-doc-example-project | [#41 - Initial commit.](41_initial_commit.md) | 🟢 | Done           |[GitHub](#) |
+| AbsaOSS          | living-doc-example-project | [#33 - Example bugfix](33_example_bugfix.md)  | 🔴 | ---            |[GitHub](#) |
 ```
+
+- **Project Status** can have various values depending on the project, such as: Todo, Done, Closed, In Progress, In Review, Blocked, etc. 
+These values can vary from project to project.
+- The `---` symbol is used to indicate that an issue has no required project data.
 
 ### Issue page example
 
@@ -234,12 +241,12 @@ Users often struggle to find specific books in a large catalog. An advanced sear
 If you need to build the action locally, follow these steps:
 
 ### Prepare the Environment
-```
+```shell
 python3 --version
 ```
 
 ### Set Up Python Environment
-```
+```shell
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -263,8 +270,6 @@ Set the configuration environment variables in the shell script following the st
 Also make sure that the GITHUB_TOKEN is configured in your environment variables.
 ```
 export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
-export INPUT_PROJECT_STATE_MINING="true"
-export INPUT_VERBOSE_LOGGING="true"
 export INPUT_REPOSITORIES='[
             {
               "organization-name": "Organization Name",
@@ -274,6 +279,8 @@ export INPUT_REPOSITORIES='[
             }
           ]'
 export INPUT_OUTPUT_PATH="/output/directory/path
+export INPUT_PROJECT_STATE_MINING="true"
+export INPUT_VERBOSE_LOGGING="true"
 ```
 
 ### Running the script locally
@@ -296,6 +303,40 @@ chmod +x run_script.sh
 ```shell
 ./run_script.sh
 ```
+
+## Run Pylint Check Locally
+This project uses Pylint tool for static code analysis.
+Pylint analyses your code without actually running it.
+It checks for errors, enforces, coding standards, looks for code smells etc. 
+
+Pylint displays a global evaluation score for the code, rated out of a maximum score of 10.0.
+We are aiming to keep our code quality high above the score 9.5.
+
+Follow these steps to run Pylint check locally:
+
+### Set Up Python Environment
+From terminal in the root of the project, run the following command:
+
+```shell
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+This command will also install a Pylint tool, since it is listed in the project requirements.
+
+### Run Pylint
+Run Pylint on all files that are currently tracked by Git in the project.
+```shell
+pylint $(git ls-files '*.py')
+```
+
+To run Pylint on a specific file, follow the pattern `pylint <path_to_file>/<name_of_file>.py`.
+
+Example:
+```shell
+pylint living_documentation_generator/generator.py
+``` 
 
 ## Run unit test
 TODO - check this chapter and update by latest state

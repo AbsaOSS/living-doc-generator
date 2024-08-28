@@ -60,7 +60,6 @@ def make_absolute_path(path: str) -> str:
     # Otherwise, convert the relative path to an absolute path
     return os.path.abspath(path)
 
-
 # Github
 def get_action_input(name: str, default: str = None) -> str:
     """Get the input value from the environment variables."""
@@ -78,6 +77,7 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
         f.write("EOF\n")
 
 
+# pylint: disable=fixme
 def set_action_failed(message: str):
     """Set the action as failed with the provided message."""
     # TODO: might need a print value to work: check again at Integration testing

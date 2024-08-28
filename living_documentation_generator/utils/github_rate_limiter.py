@@ -28,6 +28,8 @@ from github import Github
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-few-public-methods
+# It is fine to have a single method in this class, since we use it as a callable class
 class GithubRateLimiter:
     """
     A class that acts as a rate limiter for GitHub API calls.

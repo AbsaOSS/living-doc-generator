@@ -89,9 +89,9 @@ class ActionInputs:
         self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input(REPOSITORIES, "")
 
-        logger.debug("Is project state mining allowed: %s.", self.is_project_state_mining_enabled)
-        logger.debug("JSON repositories to fetch from: %s.", repositories_json)
-        logger.debug("Output directory: %s.", self.output_directory)
+        logger.debug('Is project state mining allowed: %s.', self.is_project_state_mining_enabled)
+        logger.debug('JSON repositories to fetch from: %s.', repositories_json)
+        logger.debug('Output directory: %s.', self.output_directory)
 
         # Validate inputs
         if validate:

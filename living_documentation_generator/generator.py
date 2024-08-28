@@ -30,7 +30,6 @@ from datetime import datetime
 from github import Github, Auth
 from github.Issue import Issue
 
-
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.config_repository import ConfigRepository
@@ -406,13 +405,13 @@ class LivingDocumentationGenerator:
 
             # Generate the Markdown issue line WITH extra project data
             md_issue_line = (
-                f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+                f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
                 f" {linked_to_project} | {status} |[GitHub link]({url}) |\n"
             )
         else:
             # Generate the Markdown issue line WITHOUT project data
             md_issue_line = (
-                f"|{organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+                f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
                 f" {state} |[GitHub link]({url}) |\n"
             )
 
@@ -459,22 +458,24 @@ class LivingDocumentationGenerator:
             project_status = consolidated_issue.project_status
 
             if consolidated_issue.linked_to_project:
-                headers.extend(["Project title", "Status", "Priority", "Size", "MoSCoW"])
+                headers.extend([
+                    "Project title",
+                    "Status",
+                    "Priority",
+                    "Size",
+                    "MoSCoW"
+                ])
 
-                values.extend(
-                    [
-                        project_status.project_title,
-                        project_status.status,
-                        project_status.priority,
-                        project_status.size,
-                        project_status.moscow,
-                    ]
-                )
+                values.extend([
+                    project_status.project_title,
+                    project_status.status,
+                    project_status.priority,
+                    project_status.size,
+                    project_status.moscow,
+                ])
             else:
                 headers.append("Linked to project")
-                linked_to_project = (LINKED_TO_PROJECT_TRUE
-                                     if consolidated_issue.linked_to_project
-                                     else LINKED_TO_PROJECT_FALSE)
+                linked_to_project = LINKED_TO_PROJECT_FALSE
                 values.append(linked_to_project)
 
         # Initialize the Markdown table

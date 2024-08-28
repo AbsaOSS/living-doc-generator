@@ -8,6 +8,7 @@ on:
 jobs:
   check-release-notes-comments:
     runs-on: ubuntu-latest
+    name: Release Notes Comment Check
     steps:
       - name: Fetch all PR comments
         id: get-comments
