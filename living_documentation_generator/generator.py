@@ -16,9 +16,6 @@
 """
 This module contains the LivingDocumentationGenerator class which is responsible for generating
 the Living Documentation output.
-
-The class uses several helper methods to fetch required data from GitHub, consolidate the data
-and generate the markdown pages as the output of Living Documentation action.
 """
 
 import logging
@@ -51,14 +48,8 @@ logger = logging.getLogger(__name__)
 class LivingDocumentationGenerator:
     """
     A class representing the Living Documentation Generator.
-
-    Attributes:
-        __github_instance (GitHub): The GitHub instance used for authentication and requests.
-        __github_projects_instance (GithubProjects): The GithubProjects instance used for project related operations.
-        __rate_limiter (GithubRateLimiter): The rate limiter used to control the rate of API calls.
-        __repositories (list[ConfigRepository]): List of config repositories to fetch from.
-        __project_state_mining_enabled (bool): Switch indicating if project state mining is enabled.
-        __output_path (str): The directory where the markdown pages will be stored.
+    The class uses several helper methods to fetch required data from GitHub, consolidate the data
+    and generate the markdown pages as the output of Living Documentation action.
     """
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -109,7 +100,11 @@ class LivingDocumentationGenerator:
         return self.__output_path
 
     def generate(self) -> None:
-        """Generate the Living Documentation markdown pages output."""
+        """
+        Generate the Living Documentation markdown pages output.
+
+        @return: None
+        """
         self._clean_output_directory()
         logger.debug("Output directory cleaned.")
 
@@ -136,7 +131,11 @@ class LivingDocumentationGenerator:
         logger.info("Markdown page generation - finished.")
 
     def _clean_output_directory(self) -> None:
-        """Clean the output directory from the previous run."""
+        """
+        Clean the output directory from the previous run.
+
+        @return: None
+        """
         if os.path.exists(self.output_path):
             shutil.rmtree(self.output_path)
         os.makedirs(self.output_path)
@@ -145,6 +144,8 @@ class LivingDocumentationGenerator:
         """
         Fetch GitHub repository issues using the GitHub library. Only issues with correct labels are fetched,
         if no labels are defined in the configuration, all repository issues are fetched.
+
+        @return: A dictionary containing repository issue objects with unique key.
         """
         issues = {}
         total_issues_number = 0
@@ -193,7 +194,11 @@ class LivingDocumentationGenerator:
         return issues
 
     def _fetch_github_project_issues(self) -> dict[str, ProjectIssue]:
-        """Fetch GitHub project issues using the GraphQL API."""
+        """
+        Fetch GitHub project issues using the GraphQL API.
+
+        @return: A dictionary containing project issue objects with unique key.
+        """
         if not self.project_state_mining_enabled:
             logger.info("Fetching GitHub project data - project mining is not allowed.")
             return {}
@@ -250,9 +255,9 @@ class LivingDocumentationGenerator:
         """
         Consolidate the fetched issues and extra project data into a one consolidated object.
 
-        Args:
-            repository_issues (dict): A dictionary containing repository issue objects with unique key.
-            projects_issues (dict): A dictionary containing project issue objects with unique key.
+        @param repository_issues: A dictionary containing repository issue objects with unique key.
+        @param projects_issues: A dictionary containing project issue objects with unique key.
+        @return: A dictionary containing all consolidated issues.
         """
 
         consolidated_issues = {}
@@ -286,8 +291,7 @@ class LivingDocumentationGenerator:
         Generate the Markdown pages for all consolidated issues, create a summary index page and
         save it all to the output directory.
 
-        Args:
-            issues (dict): A dictionary containing all consolidated issues.
+        @param issues: A dictionary containing all consolidated issues.
         """
         with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
             issue_page_detail_template = f.read()
@@ -307,9 +311,9 @@ class LivingDocumentationGenerator:
         """
         Generates a single issue Markdown page from a template and save to the output directory.
 
-        Args:
-            issue_page_template (str): The template string for generating the single markdown issue page.
-            consolidated_issue (ConsolidatedIssue): The ConsolidatedIssue object containing the issue data.
+        @param issue_page_template: The template string for generating the single markdown issue page.
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: None
         """
 
         # Get all replacements for generating single issue page from a template
@@ -347,9 +351,9 @@ class LivingDocumentationGenerator:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
 
-        Args:
-            issue_index_page_template (str): The template string for generating the index markdown page.
-            consolidated_issues (dict): A dictionary containing all consolidated issues.
+        @param issue_index_page_template: The template string for generating the index markdown page.
+        @param consolidated_issues: A dictionary containing all consolidated issues.
+        @return: None
         """
 
         # Initializing the issue table header based on the project mining state
@@ -385,7 +389,12 @@ class LivingDocumentationGenerator:
         logger.info("Markdown page generation - generated `_index.md`.")
 
     def _generate_markdown_line(self, consolidated_issue: ConsolidatedIssue) -> str:
-        """Generates a markdown summary line for a single issue."""
+        """
+        Generates a markdown summary line for a single issue.
+
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: The markdown line for the issue.
+        """
         organization_name = consolidated_issue.organization_name
         repository_name = consolidated_issue.repository_name
         number = consolidated_issue.number
@@ -418,7 +427,12 @@ class LivingDocumentationGenerator:
         return md_issue_line
 
     def _generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
-        """Generates a string representation of feature info in a table format."""
+        """
+        Generates a string representation of feature info in a table format.
+
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: The string representation of the issue info in a table format.
+        """
         # Join issue labels into one string
         labels = consolidated_issue.labels
         labels = ", ".join(labels) if labels else None

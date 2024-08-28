@@ -15,8 +15,8 @@
 #
 
 """
-This module contains the ActionInputs class which is responsible for loading, managing and validating the inputs
-required for running the GH Action.
+This module contains an Action Inputs class methods,
+which are essential for running the GH action.
 """
 
 import json
@@ -40,13 +40,8 @@ logger = logging.getLogger(__name__)
 
 class ActionInputs:
     """
-    A class representing all inputs that are essential for running the GH action.
-
-    Attributes:
-        __github_token (str): The GitHub token used for authentication.
-        __is_project_state_mining_enabled (bool): Switch indicating if project state mining is enabled.
-        __repositories (list[ConfigRepository]): List of config repositories to fetch from.
-        __output_directory (str): The directory where the markdown pages will be stored.
+    A class representing all the action inputs. It is responsible for loading, managing
+    and validating the inputs required for running the GH Action.
     """
     def __init__(self):
         self.__github_token: str = ""
@@ -78,8 +73,8 @@ class ActionInputs:
         """
         Load the action inputs from the environment variables and validate them if needed.
 
-        Args:
-            validate (bool): Switch indicating if the inputs should be validated.
+        @param validate: Switch indicating if the inputs should be validated.
+        @return: The instance of the ActionInputs class.
         """
         self.__github_token = get_action_input(GITHUB_TOKEN)
         self.__is_project_state_mining_enabled = (
@@ -115,8 +110,8 @@ class ActionInputs:
         """
         Validate the input attributes of the action.
 
-        Args:
-            repositories_json(str): The JSON string containing the repositories to fetch.
+        @param repositories_json: The JSON string containing the repositories to fetch.
+        @return: None
         """
 
         # Validate correct format of input repositories_json

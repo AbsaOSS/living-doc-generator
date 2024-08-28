@@ -15,9 +15,6 @@
 
 """
 This module contains the GithubProjects class which is responsible for mining data for GitHub Projects.
-
-The GithubProjects class handles the logic of initializing request session, sending GraphQL queries
-and processes the responses.
 """
 
 import logging
@@ -40,17 +37,19 @@ logger = logging.getLogger(__name__)
 class GithubProjects:
     """
     A class representing all the logic for mining data for GitHub Projects.
-
-    Attributes:
-        __token (str): The GitHub token used for authentication.
-        __session (requests.Session): The session for making graphQL requests.
+    The class handles the logic of initializing request session, sending GraphQL queries
+    and processes the responses.
     """
     def __init__(self, token: str):
         self.__token = token
         self.__session = None
 
     def __initialize_request_session(self) -> requests.Session:
-        """Initializes the request Session and updates the headers."""
+        """
+        Initializes the request Session and updates the headers.
+
+        @return: The request session object.
+        """
 
         self.__session = requests.Session()
         headers = {
@@ -66,8 +65,8 @@ class GithubProjects:
         Send a GraphQL query to the GitHub API and returns the response.
         If an HTTP error occurs, it prints the error and returns None instead.
 
-        Args:
-            query (str): The formated GraphQL query to send to the GitHub API.
+        @param query: The formated GraphQL query to send to the GitHub API.
+        @return: The response from the GitHub API.
         """
         try:
             if self.__session is None:
@@ -94,9 +93,9 @@ class GithubProjects:
         Fetch all projects attached to a given repository using a GraphQL query. Based on the response create
         GitHub project objects and return them in a list.
 
-        Args:
-            repository (Repository): The repository object to fetch projects from.
-            projects_title_filter (list[str]): The list of project titles to filter for.
+        @param repository: The repository object to fetch projects from.
+        @param projects_title_filter: The list of project titles to filter for.
+        @return: A list of GitHub project objects.
         """
         projects = []
 
@@ -165,8 +164,8 @@ class GithubProjects:
         Fetching is supported by pagination. Based on the response create project issue objects
         and return them in a list.
 
-        Args:
-            project (GithubProject): The GitHub project object to fetch issues from.
+        @param project: The GitHub project object to fetch issues from.
+        @return: A list of project issue objects.
         """
         project_issues_raw = []
         cursor = None

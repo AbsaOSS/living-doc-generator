@@ -15,7 +15,8 @@
 #
 
 """
-This module contains a GitHub Rate Limiter methods, which acts as a rate limiter for GitHub API calls.
+This module contains a GitHub Rate Limiter class methods,
+which acts as a rate limiter for GitHub API calls.
 """
 
 import logging
