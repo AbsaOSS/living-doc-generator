@@ -32,10 +32,10 @@ jobs:
       - name: Check Pylint score
         run: |
           if (( $(echo "$PYLINT_SCORE < 9.5" | bc -l) )); then
-            echo "Failure: Pylint score is below 9.5 (project score: $PYLINT_SCORE)"
+            echo "Failure: Pylint score is below 9.5 (project score: $PYLINT_SCORE)."
             exit 1
           else
-            echo "Success: Pylint score is above 9.5 (project score: $PYLINT_SCORE)"
+            echo "Success: Pylint score is above 9.5 (project score: $PYLINT_SCORE)."
           fi
 
   python-tests:
