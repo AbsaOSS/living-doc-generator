@@ -15,7 +15,7 @@
 #
 
 """
-This module contains the ProjectStatus class which is responsible for access and change project issue status specifics.
+This module contains a data container for issue Project Status.
 """
 
 from living_documentation_generator.utils.constants import NO_PROJECT_DATA
@@ -23,14 +23,8 @@ from living_documentation_generator.utils.constants import NO_PROJECT_DATA
 
 class ProjectStatus:
     """
-    A class representing the project status of an issue.
-
-    Attributes:
-        __project_title (str): The title of the project.
-        __status (str): The status of the issue in the project.
-        __priority (str): The priority of the issue in the project.
-        __size (str): The difficulty of the issue in the project.
-        __moscow (str): The MoSCoW prioritization of the issue in the project.
+    A class representing the project status of an issue is responsible for access
+    and change project issue status specifics.
     """
     def __init__(self):
         self.__project_title: str = ""

@@ -15,9 +15,7 @@
 #
 
 """
-This module contains the ConsolidatedIssue class which represents a consolidated issue from a GitHub repository.
-The class provides methods for updating project data and generating page filenames, along with properties to access
-consolidated issue details.
+This module contains a data container for Consolidated Issue, which holds all the essential logic.
 """
 
 from typing import Optional
@@ -31,19 +29,13 @@ from living_documentation_generator.model.project_status import ProjectStatus
 class ConsolidatedIssue:
     """
     A class representing a consolidated issue from the repository and project data.
-
-    Attributes:
-        __issue (Issue): The issue from the repository.
-        __organization_name (str): The name of the organization that owns the repository.
-        __repository_name (str): The name of the repository.
-        __linked_to_project (bool): Switch indicating if the issue is linked to a project.
-        __project_status (ProjectStatus): The status of the project issue in the project.
-        __error (Optional[str]): Any error that occurred while processing the issue.
+    It provides methods for updating project data and generating page filenames,
+    along with properties to access consolidated issue details.
     """
     def __init__(self, repository_id: str, repository_issue: Issue = None):
         # save issue from repository (got from GitHub library & keep connection to repository for lazy loading)
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
-        self.__issue = repository_issue
+        self.__issue: Issue = repository_issue
 
         parts = repository_id.split("/")
         self.__organization_name: str = parts[0] if len(parts) == 2 else ""
@@ -134,8 +126,8 @@ class ConsolidatedIssue:
         """
         Update the consolidated issue with attached project data.
 
-        Args:
-            project_status (ProjectStatus): The extra issue project data.
+        @param project_status: The extra issue project data.
+        @return: None
         """
         self.__linked_to_project = True
         self.__project_status.project_title = project_status.project_title
@@ -145,7 +137,11 @@ class ConsolidatedIssue:
         self.__project_status.moscow = project_status.moscow
 
     def generate_page_filename(self) -> str:
-        """Generate a filename page naming based on the issue number and title."""
+        """
+        Generate a filename page naming based on the issue number and title.
+
+        @return: The generated page filename.
+        """
         md_filename_base = f"{self.number}_{self.title.lower()}.md"
         page_filename = sanitize_filename(md_filename_base)
 

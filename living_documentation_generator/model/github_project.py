@@ -15,8 +15,7 @@
 #
 
 """
-This module contains the GithubProject class which is responsible for loading JSON format data,
-fetching project field options, along with properties to access project specifics.
+This module contains a data container for GitHub Project, which holds all the essential logic.
 """
 
 import logging
@@ -28,14 +27,8 @@ logger = logging.getLogger(__name__)
 
 class GithubProject:
     """
-    A class representing GitHub Project in the Living Documentation.
-
-    Attributes:
-        __id (str): The ID of the project.
-        __number (int): The number of the project.
-        __title (str): The title of the project.
-        __organization_name (str): The name of the organization that owns the project.
-        __field_options (dict[str, str]): Field options, that can be used to describe a project issue.
+    A class representing GitHub Project is responsible for loading JSON format data,
+    fetching project field options, along with properties to access project specifics.
     """
     def __init__(self):
         self.__id: str = ""
@@ -76,10 +69,10 @@ class GithubProject:
         """
         Load the project data from several inputs.
 
-        Args:
-            project_json (dict): The JSON object containing the data about the project.
-            repository (Repository): The GH repository object where the project is located.
-            field_option_response (dict): The response containing the field options for the project.
+        @param project_json: The JSON object containing the data about the project.
+        @param repository: The GH repository object where the project is located.
+        @param field_option_response: The response containing the field options for the project.
+        @return: The GithubProject object with the loaded data.
         """
         self.__id = project_json["id"]
         self.__number = project_json["number"]
@@ -91,8 +84,13 @@ class GithubProject:
 
         return self
 
-    def __update_field_options(self, field_option_response: dict):
-        """Parse and update the field options of the project from a JSON response."""
+    def __update_field_options(self, field_option_response: dict) -> None:
+        """
+        Parse and update the field options of the project from a JSON response.
+
+        @param field_option_response: The JSON API response containing the field options.
+        @return: None
+        """
         try:
             field_options_nodes = field_option_response["repository"]["projectV2"]["fields"]["nodes"]
         except KeyError:

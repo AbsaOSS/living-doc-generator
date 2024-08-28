@@ -15,8 +15,7 @@
 #
 
 """
-This module contains the ProjectIssue class which is responsible for correct loading issue data,
-along with properties to access project issue specifics.
+This module contains a data container for Project Issue, which holds all the essential logic.
 """
 
 from living_documentation_generator.model.github_project import GithubProject
@@ -25,13 +24,8 @@ from living_documentation_generator.model.project_status import ProjectStatus
 
 class ProjectIssue:
     """
-    A class representing a Project Issue.
-
-    Attributes:
-        __number (int): The number of the project issue.
-        __organization_name (str): The name of the repo organization where the issue is located.
-        __repository_name (str): The name of the repository where the issue is located.
-        __project_status (ProjectStatus): The status of the project issue in the project.
+    A class representing a Project Issue and is responsible for correct loading issue data,
+    along with properties to access project issue specifics.
     """
     def __init__(self):
         self.__number: int = 0
@@ -63,9 +57,9 @@ class ProjectIssue:
         """
         Loads the project issue data from the provided JSON and GithubProject object.
 
-        Args:
-            issue_json (dict): The JSON data of the project issue.
-            project (GithubProject): The GithubProject object representing the project the issue belongs to.
+        @param: issue_json: The JSON data of the project issue.
+        @param: project: The GithubProject object representing the project the issue belongs to.
+        @return: The ProjectIssue object with the loaded data.
         """
         self.__number = issue_json["content"]["number"]
         self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]

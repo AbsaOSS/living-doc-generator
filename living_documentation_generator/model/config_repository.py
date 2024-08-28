@@ -15,20 +15,14 @@
 #
 
 """
-This module contains the ConfigRepository class which represents the configuration for a GH repository
-to fetch data from. The class provides loading logic and properties to access all the details.
+This module contains a data container for Config Repository, which holds all the essential logic.
 """
 
 
 class ConfigRepository:
     """
     A class representing the configuration for a GH repository to fetch data from.
-
-    Attributes:
-        __organization_name (str): The name of the organization that owns the repository.
-        __repository_name (str): The name of the repository.
-        __query_labels (list[str | None]): List of labels to query for.
-        __projects_title_filter (list[str | None]): List of project titles to filter for.
+    The class provides loading logic and properties to access all the details.
     """
     def __init__(self):
         self.__organization_name: str = ""
@@ -60,8 +54,8 @@ class ConfigRepository:
         """
         Load the configuration from a JSON object.
 
-        Args:
-            repository_json (dict): The JSON object containing the repo configuration.
+        @param repository_json: The JSON object containing the repository configuration.
+        @return: None
         """
         self.__organization_name = repository_json["organization-name"]
         self.__repository_name = repository_json["repository-name"]
