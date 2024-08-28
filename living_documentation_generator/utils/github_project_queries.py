@@ -15,7 +15,7 @@
 #
 
 """
-This module contains the GithubProjectQueries class which is responsible for formating the GitHub GraphQL queries.
+This module contains methods for formating the GitHub GraphQL queries.
 """
 
 from living_documentation_generator.utils.constants import (

@@ -30,16 +30,21 @@ def make_issue_key(organization_name: str, repository_name: str, issue_number: i
     """
     Create a unique string key for identifying the issue.
 
-    Args:
-        organization_name (str): The name of the organization where issue is located at.
-        repository_name (str): The name of the repository where issue is located at.
-        issue_number (int): The number of the issue.
+    @param organization_name: The name of the organization where issue is located at.
+    @param repository_name: The name of the repository where issue is located at.
+    @param issue_number: The number of the issue.
+    @return: The unique string key for the issue.
     """
     return f"{organization_name}/{repository_name}/{issue_number}"
 
 
 def sanitize_filename(filename: str) -> str:
-    """Sanitize the provided filename by removing invalid characters."""
+    """
+    Sanitize the provided filename by removing invalid characters.
+
+    @param filename: The filename to sanitize.
+    @return: The sanitized filename
+    """
     # Remove invalid characters for Windows filenames
     sanitized_name = re.sub(r'[<>:"/|?*`]', "", filename)
     # Reduce consecutive periods
@@ -53,22 +58,43 @@ def sanitize_filename(filename: str) -> str:
 
 
 def make_absolute_path(path: str) -> str:
-    """Convert the provided path to an absolute path."""
+    """
+    Convert the provided path to an absolute path.
+
+    @param path: The path to convert.
+    @return: The absolute path.
+    """
     # If the path is already absolute, return it as is
     if os.path.isabs(path):
         return path
     # Otherwise, convert the relative path to an absolute path
     return os.path.abspath(path)
 
+
 # Github
 def get_action_input(name: str, default: str = None) -> str:
-    """Get the input value from the environment variables."""
+    """
+    Get the input value from the environment variables.
+
+    @param name: The name of the input parameter.
+    @param default: The default value to return if the environment variable is not set.
+    @return: The value of the specified input parameter, or an empty string
+    """
     return os.getenv(f"INPUT_{name}", default)
 
 
-# pylint: disable=fixme
 def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:
-    """TODO: IDK"""
+    """
+    Write an action output to a file in the format expected by GitHub Actions.
+
+    This function writes the output in a specific format that includes the name of the
+    output and its value. The output is appended to the specified file.
+
+    @param name: The name of the output parameter.
+    @param value: The value of the output parameter.
+    @param default_output_path: The default file path to which the output is written if the
+    @return: None
+    """
     output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
     with open(output_file, "a", encoding="utf-8") as f:
         # Write the multiline output to the file
@@ -78,8 +104,13 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
 
 
 # pylint: disable=fixme
-def set_action_failed(message: str):
-    """Set the action as failed with the provided message."""
+def set_action_failed(message: str) -> None:
+    """
+    Set the action as failed with the provided message.
+
+    @param message: The error message to display.
+    @return: None
+    """
     # TODO: might need a print value to work: check again at Integration testing
     logger.error("::error:: %s", message)
     sys.exit(1)

@@ -15,7 +15,7 @@
 #
 
 """
-This module contains a function to set up logging in the project.
+This module contains a method to set up logging in the project.
 """
 
 import logging
@@ -23,7 +23,11 @@ import os
 
 
 def setup_logging() -> None:
-    """Set up the logging configuration in the project"""
+    """
+    Set up the logging configuration in the project
+
+    @return: None
+    """
     # Load logging configuration from the environment variables
     is_verbose_logging: bool = os.getenv("INPUT_VERBOSE_LOGGING", "false").lower() == "true"
     is_debug_mode = os.getenv("RUNNER_DEBUG", "0") == "1"

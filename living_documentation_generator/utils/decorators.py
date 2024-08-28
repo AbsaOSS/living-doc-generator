@@ -15,8 +15,8 @@
 #
 
 """
-This module contains decorators for adding debug logging to method calls and for creating rate-limited
-safe call functions.
+This module contains decorators for adding debug logging to method calls
+and for creating rate-limited safe call functions.
 """
 
 import logging
@@ -30,7 +30,12 @@ logger = logging.getLogger(__name__)
 
 
 def debug_log_decorator(method: Callable) -> Callable:
-    """Decorator to add debug logging for a method call."""
+    """
+    Decorator to add debug logging for a method call.
+
+    @param method: The method to decorate.
+    @return: The decorated method.
+    """
 
     @wraps(method)
     def wrapped(*args, **kwargs) -> Optional[Any]:
@@ -47,8 +52,13 @@ def debug_log_decorator(method: Callable) -> Callable:
     return wrapped
 
 
-def safe_call_decorator(rate_limiter: GithubRateLimiter):
-    """Decorator factory to create a rate-limited safe call function."""
+def safe_call_decorator(rate_limiter: GithubRateLimiter) -> Callable:
+    """
+    Decorator factory to create a rate-limited safe call function.
+
+    @param rate_limiter: The rate limiter to use.
+    @return: The decorator.
+    """
 
     def decorator(method: Callable) -> Callable:
         # Note: Keep log decorator first to log correct method name.

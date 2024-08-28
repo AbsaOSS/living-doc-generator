@@ -15,8 +15,7 @@
 #
 
 """
-This module contains the GithubRateLimiter class which acts as a rate limiter for GitHub API calls.
-The class provides a method for wrapping other methods to ensure they respect the GitHub API rate limit.
+This module contains a GitHub Rate Limiter methods, which acts as a rate limiter for GitHub API calls.
 """
 
 import logging
@@ -34,9 +33,6 @@ class GithubRateLimiter:
     """
     A class that acts as a rate limiter for GitHub API calls.
 
-    Attributes:
-        __github_client (GitHub): The GitHub client used to make API calls.
-
     Note:
         This class is used as a callable class, hence the `__call__` method.
     """
@@ -49,6 +45,12 @@ class GithubRateLimiter:
         return self.__github_client
 
     def __call__(self, method: Callable) -> Callable:
+        """
+        Wraps the provided method to ensure it respects the GitHub API rate limit.
+
+        @param method: The method to wrap.
+        @return: The wrapped method.
+        """
         def wrapped_method(*args, **kwargs) -> Optional[Any]:
             rate_limit = self.github_client.get_rate_limit().core
             remaining_calls = rate_limit.remaining
