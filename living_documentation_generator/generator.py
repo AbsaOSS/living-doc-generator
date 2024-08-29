@@ -23,6 +23,7 @@ import os
 import shutil
 
 from datetime import datetime
+from typing import Callable
 
 from github import Github, Auth
 from github.Issue import Issue
@@ -40,6 +41,8 @@ from living_documentation_generator.utils.constants import (
     ISSUE_STATE_ALL,
     LINKED_TO_PROJECT_TRUE,
     LINKED_TO_PROJECT_FALSE,
+    TABLE_HEADER_WITH_PROJECT_DATA,
+    TABLE_HEADER_WITHOUT_PROJECT_DATA,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,8 +57,8 @@ class LivingDocumentationGenerator:
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md")
-    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
+    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "issue_detail_page_template.md")
+    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_page_template.md")
 
     def __init__(
         self,
@@ -65,10 +68,10 @@ class LivingDocumentationGenerator:
         output_path: str,
     ):
 
-        self.__github_instance = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
-        self.__github_projects_instance = GithubProjects(token=github_token)
-        self.__rate_limiter = GithubRateLimiter(self.__github_instance)
-        self.__safe_call = safe_call_decorator(self.__rate_limiter)
+        self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
+        self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
+        self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
+        self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
 
         # data
         self.__repositories: list[ConfigRepository] = repositories
@@ -86,7 +89,7 @@ class LivingDocumentationGenerator:
 
     @property
     def repositories(self) -> list[ConfigRepository]:
-        """Getter of the list of config repositories objects to fetch from."""
+        """Getter of the list of config repository objects to fetch from."""
         return self.__repositories
 
     @property
@@ -285,11 +288,21 @@ class LivingDocumentationGenerator:
 
         @param issues: A dictionary containing all consolidated issues.
         """
-        with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-            issue_page_detail_template = f.read()
+        issue_page_detail_template = None
+        issue_index_page_template = None
 
-        with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-            issue_index_page_template = f.read()
+        # Load the template files for generating the Markdown pages
+        try:
+            with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
+                issue_page_detail_template = f.read()
+        except IOError:
+            logger.error("Issue page template file was not successfully loaded.", exc_info=True)
+
+        try:
+            with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
+                issue_index_page_template = f.read()
+        except IOError:
+            logger.error("Index page template file was not successfully loaded.", exc_info=True)
 
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
@@ -347,17 +360,9 @@ class LivingDocumentationGenerator:
         """
 
         # Initializing the issue table header based on the project mining state
-        if self.__project_state_mining_enabled:
-            issue_table = (
-                "| Organization name | Repository name | Issue 'Number - Title' |"
-                " Linked to project | Project status | Issue URL |\n"
-                "|-------------------|-----------------|------------------------|"
-                "-------------------|----------------|-----------|\n"
-            )
-        else:
-            issue_table = """| Organization name | Repository name | Issue 'Number - Title' | Issue state | Issue URL |
-                             |-------------------|-----------------|------------------------|-------------|-----------|
-                          """
+        issue_table = (
+            TABLE_HEADER_WITH_PROJECT_DATA if self.__project_state_mining_enabled else TABLE_HEADER_WITHOUT_PROJECT_DATA
+        )
 
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues.values():
@@ -462,7 +467,15 @@ class LivingDocumentationGenerator:
             project_status = consolidated_issue.project_status
 
             if consolidated_issue.linked_to_project:
-                headers.extend(["Project title", "Status", "Priority", "Size", "MoSCoW"])
+                headers.extend(
+                    [
+                        "Project title",
+                        "Status",
+                        "Priority",
+                        "Size",
+                        "MoSCoW",
+                    ]
+                )
 
                 values.extend(
                     [

@@ -24,8 +24,8 @@ from living_documentation_generator.model.project_status import ProjectStatus
 
 class ProjectIssue:
     """
-    A class representing a Project Issue and is responsible for correct loading issue data,
-    along with properties to access project issue specifics.
+    A class representing a Project Issue and is responsible for receiving, managing
+    response data, along with properties to access project issue specifics.
     """
 
     def __init__(self):

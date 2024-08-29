@@ -41,61 +41,72 @@ PROJECTS_FROM_REPO_QUERY = """
                 }}
                 """
 ISSUES_FROM_PROJECT_QUERY = """
-        query {{
-          node(id: "{project_id}") {{
-            ... on ProjectV2 {{
-              items(first: {issues_per_page}, {after_argument}) {{
-                pageInfo {{
-                  endCursor
-                  hasNextPage
-                }}
-                nodes {{
-                  content {{
-                      ... on Issue {{
-                        title
-                        state
-                        number
-                        repository {{
-                          name
-                          owner {{
-                            login
+                query {{
+                  node(id: "{project_id}") {{
+                    ... on ProjectV2 {{
+                      items(first: {issues_per_page}, {after_argument}) {{
+                        pageInfo {{
+                          endCursor
+                          hasNextPage
+                        }}
+                        nodes {{
+                          content {{
+                              ... on Issue {{
+                                title
+                                state
+                                number
+                                repository {{
+                                  name
+                                  owner {{
+                                    login
+                                  }}
+                                }}
+                              }}
+                            }}
+                          fieldValues(first: 100) {{
+                            nodes {{
+                              __typename
+                              ... on ProjectV2ItemFieldSingleSelectValue {{
+                                name
+                              }}
+                            }}
                           }}
                         }}
                       }}
                     }}
-                  fieldValues(first: 100) {{
-                    nodes {{
-                      __typename
-                      ... on ProjectV2ItemFieldSingleSelectValue {{
-                        name
-                      }}
-                    }}
                   }}
                 }}
-              }}
-            }}
-          }}
-        }}
-        """
+                """
 PROJECT_FIELD_OPTIONS_QUERY = """
-            query {{
-              repository(owner: "{organization_name}", name: "{repository_name}") {{
-                projectV2(number: {project_number}) {{
-                  title
-                  fields(first: 100) {{
-                    nodes {{
-                      ... on ProjectV2SingleSelectField {{
-                        name
-                        options {{
-                          name
+                query {{
+                  repository(owner: "{organization_name}", name: "{repository_name}") {{
+                    projectV2(number: {project_number}) {{
+                      title
+                      fields(first: 100) {{
+                        nodes {{
+                          ... on ProjectV2SingleSelectField {{
+                            name
+                            options {{
+                              name
+                            }}
+                          }}
                         }}
                       }}
                     }}
                   }}
                 }}
-              }}
-            }}
-            """
+                """
+
+# Table headers for Index page
+TABLE_HEADER_WITH_PROJECT_DATA = """
+| Organization name | Repository name | Issue 'Number - Title' |Linked to project | Project status | Issue URL |
+|-------------------|-----------------|------------------------|------------------|----------------|-----------|
+"""
+TABLE_HEADER_WITHOUT_PROJECT_DATA = """
+| Organization name | Repository name | Issue 'Number - Title' | Issue state | Issue URL |
+|-------------------|-----------------|------------------------|-------------|-----------|
+"""
+
 
 # Symbol, when no project is attached to an issue
 NO_PROJECT_DATA = "---"

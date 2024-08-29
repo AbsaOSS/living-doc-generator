@@ -92,11 +92,11 @@ class GithubProjects:
     def get_repository_projects(self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
         """
         Fetch all projects attached to a given repository using a GraphQL query. Based on the response create
-        GitHub project objects and return them in a list.
+        GitHub project instances and return them in a list.
 
-        @param repository: The repository object to fetch projects from.
+        @param repository: The repository instance to fetch projects from.
         @param projects_title_filter: The list of project titles to filter for.
-        @return: A list of GitHub project objects.
+        @return: A list of GitHub project instances.
         """
         projects = []
 
@@ -142,7 +142,7 @@ class GithubProjects:
                     )
                     field_option_response = self.__send_graphql_query(project_field_options_query)
 
-                    # Create the GitHub project object and add it to the output list
+                    # Create the GitHub project instance and add it to the output list
                     project = GithubProject().loads(project_json, repository, field_option_response)
                     if project not in projects:
                         projects.append(project)
