@@ -24,10 +24,7 @@ import logging
 import sys
 
 from living_documentation_generator.model.config_repository import ConfigRepository
-from living_documentation_generator.utils.utils import (
-    get_action_input,
-    make_absolute_path,
-)
+from living_documentation_generator.utils.utils import get_action_input, make_absolute_path
 from living_documentation_generator.utils.constants import (
     GITHUB_TOKEN,
     PROJECT_STATE_MINING,
@@ -43,6 +40,7 @@ class ActionInputs:
     A class representing all the action inputs. It is responsible for loading, managing
     and validating the inputs required for running the GH Action.
     """
+
     def __init__(self):
         self.__github_token: str = ""
         self.__is_project_state_mining_enabled: bool = False
@@ -77,16 +75,14 @@ class ActionInputs:
         @return: The instance of the ActionInputs class.
         """
         self.__github_token = get_action_input(GITHUB_TOKEN)
-        self.__is_project_state_mining_enabled = (
-            get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
-        )
+        self.__is_project_state_mining_enabled = get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
         out_path = get_action_input(OUTPUT_PATH, "./output")
         self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input(REPOSITORIES, "")
 
-        logger.debug('Is project state mining allowed: %s.', self.is_project_state_mining_enabled)
-        logger.debug('JSON repositories to fetch from: %s.', repositories_json)
-        logger.debug('Output directory: %s.', self.output_directory)
+        logger.debug("Is project state mining allowed: %s.", self.is_project_state_mining_enabled)
+        logger.debug("JSON repositories to fetch from: %s.", repositories_json)
+        logger.debug("Output directory: %s.", self.output_directory)
 
         # Validate inputs
         if validate:

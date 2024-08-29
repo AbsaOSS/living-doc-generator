@@ -26,6 +26,7 @@ class ProjectStatus:
     A class representing the project status of an issue is responsible for access
     and change project issue status specifics.
     """
+
     def __init__(self):
         self.__project_title: str = ""
         self.__status: str = NO_PROJECT_DATA

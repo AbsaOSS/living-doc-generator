@@ -27,9 +27,11 @@ from living_documentation_generator.utils.utils import set_action_output
 from living_documentation_generator.utils.logging_config import setup_logging
 
 
-def run():
+def run() -> None:
     """
     The main function to run the Living Documentation Generator.
+
+    @return: None
     """
     setup_logging()
     logger = logging.getLogger(__name__)
@@ -49,10 +51,7 @@ def run():
 
     # Set the output for the GitHub Action
     set_action_output("output-path", generator.output_path)
-    logger.info(
-        "Living Documentation generation - output path set to `%s`.",
-        generator.output_path,
-    )
+    logger.info("Living Documentation generation - output path set to `%s`.", generator.output_path)
 
     logger.info("Living Documentation generation completed.")
 

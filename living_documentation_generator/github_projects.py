@@ -40,6 +40,7 @@ class GithubProjects:
     The class handles the logic of initializing request session, sending GraphQL queries
     and processes the responses.
     """
+
     def __init__(self, token: str):
         self.__token = token
         self.__session = None
@@ -100,27 +101,25 @@ class GithubProjects:
         projects = []
 
         # Fetch the project response from the GraphQL API
-        projects_from_repo_query = get_projects_from_repo_query(organization_name=repository.owner.login,
-                                                                repository_name=repository.name)
+        projects_from_repo_query = get_projects_from_repo_query(
+            organization_name=repository.owner.login, repository_name=repository.name
+        )
 
         projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
 
         if projects_from_repo_response is None:
-            logger.warning("Fetching GitHub project data - no project data for repository %s. No data received.",
-                           repository.full_name
-                           )
+            logger.warning(
+                "Fetching GitHub project data - no project data for repository %s. No data received.",
+                repository.full_name,
+            )
             return projects
 
         # This will return `None` at any point if a key is missing or if the data is not found
-        projects_from_repo_nodes = (
-            projects_from_repo_response
-            .get("repository", {})
-            .get("projectsV2", {})
-            .get("nodes"))
+        projects_from_repo_nodes = projects_from_repo_response.get("repository", {}).get("projectsV2", {}).get("nodes")
 
         # If response is not None, parse the project response
         if projects_from_repo_nodes is not None:
-            projects_from_repo_nodes = projects_from_repo_response['repository']['projectsV2']['nodes']
+            projects_from_repo_nodes = projects_from_repo_response["repository"]["projectsV2"]["nodes"]
 
             for project_json in projects_from_repo_nodes:
                 # Check if the project is required based on the configuration filter
@@ -139,7 +138,8 @@ class GithubProjects:
                     project_field_options_query = get_project_field_options_query(
                         organization_name=repository.owner.login,
                         repository_name=repository.name,
-                        project_number=project_number)
+                        project_number=project_number,
+                    )
                     field_option_response = self.__send_graphql_query(project_field_options_query)
 
                     # Create the GitHub project object and add it to the output list
@@ -151,10 +151,7 @@ class GithubProjects:
             logger.warning("Repository information is not present in the response")
 
         if not projects:
-            logger.info(
-                "Fetching GitHub project data - no project data for repository `%s`.",
-                repository.full_name,
-            )
+            logger.info("Fetching GitHub project data - no project data for repository `%s`.", repository.full_name)
 
         return projects
 
@@ -176,8 +173,7 @@ class GithubProjects:
 
             # Fetch project issues via GraphQL query
             issues_from_project_query = get_issues_from_project_query(
-                project_id=project.id,
-                after_argument=after_argument,
+                project_id=project.id, after_argument=after_argument
             )
 
             project_issues_response = self.__send_graphql_query(issues_from_project_query)
@@ -192,19 +188,13 @@ class GithubProjects:
 
             # Extend project issues list per every page during pagination
             project_issues_raw.extend(project_issue_data)
-            logger.debug(
-                "Loaded `%s` issues from project: %s.",
-                len(project_issue_data), project.title,
-            )
+            logger.debug("Loaded `%s` issues from project: %s.", len(project_issue_data), project.title)
 
             # Check for closing the pagination process
             if not page_info["hasNextPage"]:
                 break
             cursor = page_info["endCursor"]
 
-        project_issues = [
-            ProjectIssue().loads(issue_json, project)
-            for issue_json in project_issues_raw
-        ]
+        project_issues = [ProjectIssue().loads(issue_json, project) for issue_json in project_issues_raw]
 
         return project_issues

@@ -32,6 +32,7 @@ class ConsolidatedIssue:
     It provides methods for updating project data and generating page filenames,
     along with properties to access consolidated issue details.
     """
+
     def __init__(self, repository_id: str, repository_issue: Issue = None):
         # save issue from repository (got from GitHub library & keep connection to repository for lazy loading)
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage

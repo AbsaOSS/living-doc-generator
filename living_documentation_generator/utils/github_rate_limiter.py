@@ -37,6 +37,7 @@ class GithubRateLimiter:
     Note:
         This class is used as a callable class, hence the `__call__` method.
     """
+
     def __init__(self, github_client: Github):
         self.__github_client: Github = github_client
 
@@ -52,6 +53,7 @@ class GithubRateLimiter:
         @param method: The method to wrap.
         @return: The wrapped method.
         """
+
         def wrapped_method(*args, **kwargs) -> Optional[Any]:
             rate_limit = self.github_client.get_rate_limit().core
             remaining_calls = rate_limit.remaining
@@ -65,9 +67,7 @@ class GithubRateLimiter:
                     reset_time += 3600  # Add 1 hour in seconds
                     sleep_time = reset_time - now
 
-                total_sleep_time = (
-                    sleep_time + 5
-                )  # Total sleep time including the additional 5 seconds
+                total_sleep_time = sleep_time + 5  # Total sleep time including the additional 5 seconds
                 hours, remainder = divmod(total_sleep_time, 3600)
                 minutes, seconds = divmod(remainder, 60)
 
@@ -78,9 +78,7 @@ class GithubRateLimiter:
                     int(seconds),
                     datetime.fromtimestamp(reset_time).strftime("%Y-%m-%d %H:%M:%S"),
                 )
-                time.sleep(
-                    sleep_time + 5
-                )  # Sleep for the calculated time plus 5 seconds
+                time.sleep(sleep_time + 5)  # Sleep for the calculated time plus 5 seconds
 
             return method(*args, **kwargs)
 

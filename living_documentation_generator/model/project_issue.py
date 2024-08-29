@@ -27,6 +27,7 @@ class ProjectIssue:
     A class representing a Project Issue and is responsible for correct loading issue data,
     along with properties to access project issue specifics.
     """
+
     def __init__(self):
         self.__number: int = 0
         self.__organization_name: str = ""
@@ -53,7 +54,7 @@ class ProjectIssue:
         """Getter of the project issue status."""
         return self.__project_status
 
-    def loads(self, issue_json: dict, project: GithubProject) -> 'ProjectIssue':
+    def loads(self, issue_json: dict, project: GithubProject) -> "ProjectIssue":
         """
         Loads the project issue data from the provided JSON and GithubProject object.
 

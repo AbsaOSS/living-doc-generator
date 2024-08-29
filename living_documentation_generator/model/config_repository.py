@@ -24,6 +24,7 @@ class ConfigRepository:
     A class representing the configuration for a GH repository to fetch data from.
     The class provides loading logic and properties to access all the details.
     """
+
     def __init__(self):
         self.__organization_name: str = ""
         self.__repository_name: str = ""

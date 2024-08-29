@@ -30,6 +30,7 @@ class GithubProject:
     A class representing GitHub Project is responsible for loading JSON format data,
     fetching project field options, along with properties to access project specifics.
     """
+
     def __init__(self):
         self.__id: str = ""
         self.__number: int = 0
@@ -62,10 +63,7 @@ class GithubProject:
         """Getter of the project field options."""
         return self.__field_options
 
-    def loads(self,
-              project_json: dict,
-              repository: Repository,
-              field_option_response: dict) -> 'GithubProject':
+    def loads(self, project_json: dict, repository: Repository, field_option_response: dict) -> "GithubProject":
         """
         Load the project data from several inputs.
 
@@ -94,10 +92,11 @@ class GithubProject:
         try:
             field_options_nodes = field_option_response["repository"]["projectV2"]["fields"]["nodes"]
         except KeyError:
-            logger.error("There is no expected response structure for field options fetched from project: %s",
-                         self.title,
-                         exc_info=True
-                         )
+            logger.error(
+                "There is no expected response structure for field options fetched from project: %s",
+                self.title,
+                exc_info=True,
+            )
             return
 
         for field_option in field_options_nodes:
