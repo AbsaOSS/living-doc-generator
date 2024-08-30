@@ -344,7 +344,10 @@ This project uses the Black tool for code formatting.
 Black aims for consistency, generality, readability and reducing git diffs.
 The coding style used can be viewed as a strict subset of PEP 8.
 
-Follow these steps to run Pylint check locally:
+The project root file `pyproject.toml` defines the Black tool configuration.
+In this project we are accepting the line length of 120 characters.
+
+Follow these steps to format your code with Black locally:
 
 ### Set Up Python Environment
 From terminal in the root of the project, run the following command:
