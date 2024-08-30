@@ -339,6 +339,16 @@ Example:
 pylint living_documentation_generator/generator.py
 ``` 
 
+### Expected Output
+This is the console expected output example after running the tool:
+```
+************* Module main
+main.py:30:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+------------------------------------------------------------------
+Your code has been rated at 9.41/10 (previous run: 8.82/10, +0.59)
+```
+
 ## Run Black Tool Locally
 This project uses the Black tool for code formatting.
 Black aims for consistency, generality, readability and reducing git diffs.
@@ -374,6 +384,7 @@ black living_documentation_generator/generator.py
 ``` 
 
 ### Expected Output
+This is the console expected output example after running the tool:
 ```
 All done! ✨ 🍰 ✨
 1 file reformatted.
