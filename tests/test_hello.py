@@ -1,6 +1,7 @@
 import unittest
 import sys
-sys.path.append('living_documentation_generator')  # Adjust path to include the directory where hello.py is located
+
+sys.path.append("living_documentation_generator")  # Adjust path to include the directory where hello.py is located
 
 
 class TestHelloWorld(unittest.TestCase):
@@ -11,5 +12,5 @@ class TestHelloWorld(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

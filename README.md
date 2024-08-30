@@ -15,6 +15,7 @@
 - [Project Setup](#project-setup)
 - [Run Scripts Locally](#run-scripts-locally)
 - [Run Pylint Check Locally](#run-pylint-check-locally)
+- [Run Black Tool Locally](#run-black-tool-locally)
 - [Run unit test](#run-unit-test)
 - [Deployment](#deployment)
 - [Features](#features)
@@ -150,7 +151,7 @@ Configure the action by customizing the following parameters based on your needs
     ]'
     ```
 
-### Features de/activation
+### Features De/Activation
 - **project-state-mining** (optional, `default: false`)
   - **Description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).
   - **Usage**: Set to true to activate.
@@ -187,7 +188,7 @@ The Living Documentation Generator action provides a key output that allows user
 ## Expected Output
 The Living Documentation Generator is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
 
-### Index page example
+### Index Page Example
 
 ```markdown
 # Issue Summary page
@@ -209,7 +210,7 @@ Here, you'll find a summarized list of all these issues, their brief description
 These values can vary from project to project.
 - The `---` symbol is used to indicate that an issue has no required project data.
 
-### Issue page example
+### Issue Page Example
 
 ```markdown
 # FEAT: Advanced Book Search
@@ -255,7 +256,7 @@ pip install -r requirements.txt
 ## Run Scripts Locally
 If you need to run the scripts locally, follow these steps:
 
-### Create the shell script
+### Create the Shell Script
 Create the shell file in the root directory. We will use `run_script.sh`.
 ```shell
 touch run_script.sh
@@ -265,7 +266,7 @@ Add the shebang line at the top of the sh script file.
 #!/bin/sh
 ```
 
-### Set the environment variables
+### Set the Environment Variables
 Set the configuration environment variables in the shell script following the structure below. 
 Also make sure that the GITHUB_TOKEN is configured in your environment variables.
 ```
@@ -338,20 +339,57 @@ Example:
 pylint living_documentation_generator/generator.py
 ``` 
 
-## Run unit test
+## Run Black Tool Locally
+This project uses the Black tool for code formatting.
+Black aims for consistency, generality, readability and reducing git diffs.
+The coding style used can be viewed as a strict subset of PEP 8.
+
+Follow these steps to run Pylint check locally:
+
+### Set Up Python Environment
+From terminal in the root of the project, run the following command:
+
+```shell
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+This command will also install a Black tool, since it is listed in the project requirements.
+
+### Run Black
+Run Black on all files that are currently tracked by Git in the project.
+```shell
+black $(git ls-files '*.py')
+```
+
+To run Black on a specific file, follow the pattern `black <path_to_file>/<name_of_file>.py`.
+
+Example:
+```shell
+black living_documentation_generator/generator.py
+``` 
+
+### Expected Output
+```
+All done! ✨ 🍰 ✨
+1 file reformatted.
+```
+
+## Run Unit Test
 TODO - check this chapter and update by latest state
-### Launch unit tests
+### Launch Unit Tests
 ```
 pytest
 ```
 
-### To run specific tests or get verbose output:
+### To Run Specific Tests or Get Verbose Output:
 ```
 pytest -v  # Verbose mode
 pytest path/to/test_file.py  # Run specific test file
 ```
 
-### To check Test Coverage:
+### To Check Test Coverage:
 ```
 pytest --cov=../scripts
 ```
