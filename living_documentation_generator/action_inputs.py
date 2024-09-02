@@ -25,9 +25,7 @@ import sys
 
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.utils.utils import get_action_input, make_absolute_path
-from living_documentation_generator.utils.constants import (GITHUB_TOKEN,
-
-                                                            PROJECT_STATE_MINING, REPOSITORIES, OUTPUT_PATH)
+from living_documentation_generator.utils.constants import GITHUB_TOKEN, PROJECT_STATE_MINING, REPOSITORIES, OUTPUT_PATH
 
 logger = logging.getLogger(__name__)
 
