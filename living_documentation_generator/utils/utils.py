@@ -95,15 +95,11 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
     @param default_output_path: The default file path to which the output is written if the
     @return: None
     """
-    output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
-    with open(output_file, "a", encoding="utf-8") as f:
-        # Write the multiline output to the file
-        f.write(f"{name}<<EOF\n")
-        f.write(f"{value}")
-        f.write("EOF\n")
+    output_file = os.getenv('GITHUB_OUTPUT', default_output_path)
+    with open(output_file, 'a') as f:
+        f.write(f'{name}={value}\n')
 
 
-# pylint: disable=fixme
 def set_action_failed(message: str) -> None:
     """
     Set the action as failed with the provided message.
@@ -111,6 +107,5 @@ def set_action_failed(message: str) -> None:
     @param message: The error message to display.
     @return: None
     """
-    # TODO: might need a print value to work: check again at Integration testing
     logger.error("::error:: %s", message)
     sys.exit(1)
