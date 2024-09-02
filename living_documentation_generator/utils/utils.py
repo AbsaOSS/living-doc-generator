@@ -95,9 +95,9 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
     @param default_output_path: The default file path to which the output is written if the
     @return: None
     """
-    output_file = os.getenv('GITHUB_OUTPUT', default_output_path)
-    with open(output_file, 'a') as f:
-        f.write(f'{name}={value}\n')
+    output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
+    with open(output_file, "a") as f:
+        f.write(f"{name}={value}\n")
 
 
 def set_action_failed(message: str) -> None:

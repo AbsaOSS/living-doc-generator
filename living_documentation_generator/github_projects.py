@@ -106,6 +106,7 @@ class GithubProjects:
         )
 
         projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
+        print(projects_from_repo_response)
 
         if projects_from_repo_response is None:
             logger.warning(
@@ -141,6 +142,7 @@ class GithubProjects:
                         project_number=project_number,
                     )
                     field_option_response = self.__send_graphql_query(project_field_options_query)
+                    print(field_option_response)
 
                     # Create the GitHub project instance and add it to the output list
                     project = GithubProject().loads(project_json, repository, field_option_response)
@@ -177,6 +179,7 @@ class GithubProjects:
             )
 
             project_issues_response = self.__send_graphql_query(issues_from_project_query)
+            print(project_issues_response)
 
             # Return empty list, if project has no issues attached
             if not project_issues_response:
