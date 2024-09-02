@@ -20,6 +20,7 @@ This module contains a method to set up logging in the project.
 
 import logging
 import os
+import sys
 
 
 def setup_logging() -> None:
@@ -38,4 +39,6 @@ def setup_logging() -> None:
         level=level,
         format="%(asctime)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[logging.StreamHandler(sys.stdout)],
     )
+    sys.stdout.flush()
