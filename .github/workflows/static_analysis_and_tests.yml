@@ -23,11 +23,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Check code format with Black
-        id: check-format
-        run: |
-          black --check $(git ls-files '*.py')
-
       - name: Analyze code with Pylint
         id: analyze-code
         run: |

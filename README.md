@@ -306,7 +306,7 @@ chmod +x run_script.sh
 ```
 
 ## Run Pylint Check Locally
-This project uses Pylint tool for static code analysis.
+This project uses [Pylint](https://pypi.org/project/pylint/) tool for static code analysis.
 Pylint analyses your code without actually running it.
 It checks for errors, enforces, coding standards, looks for code smells etc. 
 
@@ -350,7 +350,7 @@ Your code has been rated at 9.41/10 (previous run: 8.82/10, +0.59)
 ```
 
 ## Run Black Tool Locally
-This project uses the Black tool for code formatting.
+This project uses the [Black](https://github.com/psf/black) tool for code formatting.
 Black aims for consistency, generality, readability and reducing git diffs.
 The coding style used can be viewed as a strict subset of PEP 8.
 
