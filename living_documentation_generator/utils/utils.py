@@ -1,9 +1,23 @@
-"""Utility Functions
+#
+# Copyright 2024 ABSA Group Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-This script contains helper functions that are used across multiple living_documentation_generator in this project.
-
-These functions can be imported and used in other living_documentation_generator as needed.
 """
+This module contains utility functions used across the project.
+"""
+
 import os
 import re
 import sys
@@ -14,50 +28,75 @@ logger = logging.getLogger(__name__)
 
 def make_issue_key(organization_name: str, repository_name: str, issue_number: int) -> str:
     """
-       Creates a unique 3way string key for identifying every unique feature.
+    Create a unique string key for identifying the issue.
 
-       @return: The unique string key for the feature.
+    @param organization_name: The name of the organization where issue is located at.
+    @param repository_name: The name of the repository where issue is located at.
+    @param issue_number: The number of the issue.
+    @return: The unique string key for the issue.
     """
     return f"{organization_name}/{repository_name}/{issue_number}"
 
 
 def sanitize_filename(filename: str) -> str:
     """
-    Sanitizes the provided filename by removing invalid characters and replacing spaces with underscores.
+    Sanitize the provided filename by removing invalid characters.
 
-    @param filename: The filename to be sanitized.
-
-    @return: The sanitized filename.
+    @param filename: The filename to sanitize.
+    @return: The sanitized filename
     """
     # Remove invalid characters for Windows filenames
-    sanitized_name = re.sub(r'[<>:"/|?*`]', '', filename)
+    sanitized_name = re.sub(r'[<>:"/|?*`]', "", filename)
     # Reduce consecutive periods
-    sanitized_name = re.sub(r'\.{2,}', '.', sanitized_name)
+    sanitized_name = re.sub(r"\.{2,}", ".", sanitized_name)
     # Reduce consecutive spaces to a single space
-    sanitized_name = re.sub(r' {2,}', ' ', sanitized_name)
+    sanitized_name = re.sub(r" {2,}", " ", sanitized_name)
     # Replace space with '_'
-    sanitized_name = sanitized_name.replace(' ', '_')
+    sanitized_name = sanitized_name.replace(" ", "_")
 
     return sanitized_name
 
 
-def make_absolute_path(path):
+def make_absolute_path(path: str) -> str:
+    """
+    Convert the provided path to an absolute path.
+
+    @param path: The path to convert.
+    @return: The absolute path.
+    """
     # If the path is already absolute, return it as is
     if os.path.isabs(path):
         return path
     # Otherwise, convert the relative path to an absolute path
     return os.path.abspath(path)
 
+
 # Github
-
-
 def get_action_input(name: str, default: str = None) -> str:
+    """
+    Get the input value from the environment variables.
+
+    @param name: The name of the input parameter.
+    @param default: The default value to return if the environment variable is not set.
+    @return: The value of the specified input parameter, or an empty string
+    """
     return os.getenv(f"INPUT_{name}", default)
 
 
-def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt"):
+def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:
+    """
+    Write an action output to a file in the format expected by GitHub Actions.
+
+    This function writes the output in a specific format that includes the name of the
+    output and its value. The output is appended to the specified file.
+
+    @param name: The name of the output parameter.
+    @param value: The value of the output parameter.
+    @param default_output_path: The default file path to which the output is written if the
+    @return: None
+    """
     output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
-    with open(output_file, 'a', encoding='utf-8') as f:
+    with open(output_file, "a", encoding="utf-8") as f:
         # Write the multiline output to the file
         f.write(f"{name}<<EOF\n")
         f.write(f"{value}")
@@ -65,7 +104,13 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
 
 
 # pylint: disable=fixme
-def set_action_failed(message: str):
+def set_action_failed(message: str) -> None:
+    """
+    Set the action as failed with the provided message.
+
+    @param message: The error message to display.
+    @return: None
+    """
     # TODO: might need a print value to work: check again at Integration testing
     logger.error("::error:: %s", message)
     sys.exit(1)

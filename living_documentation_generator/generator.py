@@ -1,39 +1,77 @@
+# Copyright 2024 ABSA Group Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+"""
+This module contains the LivingDocumentationGenerator class which is responsible for generating
+the Living Documentation output.
+"""
+
 import logging
 import os
 import shutil
 
 from datetime import datetime
+from typing import Callable
 
 from github import Github, Auth
 from github.Issue import Issue
 
 from living_documentation_generator.github_projects import GithubProjects
+from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.decorators import safe_call_decorator
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 from living_documentation_generator.utils.utils import make_issue_key
-from living_documentation_generator.utils.constants import (ISSUES_PER_PAGE_LIMIT, ISSUE_STATE_ALL,
-                                                            LINKED_TO_PROJECT_TRUE, LINKED_TO_PROJECT_FALSE)
+from living_documentation_generator.utils.constants import (
+    ISSUES_PER_PAGE_LIMIT,
+    ISSUE_STATE_ALL,
+    LINKED_TO_PROJECT_TRUE,
+    LINKED_TO_PROJECT_FALSE,
+    TABLE_HEADER_WITH_PROJECT_DATA,
+    TABLE_HEADER_WITHOUT_PROJECT_DATA,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class LivingDocumentationGenerator:
+    """
+    A class representing the Living Documentation Generator.
+    The class uses several helper methods to fetch required data from GitHub, consolidate the data
+    and generate the markdown pages as the output of Living Documentation action.
+    """
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "issue_detail_page_template.md")
-    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, "..", "templates", "_index_page_template.md")
+    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "issue_detail_page_template.md")
+    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_page_template.md")
 
-    def __init__(self, github_token: str, repositories: list[ConfigRepository], project_state_mining_enabled: bool,
-                 output_path: str):
+    def __init__(
+        self,
+        github_token: str,
+        repositories: list[ConfigRepository],
+        project_state_mining_enabled: bool,
+        output_path: str,
+    ):
 
-        self.github_instance = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
-        self.github_projects_instance = GithubProjects(token=github_token)
-        self.rate_limiter = GithubRateLimiter(self.github_instance)
-        self.safe_call = safe_call_decorator(self.rate_limiter)
+        self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
+        self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
+        self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
+        self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
 
         # data
         self.__repositories: list[ConfigRepository] = repositories
@@ -45,18 +83,31 @@ class LivingDocumentationGenerator:
         self.__output_path: str = output_path
 
     @property
+    def github_instance(self) -> Github:
+        """Getter of the GitHub instance."""
+        return self.__github_instance
+
+    @property
     def repositories(self) -> list[ConfigRepository]:
+        """Getter of the list of config repository objects to fetch from."""
         return self.__repositories
 
     @property
     def project_state_mining_enabled(self) -> bool:
+        """Getter of the project state mining switch."""
         return self.__project_state_mining_enabled
 
     @property
     def output_path(self) -> str:
+        """Getter of the output directory."""
         return self.__output_path
 
-    def generate(self):
+    def generate(self) -> None:
+        """
+        Generate the Living Documentation markdown pages output.
+
+        @return: None
+        """
         self._clean_output_directory()
         logger.debug("Output directory cleaned.")
 
@@ -72,59 +123,87 @@ class LivingDocumentationGenerator:
         # Note: got dict of project issues with unique string key defying the issue
         logger.info("Fetching GitHub project data - finished.")
 
-        # Consolidate all issues data together
+        # Consolidate all issue data together
         logger.info("Issue and project data consolidation - started.")
-        projects_issues = self._consolidate_issues_data(repository_issues, project_issues)
+        consolidated_issues = self._consolidate_issues_data(repository_issues, project_issues)
         logger.info("Issue and project data consolidation - finished.")
 
         # Generate markdown pages
         logger.info("Markdown page generation - started.")
-        self._generate_markdown_pages(projects_issues)
+        self._generate_markdown_pages(consolidated_issues)
         logger.info("Markdown page generation - finished.")
 
-    def _clean_output_directory(self):
+    def _clean_output_directory(self) -> None:
+        """
+        Clean the output directory from the previous run.
+
+        @return: None
+        """
         if os.path.exists(self.output_path):
             shutil.rmtree(self.output_path)
         os.makedirs(self.output_path)
 
     def _fetch_github_issues(self) -> dict[str, list[Issue]]:
+        """
+        Fetch GitHub repository issues using the GitHub library. Only issues with correct labels are fetched,
+        if no labels are defined in the configuration, all repository issues are fetched.
+
+        @return: A dictionary containing repository issue objects with unique key.
+        """
         issues = {}
         total_issues_number = 0
 
-        # Mine issues from every config repository
+        # Run the fetching logic for every config repository
         for config_repository in self.repositories:
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
-            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.__safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
             logger.info("Fetching repository GitHub issues - from `%s`.", repository.full_name)
 
-            # Load all issues from one repository (unique for each repository) and save it under repository id
+            # If the query labels are not defined, fetch all issues from the repository
             if not config_repository.query_labels:
                 logger.debug("Fetching all issues in the repository")
-                issues[repository_id] = self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
+                issues[repository_id] = self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
                 amount_of_issues_per_repo = len(issues[repository_id])
-                logger.debug("Fetched `%s` repository issues (%s)`.", amount_of_issues_per_repo, repository.full_name)
+                logger.debug(
+                    "Fetched `%s` repository issues (%s)`.",
+                    amount_of_issues_per_repo,
+                    repository.full_name,
+                )
             else:
+                # Fetch only issues with required labels from configuration
                 issues[repository_id] = []
                 logger.debug("Labels to be fetched from: %s.", config_repository.query_labels)
                 for label in config_repository.query_labels:
                     logger.debug("Fetching issues with label `%s`.", label)
-                    issues[repository_id].extend(self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL,
-                                                                                       labels=[label]))
+                    issues[repository_id].extend(
+                        self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
+                    )
                 amount_of_issues_per_repo = len(issues[repository_id])
 
             # Accumulate the count of issues
             total_issues_number += amount_of_issues_per_repo
-            logger.info("Fetching repository GitHub issues - fetched `%s` repository issues (%s).",
-                        amount_of_issues_per_repo, repository.full_name)
+            logger.info(
+                "Fetching repository GitHub issues - fetched `%s` repository issues (%s).",
+                amount_of_issues_per_repo,
+                repository.full_name,
+            )
 
-        logger.info("Fetching repository GitHub issues - loaded `%s` repository issues in total.", total_issues_number)
+        logger.info(
+            "Fetching repository GitHub issues - loaded `%s` repository issues in total.",
+            total_issues_number,
+        )
         return issues
 
     def _fetch_github_project_issues(self) -> dict[str, ProjectIssue]:
+        """
+        Fetch GitHub project issues using the GraphQL API.
+
+        @return: A dictionary containing project issue objects with unique key.
+        """
         if not self.project_state_mining_enabled:
             logger.info("Fetching GitHub project data - project mining is not allowed.")
             return {}
@@ -139,32 +218,45 @@ class LivingDocumentationGenerator:
             projects_title_filter = config_repository.projects_title_filter
             logger.debug("Filtering projects: %s. If filter is empty, fetching all.", projects_title_filter)
 
-            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.__safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
             # Fetch all projects_buffer attached to the repository
             logger.info("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
-            projects = self.safe_call(self.github_projects_instance.get_repository_projects)(
-                repository=repository, projects_title_filter=projects_title_filter)
+            projects: list[GithubProject] = self.__safe_call(self.__github_projects_instance.get_repository_projects)(
+                repository=repository, projects_title_filter=projects_title_filter
+            )
 
             # Update every project with project issue related data
             for project in projects:
                 logger.info("Fetching GitHub project data - from `%s`.", project.title)
-                project_issues: list[ProjectIssue] = (self.safe_call(self.github_projects_instance.get_project_issues)
-                                                      (project=project))
+                project_issues: list[ProjectIssue] = self.__safe_call(
+                    self.__github_projects_instance.get_project_issues
+                )(project=project)
 
                 for project_issue in project_issues:
-                    key = make_issue_key(project_issue.organization_name, project_issue.repository_name,
-                                         project_issue.number)
+                    key = make_issue_key(
+                        project_issue.organization_name,
+                        project_issue.repository_name,
+                        project_issue.number,
+                    )
                     all_project_issues[key] = project_issue
                 logger.info("Fetching GitHub project data - fetched project data (%s).", project.title)
 
         return all_project_issues
 
     @staticmethod
-    def _consolidate_issues_data(repository_issues: dict[str, list[Issue]],
-                                 projects_issues: dict[str, ProjectIssue]) -> dict[str, ConsolidatedIssue]:
+    def _consolidate_issues_data(
+        repository_issues: dict[str, list[Issue]], projects_issues: dict[str, ProjectIssue]
+    ) -> dict[str, ConsolidatedIssue]:
+        """
+        Consolidate the fetched issues and extra project data into a one consolidated object.
+
+        @param repository_issues: A dictionary containing repository issue objects with unique key.
+        @param projects_issues: A dictionary containing project issue objects with unique key.
+        @return: A dictionary containing all consolidated issues.
+        """
 
         consolidated_issues = {}
 
@@ -173,8 +265,9 @@ class LivingDocumentationGenerator:
             for repository_issue in repository_issues[repository_id]:
                 repo_id_parts = repository_id.split("/")
                 unique_key = make_issue_key(repo_id_parts[0], repo_id_parts[1], repository_issue.number)
-                consolidated_issues[unique_key] = ConsolidatedIssue(repository_id=repository_id,
-                                                                    repository_issue=repository_issue)
+                consolidated_issues[unique_key] = ConsolidatedIssue(
+                    repository_id=repository_id, repository_issue=repository_issue
+                )
 
         # Update consolidated issue structures with project data
         logger.debug("Updating consolidated issue structure with project data.")
@@ -182,30 +275,50 @@ class LivingDocumentationGenerator:
             if key in projects_issues:
                 consolidated_issue.update_with_project_data(projects_issues[key].project_status)
 
-        logging.info("Issue and project data consolidation - consolidated `%s` repository issues"
-                     " with extra project data.",
-                     len(consolidated_issues))
+        logging.info(
+            "Issue and project data consolidation - consolidated `%s` repository issues" " with extra project data.",
+            len(consolidated_issues),
+        )
         return consolidated_issues
 
-    def _generate_markdown_pages(self, issues: dict[str, ConsolidatedIssue]):
-        with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f:
-            issue_page_detail_template = f.read()
+    def _generate_markdown_pages(self, issues: dict[str, ConsolidatedIssue]) -> None:
+        """
+        Generate the Markdown pages for all consolidated issues, create a summary index page and
+        save it all to the output directory.
 
-        with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, 'r', encoding='utf-8') as f:
-            issue_index_page_template = f.read()
+        @param issues: A dictionary containing all consolidated issues.
+        """
+        issue_page_detail_template = None
+        issue_index_page_template = None
 
+        # Load the template files for generating the Markdown pages
+        try:
+            with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
+                issue_page_detail_template = f.read()
+        except IOError:
+            logger.error("Issue page template file was not successfully loaded.", exc_info=True)
+
+        try:
+            with open(LivingDocumentationGenerator.INDEX_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
+                issue_index_page_template = f.read()
+        except IOError:
+            logger.error("Index page template file was not successfully loaded.", exc_info=True)
+
+        # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
         logger.info("Markdown page generation - generated `%s` issue pages.", len(issues))
 
+        # Generate an index page with a summary table about all issues
         self._generate_index_page(issue_index_page_template, issues)
 
     def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
         """
-            Generates a single issue Markdown page from a template and save to the output directory.
+        Generates a single issue Markdown page from a template and save to the output directory.
 
-            @param issue_page_template: The template string for generating a single issue page.
-            @param consolidated_issue: The dictionary containing issue data.
+        @param issue_page_template: The template string for generating the single markdown issue page.
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: None
         """
 
         # Get all replacements for generating single issue page from a template
@@ -222,7 +335,7 @@ class LivingDocumentationGenerator:
             "date": date,
             "page_issue_title": title,
             "issue_summary_table": issue_table,
-            "issue_content": issue_content
+            "issue_content": issue_content,
         }
 
         # Run through all replacements and update template keys with adequate content
@@ -230,30 +343,26 @@ class LivingDocumentationGenerator:
 
         # Save the single issue Markdown page
         page_filename = consolidated_issue.generate_page_filename()
-        with open(os.path.join(self.output_path, page_filename), 'w', encoding='utf-8') as f:
+        with open(os.path.join(self.output_path, page_filename), "w", encoding="utf-8") as f:
             f.write(issue_md_page_content)
 
         logger.debug("Generated Markdown page: %s.", page_filename)
 
-    def _generate_index_page(self, issue_index_page_template: str, consolidated_issues: dict[str, ConsolidatedIssue])\
-            -> None:
+    def _generate_index_page(
+        self, issue_index_page_template: str, consolidated_issues: dict[str, ConsolidatedIssue]
+    ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
 
-        :param issue_index_page_template: The template string for generating the index page.
-        :param consolidated_issues: The dictionary containing all issues data.
+        @param issue_index_page_template: The template string for generating the index markdown page.
+        @param consolidated_issues: A dictionary containing all consolidated issues.
+        @return: None
         """
 
         # Initializing the issue table header based on the project mining state
-        if self.__project_state_mining_enabled:
-            issue_table = ("| Organization name | Repository name | Issue 'Number - Title' |"
-                           " Linked to project | Project status | Issue URL |\n"
-                           "|-------------------|-----------------|------------------------|"
-                           "-------------------|----------------|-----------|\n")
-        else:
-            issue_table = """| Organization name | Repository name | Issue 'Number - Title' | Issue state | Issue URL |
-                             |-------------------|-----------------|------------------------|-------------|-----------|
-                          """
+        issue_table = (
+            TABLE_HEADER_WITH_PROJECT_DATA if self.__project_state_mining_enabled else TABLE_HEADER_WITHOUT_PROJECT_DATA
+        )
 
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues.values():
@@ -262,28 +371,25 @@ class LivingDocumentationGenerator:
         # Prepare issues replacement for the index page
         replacement = {
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "issues": issue_table
+            "issues": issue_table,
         }
 
         # Replace the issue placeholders in the index template
         index_page = issue_index_page_template.format(**replacement)
 
         # Create an index page file
-        with open(os.path.join(self.output_path, "_index.md"), 'w', encoding='utf-8') as f:
+        with open(os.path.join(self.output_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(index_page)
 
         logger.info("Markdown page generation - generated `_index.md`.")
 
     def _generate_markdown_line(self, consolidated_issue: ConsolidatedIssue) -> str:
         """
-            Generates a markdown summary line for a given feature.
+        Generates a markdown summary line for a single issue.
 
-            @param consolidated_issue: The dictionary containing feature data.
-
-            @return: A string representing the markdown line for the feature.
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: The markdown line for the issue.
         """
-
-        # Extract issue details from the consolidated issue object
         organization_name = consolidated_issue.organization_name
         repository_name = consolidated_issue.repository_name
         number = consolidated_issue.number
@@ -302,26 +408,29 @@ class LivingDocumentationGenerator:
                 linked_to_project = LINKED_TO_PROJECT_FALSE
 
             # Generate the Markdown issue line WITH extra project data
-            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
-                             f" {linked_to_project} | {status} |[GitHub link]({url}) |\n")
+            md_issue_line = (
+                f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+                f" {linked_to_project} | {status} |[GitHub link]({url}) |\n"
+            )
         else:
             # Generate the Markdown issue line WITHOUT project data
-            md_issue_line = (f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
-                             f" {state} |[GitHub link]({url}) |\n")
+            md_issue_line = (
+                f"| {organization_name} | {repository_name} | [#{number} - {title}]({page_filename}) |"
+                f" {state} |[GitHub link]({url}) |\n"
+            )
 
         return md_issue_line
 
     def _generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
         """
-            Generates a string representation of feature info in a table format.
+        Generates a string representation of feature info in a table format.
 
-            @param consolidated_issue: The dictionary containing feature data.
-
-            @return: A string representing the feature information in a table format.
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: The string representation of the issue info in a table format.
         """
         # Join issue labels into one string
         labels = consolidated_issue.labels
-        labels = ', '.join(labels) if labels else None
+        labels = ", ".join(labels) if labels else None
 
         # Format issue URL as a Markdown link
         issue_url = consolidated_issue.html_url
@@ -337,7 +446,7 @@ class LivingDocumentationGenerator:
             "Created at",
             "Updated at",
             "Closed at",
-            "Labels"
+            "Labels",
         ]
 
         # Define the values for the issue summary table
@@ -350,7 +459,7 @@ class LivingDocumentationGenerator:
             consolidated_issue.created_at,
             consolidated_issue.updated_at,
             consolidated_issue.closed_at,
-            labels
+            labels,
         ]
 
         # Update the summary table, based on the project data mining situation
@@ -358,21 +467,25 @@ class LivingDocumentationGenerator:
             project_status = consolidated_issue.project_status
 
             if consolidated_issue.linked_to_project:
-                headers.extend([
-                    "Project title",
-                    "Status",
-                    "Priority",
-                    "Size",
-                    "MoSCoW"
-                ])
+                headers.extend(
+                    [
+                        "Project title",
+                        "Status",
+                        "Priority",
+                        "Size",
+                        "MoSCoW",
+                    ]
+                )
 
-                values.extend([
-                    project_status.project_title,
-                    project_status.status,
-                    project_status.priority,
-                    project_status.size,
-                    project_status.moscow
-                ])
+                values.extend(
+                    [
+                        project_status.project_title,
+                        project_status.status,
+                        project_status.priority,
+                        project_status.size,
+                        project_status.moscow,
+                    ]
+                )
             else:
                 headers.append("Linked to project")
                 linked_to_project = LINKED_TO_PROJECT_FALSE
