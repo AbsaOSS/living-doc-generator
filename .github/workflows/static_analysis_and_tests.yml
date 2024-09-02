@@ -67,7 +67,7 @@ jobs:
 
   python-tests:
     runs-on: ubuntu-latest
-    name: Python tests
+    name: Python Tests
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.5
