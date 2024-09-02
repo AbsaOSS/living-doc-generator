@@ -39,12 +39,7 @@ def debug_log_decorator(method: Callable) -> Callable:
 
     @wraps(method)
     def wrapped(*args, **kwargs) -> Optional[Any]:
-        logger.debug(
-            "Calling method %s with args: %s and kwargs: %s.",
-            method.__name__,
-            args,
-            kwargs,
-        )
+        logger.debug("Calling method %s with args: %s and kwargs: %s.", method.__name__, args, kwargs)
         result = method(*args, **kwargs)
         logger.debug("Method %s returned %s.", method.__name__, result)
         return result
