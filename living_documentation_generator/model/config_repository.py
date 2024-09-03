@@ -18,6 +18,8 @@
 This module contains a data container for Config Repository, which holds all the essential logic.
 """
 
+from typing import Optional
+
 
 class ConfigRepository:
     """
@@ -28,8 +30,8 @@ class ConfigRepository:
     def __init__(self):
         self.__organization_name: str = ""
         self.__repository_name: str = ""
-        self.__query_labels: list[str | None] = [None]
-        self.__projects_title_filter: list[str | None] = [None]
+        self.__query_labels: Optional[str] = [None]
+        self.__projects_title_filter: Optional[str] = [None]
 
     @property
     def organization_name(self) -> str:
