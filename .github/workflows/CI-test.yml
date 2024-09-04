@@ -34,7 +34,7 @@ jobs:
         id: generate_living_doc
         uses: AbsaOSS/living-doc-generator@feature/22-Introduce-unit-test-and-code-coverage
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.PAT }}  
         with:
           repositories: '[
             {
