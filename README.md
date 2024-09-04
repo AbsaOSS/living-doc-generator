@@ -44,7 +44,7 @@ See the default action step definition:
   id: generate_living_doc
   uses: AbsaOSS/living-doc-generator@v0.1.0
   env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+    GITHUB_TOKEN: ${{ secrets.LIV_DOC_ACCESS_TOKEN }}  
   with:
     repositories: '[
       {
@@ -75,7 +75,7 @@ See the full example of action step definition (in example are used non-default 
   id: generate_living_doc
   uses: AbsaOSS/living-doc-generator@v0.1.0
   env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+    GITHUB_TOKEN: ${{ secrets.LIV_DOC_ACCESS_TOKEN }}  
   with:
     # input repositories + feature to filter projects
     repositories: '[
@@ -113,15 +113,22 @@ See the full example of action step definition (in example are used non-default 
 Configure the action by customizing the following parameters based on your needs:
 
 ### Environment Variables
-- **GITHUB_TOKEN** (required):
-  - **Description**: Your GitHub token for authentication. 
-  - **Usage**: Store it as a secret and reference it in the workflow file using  `${{ secrets.GITHUB_TOKEN }}`.
+- **LIV_DOC_ACCESS_TOKEN** (required):
+  - **Description**: GitHub access token for authentication, that has a permission to fetch from requested repositories.
+  - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.LIV_DOC_ACCESS_TOKEN }}`.
   - **Example**:
     ```yaml
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.LIV_DOC_ACCESS_TOKEN }}
     ```
     
+#### How to Store Token as a Secret
+1. Go to the GitHub repository, from which you want to run the GitHub Action.
+2. Click on the `Settings` tab in the top bar.
+3. In the left sidebar, click on `Secrets and variables` > `Actions`.
+4. Click on the `New repository secret` button.
+5. Name the token `LIV_DOC_ACCESS_TOKEN` and paste the token value.
+
 ### Inputs
 - **repositories** (required)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
