@@ -196,7 +196,8 @@ class GithubProjects:
             cursor = page_info["endCursor"]
 
         project_issues = [
-            issue for issue in (ProjectIssue().loads(issue_json, project) for issue_json in project_issues_raw)
+            issue
+            for issue in (ProjectIssue().loads(issue_json, project) for issue_json in project_issues_raw)
             if issue is not None
         ]
 
