@@ -200,7 +200,6 @@ class GithubProjects:
             for issue in (ProjectIssue().loads(issue_json, project) for issue_json in project_issues_raw)
             if issue is not None
         ]
-
         logger.debug("Loaded `%s` issues from project: %s.", len(project_issues), project.title)
 
         return project_issues
