@@ -17,12 +17,14 @@
 """
 This module contains a data container for Project Issue, which holds all the essential logic.
 """
-from typing import Optional
+import logging
 
-from moto.dynamodb.parsing.expressions import logger
+from typing import Optional
 
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.project_status import ProjectStatus
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectIssue:
