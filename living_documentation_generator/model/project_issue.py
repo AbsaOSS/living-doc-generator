@@ -17,9 +17,14 @@
 """
 This module contains a data container for Project Issue, which holds all the essential logic.
 """
+import logging
+
+from typing import Optional
 
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.project_status import ProjectStatus
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectIssue:
@@ -54,7 +59,7 @@ class ProjectIssue:
         """Getter of the project issue status."""
         return self.__project_status
 
-    def loads(self, issue_json: dict, project: GithubProject) -> "ProjectIssue":
+    def loads(self, issue_json: dict, project: GithubProject) -> Optional["ProjectIssue"]:
         """
         Loads the project issue data from the provided JSON and GithubProject object.
 
@@ -62,6 +67,11 @@ class ProjectIssue:
         @param: project: The GithubProject object representing the project the issue belongs to.
         @return: The ProjectIssue object with the loaded data.
         """
+        if not issue_json["content"]:
+            logger.debug("No issue data provided in received json.")
+            logger.debug(issue_json)
+            return None
+
         self.__number = issue_json["content"]["number"]
         self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
         self.__repository_name = issue_json["content"]["repository"]["name"]
