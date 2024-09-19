@@ -188,13 +188,18 @@ class GithubProjects:
 
             # Extend project issues list per every page during pagination
             project_issues_raw.extend(project_issue_data)
-            logger.debug("Loaded `%s` issues from project: %s.", len(project_issue_data), project.title)
+            logger.debug("Received `%s` issue records from project: %s.", len(project_issue_data), project.title)
 
             # Check for closing the pagination process
             if not page_info["hasNextPage"]:
                 break
             cursor = page_info["endCursor"]
 
-        project_issues = [ProjectIssue().loads(issue_json, project) for issue_json in project_issues_raw]
+        project_issues = [
+            issue
+            for issue in (ProjectIssue().loads(issue_json, project) for issue_json in project_issues_raw)
+            if issue is not None
+        ]
+        logger.debug("Loaded `%s` issues from project: %s.", len(project_issues), project.title)
 
         return project_issues
