@@ -121,6 +121,33 @@ Configure the action by customizing the following parameters based on your needs
     env:
       GITHUB_TOKEN: ${{ secrets.LIV_DOC_ACCESS_TOKEN }}
     ```
+
+#### How to Create a Token with Required Scope
+1. Go to your GitHub account settings.
+2. Click on the `Developer settings` tab in the left sidebar.
+3. In the left sidebar, click on `Personal access tokens` and choose `Tokens (classic)`.
+4. Click on the `Generate new token` button and choose `Generate new token (classic)`.
+5. Optional - Add a note, what is token for and choose token expiration.
+6. Select ONLY bold scope options below:
+   - **workflow**
+   - write:packages
+     - **read:packages**
+   - admin:org
+     - **read:org**
+     - **manage_runners:org**
+   - admin:public_key
+     - **read:public_key**
+   - admin:repo_hook
+     - **read:repo_hook**
+   - admin:enterprise
+     - **manage_runners:enterprise**
+     - **read:enterprise**
+   - audit_log
+     - **read:audit_log**
+   - project
+     - **read:project**
+7. Copy the token value somewhere, because you won't be able to see it again.
+8. Authorize new token to organization you want to fetch from.
     
 #### How to Store Token as a Secret
 1. Go to the GitHub repository, from which you want to run the GitHub Action.
