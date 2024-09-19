@@ -230,10 +230,14 @@ class LivingDocumentationGenerator:
 
             if projects:
                 logger.info(
-                    "Fetching GitHub project data - for %s found `%s` project/s.", repository.full_name, len(projects)
+                    "Fetching GitHub project data - for repository `%s` found `%s` project/s.",
+                    repository.full_name,
+                    len(projects),
                 )
             else:
-                logger.info("Fetching GitHub project data - no projects found for `%s`.", repository.full_name)
+                logger.info(
+                    "Fetching GitHub project data - no project data found for repository `%s`.", repository.full_name
+                )
 
             # Update every project with project issue related data
             for project in projects:
@@ -249,7 +253,9 @@ class LivingDocumentationGenerator:
                         project_issue.number,
                     )
                     all_project_issues[key] = project_issue
-                logger.info("Fetching GitHub project data - successful fetched project data from `%s`.", project.title)
+                logger.info(
+                    "Fetching GitHub project data - successfully fetched project data from `%s`.", project.title
+                )
 
         return all_project_issues
 
