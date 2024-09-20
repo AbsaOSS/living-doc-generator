@@ -150,9 +150,6 @@ class GithubProjects:
         else:
             logger.warning("Repository information is not present in the response")
 
-        if not projects:
-            logger.info("Fetching GitHub project data - no project data for repository `%s`.", repository.full_name)
-
         return projects
 
     def get_project_issues(self, project: GithubProject) -> list[ProjectIssue]:

@@ -167,7 +167,7 @@ class LivingDocumentationGenerator:
             if not config_repository.query_labels:
                 logger.debug("Fetching all issues in the repository")
                 issues[repository_id] = self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
-                amount_of_issues_per_repo = len(issues[repository_id])
+                amount_of_issues_per_repo = len(list(issues[repository_id]))
                 logger.debug(
                     "Fetched `%s` repository issues (%s)`.",
                     amount_of_issues_per_repo,
@@ -223,14 +223,25 @@ class LivingDocumentationGenerator:
                 return {}
 
             # Fetch all projects_buffer attached to the repository
-            logger.info("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
+            logger.debug("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
             projects: list[GithubProject] = self.__safe_call(self.__github_projects_instance.get_repository_projects)(
                 repository=repository, projects_title_filter=projects_title_filter
             )
 
+            if projects:
+                logger.info(
+                    "Fetching GitHub project data - for repository `%s` found `%s` project/s.",
+                    repository.full_name,
+                    len(projects),
+                )
+            else:
+                logger.info(
+                    "Fetching GitHub project data - no project data found for repository `%s`.", repository.full_name
+                )
+
             # Update every project with project issue related data
             for project in projects:
-                logger.info("Fetching GitHub project data - from `%s`.", project.title)
+                logger.info("Fetching GitHub project data - fetching project data from `%s`.", project.title)
                 project_issues: list[ProjectIssue] = self.__safe_call(
                     self.__github_projects_instance.get_project_issues
                 )(project=project)
@@ -242,7 +253,9 @@ class LivingDocumentationGenerator:
                         project_issue.number,
                     )
                     all_project_issues[key] = project_issue
-                logger.info("Fetching GitHub project data - fetched project data (%s).", project.title)
+                logger.info(
+                    "Fetching GitHub project data - successfully fetched project data from `%s`.", project.title
+                )
 
         return all_project_issues
 

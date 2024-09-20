@@ -31,9 +31,6 @@ branding:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-python@v5.1.1
-      with:
-        python-version: '3.11'
 
     - name: Install Python dependencies
       run: |
@@ -51,7 +48,7 @@ runs:
       env:
         INPUT_GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         INPUT_REPOSITORIES: ${{ inputs.repositories }}
-        INPUT_PROJECT_STATE_MINING: ${{ inputs.project_state_mining }}
+        INPUT_PROJECT_STATE_MINING: ${{ inputs.project-state-mining }}
         INPUT_VERBOSE_LOGGING: ${{ inputs.verbose-logging }}
         INPUT_OUTPUT_PATH: ${{ inputs.output-path }}
 
