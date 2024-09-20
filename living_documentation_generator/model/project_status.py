@@ -17,6 +17,7 @@
 """
 This module contains a data container for issue Project Status.
 """
+from typing import Union
 
 from living_documentation_generator.utils.constants import NO_PROJECT_DATA
 
@@ -28,53 +29,63 @@ class ProjectStatus:
     """
 
     def __init__(self):
-        self.__project_title: str = ""
-        self.__status: str = NO_PROJECT_DATA
-        self.__priority: str = NO_PROJECT_DATA
-        self.__size: str = NO_PROJECT_DATA
-        self.__moscow: str = NO_PROJECT_DATA
+        self.__project_title = [NO_PROJECT_DATA]
+        self.__status = [NO_PROJECT_DATA]
+        self.__priority = [NO_PROJECT_DATA]
+        self.__size = [NO_PROJECT_DATA]
+        self.__moscow = [NO_PROJECT_DATA]
 
     @property
-    def project_title(self) -> str:
-        """Getter of the issue attached project title."""
+    def project_title(self) -> list:
         return self.__project_title
 
     @project_title.setter
-    def project_title(self, value: str):
-        self.__project_title = value
+    def project_title(self, value: Union[str, list]):
+        if self.__project_title == [NO_PROJECT_DATA]:
+            self.__project_title = [value]
+        else:
+            self.__project_title.append(value)
 
     @property
-    def status(self) -> str:
-        """Getter of the issue project status."""
+    def status(self) -> list:
         return self.__status
 
     @status.setter
-    def status(self, value: str):
-        self.__status = value
+    def status(self, value: Union[str, list]):
+        if self.__status == [NO_PROJECT_DATA]:
+            self.__status = [value]
+        else:
+            self.__status.append(value)
 
     @property
-    def priority(self) -> str:
-        """Getter of the issue project priority."""
+    def priority(self) -> list:
         return self.__priority
 
     @priority.setter
-    def priority(self, value: str):
-        self.__priority = value
+    def priority(self, value: Union[str, list]):
+        if self.__priority == [NO_PROJECT_DATA]:
+            self.__priority = [value]
+        else:
+            self.__priority.append(value)
 
     @property
-    def size(self) -> str:
-        """Getter of the issue project difficulty."""
+    def size(self) -> list:
         return self.__size
 
     @size.setter
-    def size(self, value: str):
-        self.__size = value
+    def size(self, value: Union[str, list]):
+        if self.__size == [NO_PROJECT_DATA]:
+            self.__size = [value]
+        else:
+            self.__size.append(value)
 
     @property
-    def moscow(self) -> str:
-        """Getter of the issue project MoSCoW prioritization."""
+    def moscow(self) -> list:
         return self.__moscow
 
     @moscow.setter
-    def moscow(self, value: str):
-        self.__moscow = value
+    def moscow(self, value: Union[str, list]):
+        if self.__moscow == [NO_PROJECT_DATA]:
+            self.__moscow = [value]
+        else:
+            self.__moscow.append(value)

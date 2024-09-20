@@ -33,6 +33,7 @@ from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_generator.model.project_issue import ProjectIssue
+from living_documentation_generator.model.project_status import ProjectStatus
 from living_documentation_generator.utils.decorators import safe_call_decorator
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 from living_documentation_generator.utils.utils import make_issue_key
@@ -119,13 +120,13 @@ class LivingDocumentationGenerator:
 
         # Data mine GitHub project's issues
         logger.info("Fetching GitHub project data - started.")
-        project_issues: dict[str, ProjectIssue] = self._fetch_github_project_issues()
+        project_issues: dict[str, dict[str, ProjectStatus]] = self._fetch_github_project_issues()
         # Note: got dict of project issues with unique string key defying the issue
         logger.info("Fetching GitHub project data - finished.")
 
         # Consolidate all issue data together
         logger.info("Issue and project data consolidation - started.")
-        consolidated_issues = self._consolidate_issues_data(repository_issues, project_issues)
+        consolidated_issues: dict[str, ConsolidatedIssue] = self._consolidate_issues_data(repository_issues, project_issues)
         logger.info("Issue and project data consolidation - finished.")
 
         # Generate markdown pages
@@ -198,7 +199,7 @@ class LivingDocumentationGenerator:
         )
         return issues
 
-    def _fetch_github_project_issues(self) -> dict[str, ProjectIssue]:
+    def _fetch_github_project_issues(self) -> dict[str, dict[str, ProjectStatus]]:
         """
         Fetch GitHub project issues using the GraphQL API.
 
@@ -211,7 +212,7 @@ class LivingDocumentationGenerator:
         logger.debug("Project data mining allowed.")
 
         # Mine project issues for every repository
-        all_project_issues: dict[str, ProjectIssue] = {}
+        all_project_issues: dict[str, dict[str, ProjectStatus]] = {}
 
         for config_repository in self.repositories:
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
@@ -252,7 +253,12 @@ class LivingDocumentationGenerator:
                         project_issue.repository_name,
                         project_issue.number,
                     )
-                    all_project_issues[key] = project_issue
+
+                    if key not in all_project_issues:
+                        all_project_issues[key] = {}
+                        all_project_issues[key][project.id] = project_issue.project_status
+                    else:
+                        all_project_issues[key][project.id] = project_issue.project_status
                 logger.info(
                     "Fetching GitHub project data - successfully fetched project data from `%s`.", project.title
                 )
@@ -261,7 +267,7 @@ class LivingDocumentationGenerator:
 
     @staticmethod
     def _consolidate_issues_data(
-        repository_issues: dict[str, list[Issue]], projects_issues: dict[str, ProjectIssue]
+        repository_issues: dict[str, list[Issue]], projects_issues: dict[str, dict[str, ProjectStatus]]
     ) -> dict[str, ConsolidatedIssue]:
         """
         Consolidate the fetched issues and extra project data into a one consolidated object.
@@ -286,7 +292,9 @@ class LivingDocumentationGenerator:
         logger.debug("Updating consolidated issue structure with project data.")
         for key, consolidated_issue in consolidated_issues.items():
             if key in projects_issues:
-                consolidated_issue.update_with_project_data(projects_issues[key].project_status)
+                # Update the consolidated issue with project status data from all projects
+                for project_status in projects_issues[key].values():
+                    consolidated_issue.update_with_project_data(project_status)
 
         logging.info(
             "Issue and project data consolidation - consolidated `%s` repository issues" " with extra project data.",
