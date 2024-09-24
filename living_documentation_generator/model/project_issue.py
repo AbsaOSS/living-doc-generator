@@ -37,7 +37,6 @@ class ProjectIssue:
         self.__number: int = 0
         self.__organization_name: str = ""
         self.__repository_name: str = ""
-        self.__project_id: str = ""
         self.__project_status: ProjectStatus = ProjectStatus()
 
     @property
@@ -54,11 +53,6 @@ class ProjectIssue:
     def repository_name(self) -> str:
         """Getter of the repository name where the issue was fetched from."""
         return self.__repository_name
-
-    @property
-    def project_id(self) -> str:
-        """Getter of the project ID where the issue belongs."""
-        return self.__project_id
 
     @property
     def project_status(self) -> ProjectStatus:
