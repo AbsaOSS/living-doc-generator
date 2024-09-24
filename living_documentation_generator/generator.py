@@ -255,12 +255,12 @@ class LivingDocumentationGenerator:
                         project_issue.number,
                     )
 
-                    # If the key is unique, add the project data status to the repository issue
+                    # If the key is unique, add the project issue to the dictionary
                     if key not in all_project_issues:
                         all_project_issues[key] = []
                         all_project_issues[key].append(project_issue)
                     else:
-                        # If the repository issue is already present, add another project data from other projects
+                        # If the project issue key is already present, add another project data from other projects
                         all_project_issues[key].append(project_issue)
                 logger.info(
                     "Fetching GitHub project data - successfully fetched project data from `%s`.", project.title
