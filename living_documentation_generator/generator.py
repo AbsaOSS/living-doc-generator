@@ -230,10 +230,6 @@ class LivingDocumentationGenerator:
                 repository=repository, projects_title_filter=projects_title_filter
             )
 
-            print("PROJECTS FOR REPOSITORY")
-            for project in projects:
-                print(project.title)
-
             if projects:
                 logger.info(
                     "Fetching GitHub project data - for repository `%s` found `%s` project/s.",
