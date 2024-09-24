@@ -423,7 +423,7 @@ class LivingDocumentationGenerator:
         state = consolidated_issue.state
 
         status_list = [project_status.status for project_status in consolidated_issue.project_issue_statuses]
-        status = ", ".join(status_list)
+        status = ", ".join(status_list) if status_list else "---"
 
         # Change the bool values to more user-friendly characters
         if self.__project_state_mining_enabled:
