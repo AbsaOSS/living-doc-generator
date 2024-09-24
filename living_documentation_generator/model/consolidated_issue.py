@@ -44,7 +44,7 @@ class ConsolidatedIssue:
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
-        self.__project_status: ProjectStatus = ProjectStatus()
+        self.__project_issue_statuses: list[ProjectStatus] = []
 
         self.__error: Optional[str] = None
 
@@ -113,9 +113,9 @@ class ConsolidatedIssue:
         return self.__linked_to_project
 
     @property
-    def project_status(self) -> ProjectStatus:
-        """Getter of the project status."""
-        return self.__project_status
+    def project_issue_statuses(self) -> list[ProjectStatus]:
+        """Getter of the project issue statuses."""
+        return self.__project_issue_statuses
 
     # Error property
     @property
@@ -123,19 +123,15 @@ class ConsolidatedIssue:
         """Getter of the error message."""
         return self.__error
 
-    def update_with_project_data(self, project_status: ProjectStatus) -> None:
+    def update_with_project_data(self, project_issue_status: ProjectStatus) -> None:
         """
-        Update the consolidated issue with attached project data.
+        Update the consolidated issue with Project Status data.
 
-        @param project_status: The extra issue project data.
+        @param project_issue_status: The extra issue project data per one project.
         @return: None
         """
         self.__linked_to_project = True
-        self.__project_status.project_title = project_status.project_title
-        self.__project_status.status = project_status.status
-        self.__project_status.priority = project_status.priority
-        self.__project_status.size = project_status.size
-        self.__project_status.moscow = project_status.moscow
+        self.__project_issue_statuses.append(project_issue_status)
 
     def generate_page_filename(self) -> str:
         """
