@@ -257,8 +257,7 @@ class LivingDocumentationGenerator:
 
                     # If the key is unique, add the project issue to the dictionary
                     if key not in all_project_issues:
-                        all_project_issues[key] = []
-                        all_project_issues[key].append(project_issue)
+                        all_project_issues[key] = [project_issue]
                     else:
                         # If the project issue key is already present, add another project data from other projects
                         all_project_issues[key].append(project_issue)
