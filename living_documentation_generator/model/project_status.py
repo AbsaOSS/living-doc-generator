@@ -28,7 +28,7 @@ class ProjectStatus:
     """
 
     def __init__(self):
-        self.__project_title: str = ""
+        self.__project_title: str = NO_PROJECT_DATA
         self.__status: str = NO_PROJECT_DATA
         self.__priority: str = NO_PROJECT_DATA
         self.__size: str = NO_PROJECT_DATA

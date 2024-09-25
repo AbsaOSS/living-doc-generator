@@ -119,13 +119,15 @@ class LivingDocumentationGenerator:
 
         # Data mine GitHub project's issues
         logger.info("Fetching GitHub project data - started.")
-        project_issues: dict[str, ProjectIssue] = self._fetch_github_project_issues()
+        project_issues: dict[str, list[ProjectIssue]] = self._fetch_github_project_issues()
         # Note: got dict of project issues with unique string key defying the issue
         logger.info("Fetching GitHub project data - finished.")
 
         # Consolidate all issue data together
         logger.info("Issue and project data consolidation - started.")
-        consolidated_issues = self._consolidate_issues_data(repository_issues, project_issues)
+        consolidated_issues: dict[str, ConsolidatedIssue] = self._consolidate_issues_data(
+            repository_issues, project_issues
+        )
         logger.info("Issue and project data consolidation - finished.")
 
         # Generate markdown pages
@@ -198,7 +200,7 @@ class LivingDocumentationGenerator:
         )
         return issues
 
-    def _fetch_github_project_issues(self) -> dict[str, ProjectIssue]:
+    def _fetch_github_project_issues(self) -> dict[str, list[ProjectIssue]]:
         """
         Fetch GitHub project issues using the GraphQL API.
 
@@ -211,7 +213,7 @@ class LivingDocumentationGenerator:
         logger.debug("Project data mining allowed.")
 
         # Mine project issues for every repository
-        all_project_issues: dict[str, ProjectIssue] = {}
+        all_project_issues: dict[str, list[ProjectIssue]] = {}
 
         for config_repository in self.repositories:
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
@@ -252,7 +254,13 @@ class LivingDocumentationGenerator:
                         project_issue.repository_name,
                         project_issue.number,
                     )
-                    all_project_issues[key] = project_issue
+
+                    # If the key is unique, add the project issue to the dictionary
+                    if key not in all_project_issues:
+                        all_project_issues[key] = [project_issue]
+                    else:
+                        # If the project issue key is already present, add another project data from other projects
+                        all_project_issues[key].append(project_issue)
                 logger.info(
                     "Fetching GitHub project data - successfully fetched project data from `%s`.", project.title
                 )
@@ -261,13 +269,13 @@ class LivingDocumentationGenerator:
 
     @staticmethod
     def _consolidate_issues_data(
-        repository_issues: dict[str, list[Issue]], projects_issues: dict[str, ProjectIssue]
+        repository_issues: dict[str, list[Issue]], project_issues: dict[str, list[ProjectIssue]]
     ) -> dict[str, ConsolidatedIssue]:
         """
         Consolidate the fetched issues and extra project data into a one consolidated object.
 
         @param repository_issues: A dictionary containing repository issue objects with unique key.
-        @param projects_issues: A dictionary containing project issue objects with unique key.
+        @param project_issues: A dictionary containing project issue objects with unique key.
         @return: A dictionary containing all consolidated issues.
         """
 
@@ -285,8 +293,9 @@ class LivingDocumentationGenerator:
         # Update consolidated issue structures with project data
         logger.debug("Updating consolidated issue structure with project data.")
         for key, consolidated_issue in consolidated_issues.items():
-            if key in projects_issues:
-                consolidated_issue.update_with_project_data(projects_issues[key].project_status)
+            if key in project_issues:
+                for project_issue in project_issues[key]:
+                    consolidated_issue.update_with_project_data(project_issue.project_status)
 
         logging.info(
             "Issue and project data consolidation - consolidated `%s` repository issues" " with extra project data.",
@@ -409,9 +418,11 @@ class LivingDocumentationGenerator:
         title = consolidated_issue.title
         title = title.replace("|", " _ ")
         page_filename = consolidated_issue.generate_page_filename()
-        status = consolidated_issue.project_status.status
         url = consolidated_issue.html_url
         state = consolidated_issue.state
+
+        status_list = [project_status.status for project_status in consolidated_issue.project_issue_statuses]
+        status = ", ".join(status_list) if status_list else "---"
 
         # Change the bool values to more user-friendly characters
         if self.__project_state_mining_enabled:
@@ -477,28 +488,29 @@ class LivingDocumentationGenerator:
 
         # Update the summary table, based on the project data mining situation
         if self.__project_state_mining_enabled:
-            project_status = consolidated_issue.project_status
+            project_statuses = consolidated_issue.project_issue_statuses
 
             if consolidated_issue.linked_to_project:
-                headers.extend(
-                    [
-                        "Project title",
-                        "Status",
-                        "Priority",
-                        "Size",
-                        "MoSCoW",
-                    ]
-                )
+                project_data_header = [
+                    "Project title",
+                    "Status",
+                    "Priority",
+                    "Size",
+                    "MoSCoW",
+                ]
 
-                values.extend(
-                    [
+                for project_status in project_statuses:
+                    # Update the summary data table for every project attached to repository issue
+                    project_data_values = [
                         project_status.project_title,
                         project_status.status,
                         project_status.priority,
                         project_status.size,
                         project_status.moscow,
                     ]
-                )
+
+                    headers.extend(project_data_header)
+                    values.extend(project_data_values)
             else:
                 headers.append("Linked to project")
                 linked_to_project = LINKED_TO_PROJECT_FALSE
