@@ -567,12 +567,12 @@ class LivingDocumentationGenerator:
 
     def _generate_directory_path(self, repository_id: Optional[str]) -> str:
         """
-        Generate a directory path based on the repository id.
+        Generates a directory path based on if structured output is required.
 
         @param repository_id: The repository id.
         @return: The generated directory path.
         """
-        if self.structured_output and repository_id:
+        if self.structured_output:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(self.output_path, organization_name, repository_name)
         else:
