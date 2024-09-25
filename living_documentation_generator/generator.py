@@ -23,7 +23,7 @@ import os
 import shutil
 
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Optional
 
 from github import Github, Auth
 from github.Issue import Issue
@@ -65,6 +65,7 @@ class LivingDocumentationGenerator:
         github_token: str,
         repositories: list[ConfigRepository],
         project_state_mining_enabled: bool,
+        structured_output: bool,
         output_path: str,
     ):
 
@@ -78,6 +79,7 @@ class LivingDocumentationGenerator:
 
         # features control
         self.__project_state_mining_enabled: bool = project_state_mining_enabled
+        self.__structured_output: bool = structured_output
 
         # paths
         self.__output_path: str = output_path
@@ -96,6 +98,11 @@ class LivingDocumentationGenerator:
     def project_state_mining_enabled(self) -> bool:
         """Getter of the project state mining switch."""
         return self.__project_state_mining_enabled
+
+    @property
+    def structured_output(self) -> bool:
+        """Getter of the structured output switch."""
+        return self.__structured_output
 
     @property
     def output_path(self) -> str:
@@ -257,8 +264,7 @@ class LivingDocumentationGenerator:
 
                     # If the key is unique, add the project issue to the dictionary
                     if key not in all_project_issues:
-                        all_project_issues[key] = []
-                        all_project_issues[key].append(project_issue)
+                        all_project_issues[key] = [project_issue]
                     else:
                         # If the project issue key is already present, add another project data from other projects
                         all_project_issues[key].append(project_issue)
@@ -299,7 +305,7 @@ class LivingDocumentationGenerator:
                     consolidated_issue.update_with_project_data(project_issue.project_status)
 
         logging.info(
-            "Issue and project data consolidation - consolidated `%s` repository issues" " with extra project data.",
+            "Issue and project data consolidation - consolidated `%s` repository issues with extra project data.",
             len(consolidated_issues),
         )
         return consolidated_issues
@@ -333,7 +339,12 @@ class LivingDocumentationGenerator:
         logger.info("Markdown page generation - generated `%s` issue pages.", len(issues))
 
         # Generate an index page with a summary table about all issues
-        self._generate_index_page(issue_index_page_template, issues)
+        if self.structured_output:
+            self._generate_structured_index_page(issue_index_page_template, issues)
+        else:
+            issues = list(issues.values())
+            self._generate_index_page(issue_index_page_template, issues)
+            logger.info("Markdown page generation - generated `_index.md`")
 
     def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
         """
@@ -364,31 +375,57 @@ class LivingDocumentationGenerator:
         # Run through all replacements and update template keys with adequate content
         issue_md_page_content = issue_page_template.format(**replacements)
 
+        # Create a directory structure path for the issue page
+        page_directory_path = self._generate_directory_path(consolidated_issue.repository_id)
+
         # Save the single issue Markdown page
         page_filename = consolidated_issue.generate_page_filename()
-        with open(os.path.join(self.output_path, page_filename), "w", encoding="utf-8") as f:
+        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
             f.write(issue_md_page_content)
 
         logger.debug("Generated Markdown page: %s.", page_filename)
 
-    def _generate_index_page(
+    def _generate_structured_index_page(
         self, issue_index_page_template: str, consolidated_issues: dict[str, ConsolidatedIssue]
+    ) -> None:
+        """
+        Generates a structured index page with a summary of one repository issues.
+
+        @param issue_index_page_template: The template string for generating the index markdown page.
+        @param consolidated_issues: A dictionary containing all consolidated issues.
+        @return: None
+        """
+        # Group issues by repository for structured index page content
+        issues_by_repository = {}
+        for consolidated_issue in consolidated_issues.values():
+            repository_id = consolidated_issue.repository_id
+            if repository_id not in issues_by_repository:
+                issues_by_repository[repository_id] = []
+            issues_by_repository[repository_id].append(consolidated_issue)
+
+        # Generate an index page for each repository
+        for repository_id, issues in issues_by_repository.items():
+            self._generate_index_page(issue_index_page_template, issues, repository_id)
+            logger.info("Markdown page generation - generated `_index.md` for %s.", repository_id)
+
+    def _generate_index_page(
+        self, issue_index_page_template: str, consolidated_issues: list[ConsolidatedIssue], repository_id: str = None
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
 
         @param issue_index_page_template: The template string for generating the index markdown page.
         @param consolidated_issues: A dictionary containing all consolidated issues.
+        @param repository_id: The repository id used if the structured output is generated.
         @return: None
         """
-
         # Initializing the issue table header based on the project mining state
         issue_table = (
             TABLE_HEADER_WITH_PROJECT_DATA if self.__project_state_mining_enabled else TABLE_HEADER_WITHOUT_PROJECT_DATA
         )
 
         # Create an issue summary table for every issue
-        for consolidated_issue in consolidated_issues.values():
+        for consolidated_issue in consolidated_issues:
             issue_table += self._generate_markdown_line(consolidated_issue)
 
         # Prepare issues replacement for the index page
@@ -400,11 +437,13 @@ class LivingDocumentationGenerator:
         # Replace the issue placeholders in the index template
         index_page = issue_index_page_template.format(**replacement)
 
-        # Create an index page file
-        with open(os.path.join(self.output_path, "_index.md"), "w", encoding="utf-8") as f:
-            f.write(index_page)
+        # Generate a directory structure path for the index page
+        # Note: repository_id is used only, if the structured output is generated
+        index_directory_path = self._generate_directory_path(repository_id)
 
-        logger.info("Markdown page generation - generated `_index.md`.")
+        # Create an index page file
+        with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
+            f.write(index_page)
 
     def _generate_markdown_line(self, consolidated_issue: ConsolidatedIssue) -> str:
         """
@@ -525,3 +564,20 @@ class LivingDocumentationGenerator:
             issue_info += f"| {attribute} | {content} |\n"
 
         return issue_info
+
+    def _generate_directory_path(self, repository_id: Optional[str]) -> str:
+        """
+        Generate a directory path based on the repository id.
+
+        @param repository_id: The repository id.
+        @return: The generated directory path.
+        """
+        if self.structured_output and repository_id:
+            organization_name, repository_name = repository_id.split("/")
+            output_path = os.path.join(self.output_path, organization_name, repository_name)
+        else:
+            output_path = self.output_path
+
+        os.makedirs(output_path, exist_ok=True)
+
+        return output_path

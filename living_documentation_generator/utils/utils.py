@@ -96,7 +96,7 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
     @return: None
     """
     output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
-    with open(output_file, "a") as f:
+    with open(output_file, "a", encoding="utf-8") as f:
         f.write(f"{name}={value}\n")
 
 

@@ -19,6 +19,10 @@ inputs:
     description: 'Path to the generated living documentation files.'
     required: false
     default: './output'
+  structured-output:
+    description: 'Enable or disable structured output.'
+    required: false
+    default: 'false'
 outputs:
   output-path:
     description: 'Path to the generated living documentation files'
@@ -51,6 +55,7 @@ runs:
         INPUT_PROJECT_STATE_MINING: ${{ inputs.project-state-mining }}
         INPUT_VERBOSE_LOGGING: ${{ inputs.verbose-logging }}
         INPUT_OUTPUT_PATH: ${{ inputs.output-path }}
+        INPUT_STRUCTURED_OUTPUT: ${{ inputs.structured-output }}
 
       run: |
         python ${{ github.action_path }}/main.py

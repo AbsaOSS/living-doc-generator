@@ -44,6 +44,7 @@ def run() -> None:
         repositories=action_inputs.repositories,
         project_state_mining_enabled=action_inputs.is_project_state_mining_enabled,
         output_path=action_inputs.output_directory,
+        structured_output=action_inputs.structured_output,
     )
 
     # Generate the Living Documentation
