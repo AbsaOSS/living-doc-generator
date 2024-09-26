@@ -28,6 +28,7 @@ from typing import Callable, Optional
 from github import Github, Auth
 from github.Issue import Issue
 
+from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.model.config_repository import ConfigRepository
@@ -60,29 +61,22 @@ class LivingDocumentationGenerator:
     ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "issue_detail_page_template.md")
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_page_template.md")
 
-    def __init__(
-        self,
-        github_token: str,
-        repositories: list[ConfigRepository],
-        project_state_mining_enabled: bool,
-        structured_output: bool,
-        output_path: str,
-    ):
-
+    def __init__(self, action_inputs: ActionInputs):
+        github_token = action_inputs.github_token
         self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
         self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
         self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
 
         # data
-        self.__repositories: list[ConfigRepository] = repositories
+        self.__repositories: list[ConfigRepository] = action_inputs.repositories
 
         # features control
-        self.__project_state_mining_enabled: bool = project_state_mining_enabled
-        self.__structured_output: bool = structured_output
+        self.__project_state_mining_enabled: bool = action_inputs.is_project_state_mining_enabled
+        self.__structured_output: bool = action_inputs.structured_output
 
         # paths
-        self.__output_path: str = output_path
+        self.__output_path: str = action_inputs.output_directory
 
     @property
     def github_instance(self) -> Github:
@@ -572,7 +566,7 @@ class LivingDocumentationGenerator:
         @param repository_id: The repository id.
         @return: The generated directory path.
         """
-        if self.structured_output:
+        if self.structured_output and repository_id:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(self.output_path, organization_name, repository_name)
         else:

@@ -39,13 +39,8 @@ def run() -> None:
     logger.info("Starting Living Documentation generation.")
     action_inputs = ActionInputs().load_from_environment()
 
-    generator = LivingDocumentationGenerator(
-        github_token=action_inputs.github_token,
-        repositories=action_inputs.repositories,
-        project_state_mining_enabled=action_inputs.is_project_state_mining_enabled,
-        output_path=action_inputs.output_directory,
-        structured_output=action_inputs.structured_output,
-    )
+    # Create the Living Documentation Generator
+    generator = LivingDocumentationGenerator(action_inputs=action_inputs)
 
     # Generate the Living Documentation
     generator.generate()
