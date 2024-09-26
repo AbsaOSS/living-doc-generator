@@ -247,9 +247,9 @@ class LivingDocumentationGenerator:
             # Update every project with project issue related data
             for project in projects:
                 logger.info("Fetching GitHub project data - fetching project data from `%s`.", project.title)
-                project_issues: list[ProjectIssue] = self.safe_call(
-                    self.github_projects_instance.get_project_issues
-                )(project=project)
+                project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(
+                    project=project
+                )
 
                 for project_issue in project_issues:
                     key = make_issue_key(
