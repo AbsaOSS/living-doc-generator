@@ -71,11 +71,6 @@ class LivingDocumentationGenerator:
         self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
 
     @property
-    def github_instance(self) -> Github:
-        """Getter of the GitHub instance."""
-        return self.__github_instance
-
-    @property
     def repositories(self) -> list[ConfigRepository]:
         """Getter of the list of config repository objects to fetch from."""
         return self.__action_inputs.repositories
@@ -94,16 +89,6 @@ class LivingDocumentationGenerator:
     def output_path(self) -> str:
         """Getter of the output directory."""
         return self.__action_inputs.output_directory
-
-    @property
-    def github_projects_instance(self) -> GithubProjects:
-        """Getter of the GitHub projects instance."""
-        return self.__github_projects_instance
-
-    @property
-    def safe_call(self) -> Callable:
-        """Getter of the safe call decorator."""
-        return self.__safe_call
 
     def generate(self) -> None:
         """
@@ -162,7 +147,7 @@ class LivingDocumentationGenerator:
         for config_repository in self.repositories:
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
-            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.__safe_call(self.__github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
@@ -171,7 +156,7 @@ class LivingDocumentationGenerator:
             # If the query labels are not defined, fetch all issues from the repository
             if not config_repository.query_labels:
                 logger.debug("Fetching all issues in the repository")
-                issues[repository_id] = self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
+                issues[repository_id] = self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
                 amount_of_issues_per_repo = len(list(issues[repository_id]))
                 logger.debug(
                     "Fetched `%s` repository issues (%s)`.",
@@ -185,7 +170,7 @@ class LivingDocumentationGenerator:
                 for label in config_repository.query_labels:
                     logger.debug("Fetching issues with label `%s`.", label)
                     issues[repository_id].extend(
-                        self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
+                        self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
                     )
                 amount_of_issues_per_repo = len(issues[repository_id])
 
@@ -223,13 +208,13 @@ class LivingDocumentationGenerator:
             projects_title_filter = config_repository.projects_title_filter
             logger.debug("Filtering projects: %s. If filter is empty, fetching all.", projects_title_filter)
 
-            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.__safe_call(self.__github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
             # Fetch all projects_buffer attached to the repository
             logger.debug("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
-            projects: list[GithubProject] = self.safe_call(self.github_projects_instance.get_repository_projects)(
+            projects: list[GithubProject] = self.__safe_call(self.__github_projects_instance.get_repository_projects)(
                 repository=repository, projects_title_filter=projects_title_filter
             )
 
@@ -247,9 +232,9 @@ class LivingDocumentationGenerator:
             # Update every project with project issue related data
             for project in projects:
                 logger.info("Fetching GitHub project data - fetching project data from `%s`.", project.title)
-                project_issues: list[ProjectIssue] = self.safe_call(self.github_projects_instance.get_project_issues)(
-                    project=project
-                )
+                project_issues: list[ProjectIssue] = self.__safe_call(
+                    self.__github_projects_instance.get_project_issues
+                )(project=project)
 
                 for project_issue in project_issues:
                     key = make_issue_key(
