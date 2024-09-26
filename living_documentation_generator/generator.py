@@ -62,21 +62,13 @@ class LivingDocumentationGenerator:
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_page_template.md")
 
     def __init__(self, action_inputs: ActionInputs):
-        github_token = action_inputs.github_token
+        self.__action_inputs = action_inputs
+
+        github_token = self.__action_inputs.github_token
         self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
         self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
         self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
-
-        # data
-        self.__repositories: list[ConfigRepository] = action_inputs.repositories
-
-        # features control
-        self.__project_state_mining_enabled: bool = action_inputs.is_project_state_mining_enabled
-        self.__structured_output: bool = action_inputs.structured_output
-
-        # paths
-        self.__output_path: str = action_inputs.output_directory
 
     @property
     def github_instance(self) -> Github:
@@ -86,22 +78,32 @@ class LivingDocumentationGenerator:
     @property
     def repositories(self) -> list[ConfigRepository]:
         """Getter of the list of config repository objects to fetch from."""
-        return self.__repositories
+        return self.__action_inputs.repositories
 
     @property
     def project_state_mining_enabled(self) -> bool:
         """Getter of the project state mining switch."""
-        return self.__project_state_mining_enabled
+        return self.__action_inputs.is_project_state_mining_enabled
 
     @property
     def structured_output(self) -> bool:
         """Getter of the structured output switch."""
-        return self.__structured_output
+        return self.__action_inputs.structured_output
 
     @property
     def output_path(self) -> str:
         """Getter of the output directory."""
-        return self.__output_path
+        return self.__action_inputs.output_directory
+
+    @property
+    def github_projects_instance(self) -> GithubProjects:
+        """Getter of the GitHub projects instance."""
+        return self.__github_projects_instance
+
+    @property
+    def safe_call(self) -> Callable:
+        """Getter of the safe call decorator."""
+        return self.__safe_call
 
     def generate(self) -> None:
         """
@@ -160,7 +162,7 @@ class LivingDocumentationGenerator:
         for config_repository in self.repositories:
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
-            repository = self.__safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
@@ -169,7 +171,7 @@ class LivingDocumentationGenerator:
             # If the query labels are not defined, fetch all issues from the repository
             if not config_repository.query_labels:
                 logger.debug("Fetching all issues in the repository")
-                issues[repository_id] = self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
+                issues[repository_id] = self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
                 amount_of_issues_per_repo = len(list(issues[repository_id]))
                 logger.debug(
                     "Fetched `%s` repository issues (%s)`.",
@@ -183,7 +185,7 @@ class LivingDocumentationGenerator:
                 for label in config_repository.query_labels:
                     logger.debug("Fetching issues with label `%s`.", label)
                     issues[repository_id].extend(
-                        self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
+                        self.safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
                     )
                 amount_of_issues_per_repo = len(issues[repository_id])
 
@@ -221,13 +223,13 @@ class LivingDocumentationGenerator:
             projects_title_filter = config_repository.projects_title_filter
             logger.debug("Filtering projects: %s. If filter is empty, fetching all.", projects_title_filter)
 
-            repository = self.__safe_call(self.github_instance.get_repo)(repository_id)
+            repository = self.safe_call(self.github_instance.get_repo)(repository_id)
             if repository is None:
                 return {}
 
             # Fetch all projects_buffer attached to the repository
             logger.debug("Fetching GitHub project data - looking for repository `%s` projects.", repository_id)
-            projects: list[GithubProject] = self.__safe_call(self.__github_projects_instance.get_repository_projects)(
+            projects: list[GithubProject] = self.safe_call(self.github_projects_instance.get_repository_projects)(
                 repository=repository, projects_title_filter=projects_title_filter
             )
 
@@ -245,8 +247,8 @@ class LivingDocumentationGenerator:
             # Update every project with project issue related data
             for project in projects:
                 logger.info("Fetching GitHub project data - fetching project data from `%s`.", project.title)
-                project_issues: list[ProjectIssue] = self.__safe_call(
-                    self.__github_projects_instance.get_project_issues
+                project_issues: list[ProjectIssue] = self.safe_call(
+                    self.github_projects_instance.get_project_issues
                 )(project=project)
 
                 for project_issue in project_issues:
@@ -415,7 +417,7 @@ class LivingDocumentationGenerator:
         """
         # Initializing the issue table header based on the project mining state
         issue_table = (
-            TABLE_HEADER_WITH_PROJECT_DATA if self.__project_state_mining_enabled else TABLE_HEADER_WITHOUT_PROJECT_DATA
+            TABLE_HEADER_WITH_PROJECT_DATA if self.project_state_mining_enabled else TABLE_HEADER_WITHOUT_PROJECT_DATA
         )
 
         # Create an issue summary table for every issue
@@ -459,7 +461,7 @@ class LivingDocumentationGenerator:
         status = ", ".join(status_list) if status_list else "---"
 
         # Change the bool values to more user-friendly characters
-        if self.__project_state_mining_enabled:
+        if self.project_state_mining_enabled:
             if consolidated_issue.linked_to_project:
                 linked_to_project = LINKED_TO_PROJECT_TRUE
             else:
@@ -521,7 +523,7 @@ class LivingDocumentationGenerator:
         ]
 
         # Update the summary table, based on the project data mining situation
-        if self.__project_state_mining_enabled:
+        if self.project_state_mining_enabled:
             project_statuses = consolidated_issue.project_issue_statuses
 
             if consolidated_issue.linked_to_project:
