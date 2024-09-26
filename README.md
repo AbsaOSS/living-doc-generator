@@ -511,25 +511,25 @@ The goal is to provide a straightforward view of all issues in a single table, m
 
 ### Structured Output
 
-This feature allows you to generate structured output for the living documentation. Enabling this feature allows you to see a summary `index.md` page for all fetched repository.
+This feature allows you to generate structured output for the living documentation and see a summary `index.md` page for each fetched repository.
 
 - **Default Behavior**: By default, the action generates all the documentation in a single directory.
 - **Non-default Example**: Use the structured output feature to organize the generated documentation by organization and repository name.
   - `structured-output: true` activates the structured output feature.
     ```
     output
-    |_ org 1
-      |__repo 1
-         |__ issue md page 1
-         |__ issue md page 2
-         |__ _index.md
-    |_ org 2
-      |__repo 1
-         |__ issue md page 1
-         |__ _index.md
-      |__repo 2
+    |- org 1
+      |--repo 1
+         |-- issue md page 1
+         |-- issue md page 2
+         |-- _index.md
+    |- org 2
+      |--repo 1
+         |-- issue md page 1
+         |-- _index.md
+      |--repo 2
     ```
-
+---
 ## Contribution Guidelines
 
 We welcome contributions to the Living Documentation Generator! Whether you're fixing bugs, improving documentation, or proposing new features, your help is appreciated.
