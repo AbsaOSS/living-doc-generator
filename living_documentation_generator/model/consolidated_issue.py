@@ -38,6 +38,7 @@ class ConsolidatedIssue:
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
 
+        self.__repository_id: str = repository_id
         parts = repository_id.split("/")
         self.__organization_name: str = parts[0] if len(parts) == 2 else ""
         self.__repository_name: str = parts[1] if len(parts) == 2 else ""
@@ -53,6 +54,11 @@ class ConsolidatedIssue:
     def number(self) -> int:
         """Getter of the issue number."""
         return self.__issue.number if self.__issue else 0
+
+    @property
+    def repository_id(self) -> str:
+        """Getter of the repository id."""
+        return self.__repository_id
 
     @property
     def organization_name(self) -> str:

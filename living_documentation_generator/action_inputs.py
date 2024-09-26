@@ -25,7 +25,13 @@ import sys
 
 from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.utils.utils import get_action_input, make_absolute_path
-from living_documentation_generator.utils.constants import GITHUB_TOKEN, PROJECT_STATE_MINING, REPOSITORIES, OUTPUT_PATH
+from living_documentation_generator.utils.constants import (
+    GITHUB_TOKEN,
+    PROJECT_STATE_MINING,
+    REPOSITORIES,
+    OUTPUT_PATH,
+    STRUCTURED_OUTPUT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +47,7 @@ class ActionInputs:
         self.__is_project_state_mining_enabled: bool = False
         self.__repositories: list[ConfigRepository] = []
         self.__output_directory: str = ""
+        self.__structured_output: bool = False
 
     @property
     def github_token(self) -> str:
@@ -62,6 +69,11 @@ class ActionInputs:
         """Getter of the output directory."""
         return self.__output_directory
 
+    @property
+    def structured_output(self) -> bool:
+        """Getter of the structured output switch."""
+        return self.__structured_output
+
     def load_from_environment(self, validate: bool = True) -> "ActionInputs":
         """
         Load the action inputs from the environment variables and validate them if needed.
@@ -71,6 +83,7 @@ class ActionInputs:
         """
         self.__github_token = get_action_input(GITHUB_TOKEN)
         self.__is_project_state_mining_enabled = get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
+        self.__structured_output = get_action_input(STRUCTURED_OUTPUT, "false").lower() == "true"
         out_path = get_action_input(OUTPUT_PATH, "./output")
         self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input(REPOSITORIES, "")
@@ -78,6 +91,7 @@ class ActionInputs:
         logger.debug("Is project state mining allowed: %s.", self.is_project_state_mining_enabled)
         logger.debug("JSON repositories to fetch from: %s.", repositories_json)
         logger.debug("Output directory: %s.", self.output_directory)
+        logger.debug("Is output directory structured: %s.", self.structured_output)
 
         # Validate inputs
         if validate:

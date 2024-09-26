@@ -22,6 +22,7 @@
     - [Data Mining from GitHub Repositories](#data-mining-from-github-repositories)
     - [Data Mining from GitHub Projects](#data-mining-from-github-projects)
     - [Living Documentation Page Generation](#living-documentation-page-generation)
+    - [Structured Output](#structured-output)
 - [Contribution Guidelines](#contribution-guidelines)
 - [License Information](#license-information)
 - [Contact or Support Information](#contact-or-support-information)
@@ -107,6 +108,9 @@ See the full example of action step definition (in example are used non-default 
     
     # project verbose (debug) logging feature de/activation
     verbose-logging: true
+
+    # structured output feature de/activation
+    structured-output: true
 ```
 
 ## Action Configuration
@@ -202,6 +206,15 @@ Configure the action by customizing the following parameters based on your needs
     ```yaml
     with:
       verbose-logging: true
+    ```
+    
+- **structured-output** (optional, `default: false`)
+  - **Description**: Enables or disables structured output.
+  - **Usage**: Set to true to activate.
+  - **Example**:
+    ```yaml
+    with:
+      structured-output: true
     ```
 
 ## Action Outputs
@@ -496,6 +509,26 @@ The goal is to provide a straightforward view of all issues in a single table, m
 
 - **Default Behavior**: By default, the action generates a single table that lists all issues from the defined repositories.
 
+### Structured Output
+
+This feature allows you to generate structured output for the living documentation and see a summary `index.md` page for each fetched repository.
+
+- **Default Behavior**: By default, the action generates all the documentation in a single directory.
+- **Non-default Example**: Use the structured output feature to organize the generated documentation by organization and repository name.
+  - `structured-output: true` activates the structured output feature.
+    ```
+    output
+    |- org 1
+      |--repo 1
+         |-- issue md page 1
+         |-- issue md page 2
+         |-- _index.md
+    |- org 2
+      |--repo 1
+         |-- issue md page 1
+         |-- _index.md
+      |--repo 2
+    ```
 ---
 ## Contribution Guidelines
 
