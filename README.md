@@ -16,7 +16,8 @@
 - [Run Scripts Locally](#run-scripts-locally)
 - [Run Pylint Check Locally](#run-pylint-check-locally)
 - [Run Black Tool Locally](#run-black-tool-locally)
-- [Run unit test](#run-unit-test)
+- [Run Unit Test](#run-unit-test)
+- [Code Coverage](#code-coverage)
 - [Deployment](#deployment)
 - [Features](#features)
     - [Data Mining from GitHub Repositories](#data-mining-from-github-repositories)
@@ -438,35 +439,33 @@ All done! ✨ 🍰 ✨
 ```
 
 ## Run Unit Test
-TODO - check this chapter and update by latest state
-### Launch Unit Tests
-```
-pytest
+
+Unit tests are written using Pytest framework. To run alle the tests, use the following command:
+```bash
+pytest tests/
 ```
 
-### To Run Specific Tests or Get Verbose Output:
-```
-pytest -v  # Verbose mode
-pytest path/to/test_file.py  # Run specific test file
+You can modify the directory to control the level of detail or granularity as per your needs.
+
+To run specific test, write the command following the pattern below:
+```bash
+pytest path/to/test_file.py::name_of_specific_test_method
 ```
 
-### To Check Test Coverage:
-```
-pytest --cov=../scripts
+## Code Coverage
+
+This project uses [pytest-cov](https://pypi.org/project/pytest-cov/) plugin to generate test coverage reports.
+The objective of the project is to achieve a minimal score of 80 %.
+
+To generate the coverage report, run the following command:
+```bash
+pytest --cov=living_documentation_generator --cov-fail-under=80 --cov-report=html
 ```
 
-### After running the tests
-```
-deactivate
-```
-
-### Commit Changes
-After testing and ensuring that everything is functioning as expected, prepare your files for deployment:
+See the coverage report on the path:
 
 ```
-git add action.yml dist/index.js  # Adjust paths as needed
-git commit -m "Prepare GitHub Action for deployment"
-git push
+htmlcov/index.html
 ```
 
 ## Deployment
