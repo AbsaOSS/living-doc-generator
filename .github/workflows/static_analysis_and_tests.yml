@@ -79,8 +79,5 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Set PYTHONPATH environment variable
-        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}/living_documentation_generator/living_documentation_generator" >> $GITHUB_ENV
-
       - name: Build and run unit tests
-        run: pytest --cov=living_documentation_generator tests/ --cov-fail-under=80
+        run: pytest --cov=living_documentation_generator -v tests/ --cov-fail-under=80
