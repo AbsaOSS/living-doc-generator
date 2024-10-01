@@ -43,7 +43,6 @@ def setup_logging() -> None:
     )
     sys.stdout.flush()
 
-    # TODO
     logging.info("Logging configuration set up.")
 
     if is_verbose_logging:

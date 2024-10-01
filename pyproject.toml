@@ -1,22 +1,4 @@
 [tool.black]
 line-length = 120
 target-version = ['py311']
-#force-exclude = '''test'''
-
-[tool.pytest.ini_options]
-markers = [
-    "safe_call_decorator: group of tests that test the safe call decorator",
-    "decorators: group of tests that test the decorators",
-    "debug_log_decorator: group of tests that test the debug log decorator",
-    "utils: the whole folder of tests that are utils modules",
-    "github_rate_limiter: group of tests that test the github rate limiter",
-    "github_project_queries: group of tests that test the github project queries",
-    "setup_logging: group of tests that test the logging config",
-    "make_issue_key: group of tests that test the make issue key function",
-    "sanitize_filename: group of tests that test the sanitize filename function",
-    "make_absolute_path: group of tests that test the make absolute path function",
-    "github_utils: group of tests that test the github utils",
-    "get_action_input: group of tests that test the get action input function",
-    "set_action_output: group of tests that test the set action output function",
-    "set_action_failed: group of tests that test the set action failed function",
-]
+force-exclude = '''test'''

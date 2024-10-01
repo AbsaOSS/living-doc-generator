@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 import time
-import pytest
 
-pytestmark = [pytest.mark.github_rate_limiter, pytest.mark.utils]
+
+# GithubRateLimiter __call__ method
 
 
 def test_rate_limiter_extended_sleep_remaining_1(mocker, rate_limiter, mock_rate_limiter):

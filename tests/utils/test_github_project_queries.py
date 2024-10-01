@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-import pytest
-
 from living_documentation_generator.utils.constants import (
     PROJECTS_FROM_REPO_QUERY,
     ISSUES_FROM_PROJECT_QUERY,
@@ -28,7 +26,8 @@ from living_documentation_generator.utils.github_project_queries import (
     get_project_field_options_query,
 )
 
-pytestmark = [pytest.mark.github_project_queries, pytest.mark.utils]
+
+# get_projects_from_repo_query
 
 
 def test_get_projects_from_repo_query():
@@ -43,6 +42,9 @@ def test_get_projects_from_repo_query():
     assert actual_query == expected_query
 
 
+# get_issues_from_project_query
+
+
 def test_get_issues_from_project_query():
     project_id = "test_project_id"
     after_argument = "test_after_argument"
@@ -53,6 +55,9 @@ def test_get_issues_from_project_query():
     actual_query = get_issues_from_project_query(project_id, after_argument)
 
     assert actual_query == expected_query
+
+
+# get_project_field_options_query
 
 
 def test_get_project_field_options_query():

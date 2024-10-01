@@ -27,7 +27,9 @@ from living_documentation_generator.utils.utils import (
 )
 
 
-@pytest.mark.make_issue_key
+# make_issue_key
+
+
 def test_make_issue_key():
     organization_name = "org"
     repository_name = "repo"
@@ -39,7 +41,9 @@ def test_make_issue_key():
     assert actual_key == expected_key
 
 
-@pytest.mark.sanitize_filename
+# sanitize_filename
+
+
 @pytest.mark.parametrize(
     "filename_example, expected_filename",
     [
@@ -56,7 +60,9 @@ def test_sanitize_filename(filename_example, expected_filename):
     assert actual_filename == expected_filename
 
 
-@pytest.mark.make_absolute_path
+# make_absolute_path
+
+
 def test_make_absolute_path_from_relative_path():
     relative_path = "relative/path"
     expected_absolute_path = os.path.abspath(relative_path)
@@ -65,7 +71,6 @@ def test_make_absolute_path_from_relative_path():
     assert actual_absolute_path == expected_absolute_path
 
 
-@pytest.mark.make_absolute_path
 def test_make_absolute_path_from_absolute_path():
     absolute_path = "/absolute/path"
     expected_absolute_path = absolute_path
@@ -74,8 +79,10 @@ def test_make_absolute_path_from_absolute_path():
     assert actual_absolute_path == expected_absolute_path
 
 
-@pytest.mark.github_utils
-@pytest.mark.get_action_input
+# GitHub action utils
+# get_action_input
+
+
 def test_get_input_with_hyphen(mocker):
     mock_getenv = mocker.patch("os.getenv", return_value="test_value")
 
@@ -85,8 +92,6 @@ def test_get_input_with_hyphen(mocker):
     assert actual == "test_value"
 
 
-@pytest.mark.github_utils
-@pytest.mark.get_action_input
 def test_get_input_without_hyphen(mocker):
     mock_getenv = mocker.patch("os.getenv", return_value="another_test_value")
 
@@ -96,8 +101,9 @@ def test_get_input_without_hyphen(mocker):
     assert actual == "another_test_value"
 
 
-@pytest.mark.github_utils
-@pytest.mark.set_action_output
+# set_action_output
+
+
 def test_set_output_default(mocker):
     mocker.patch("os.getenv", return_value="default_output.txt")
     mock_open = mocker.patch("builtins.open", new_callable=mocker.mock_open)
@@ -109,8 +115,6 @@ def test_set_output_default(mocker):
     handle.write.assert_any_call("test-output=test_value\n")
 
 
-@pytest.mark.github_utils
-@pytest.mark.set_action_output
 def test_set_output_custom_path(mocker):
     mocker.patch("os.getenv", return_value="custom_output.txt")
     mock_open = mocker.patch("builtins.open", new_callable=mocker.mock_open)
@@ -122,8 +126,9 @@ def test_set_output_custom_path(mocker):
     handle.write.assert_any_call("custom-output=custom_value\n")
 
 
-@pytest.mark.github_utils
-@pytest.mark.set_action_failed
+# set_action_failed
+
+
 def test_set_failed(mocker):
     mock_print = mocker.patch("builtins.print", return_value=None)
     mock_exit = mocker.patch("sys.exit", return_value=None)

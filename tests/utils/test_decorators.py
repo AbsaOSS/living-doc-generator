@@ -13,11 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import pytest
 
 from living_documentation_generator.utils.decorators import debug_log_decorator, safe_call_decorator
-
-pytestmark = [pytest.mark.decorators, pytest.mark.utils]
 
 
 # sample function to be decorated
@@ -25,7 +22,9 @@ def sample_function(x, y):
     return x + y
 
 
-@pytest.mark.debug_log_decorator
+# debug_log_decorator
+
+
 def test_debug_log_decorator(mocker):
     # Mock logging
     mock_log_debug = mocker.patch("living_documentation_generator.utils.decorators.logger.debug")
@@ -42,7 +41,9 @@ def test_debug_log_decorator(mocker):
     assert mock_log_debug.call_args_list == expected_call
 
 
-@pytest.mark.safe_call_decorator
+# safe_call_decorator
+
+
 def test_safe_call_decorator_success(rate_limiter):
     @safe_call_decorator(rate_limiter)
     def sample_method(x, y):
@@ -53,7 +54,6 @@ def test_safe_call_decorator_success(rate_limiter):
     assert actual == 5
 
 
-@pytest.mark.safe_call_decorator
 def test_safe_call_decorator_exception(rate_limiter, mocker):
     mock_log_error = mocker.patch("living_documentation_generator.utils.decorators.logger.error")
 

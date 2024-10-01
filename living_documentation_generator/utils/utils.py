@@ -72,7 +72,7 @@ def make_absolute_path(path: str) -> str:
     return os.path.abspath(path)
 
 
-# Github
+# GitHub action utils
 def get_action_input(name: str, default: Optional[str] = None) -> str:
     """
     Get the input value from the environment variables.

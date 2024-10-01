@@ -14,15 +14,12 @@
 # limitations under the License.
 #
 
-import pytest
 import logging
 import os
 import sys
 from logging import StreamHandler
 
 from living_documentation_generator.utils.logging_config import setup_logging
-
-pytestmark = pytest.mark.setup_logging
 
 
 def validate_logging_config(mock_logging_setup, caplog, expected_level, expected_message):
@@ -44,6 +41,9 @@ def validate_logging_config(mock_logging_setup, caplog, expected_level, expected
 
     # Check that the log message is present
     assert expected_message in caplog.text
+
+
+# setup_logging
 
 
 def test_setup_logging_default_logging_level(mock_logging_setup, caplog):
