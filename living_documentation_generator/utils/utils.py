@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import logging
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ def make_absolute_path(path: str) -> str:
 
 
 # Github
-def get_action_input(name: str, default: str = None) -> str:
+def get_action_input(name: str, default: Optional[str] = None) -> str:
     """
     Get the input value from the environment variables.
 
@@ -80,7 +81,7 @@ def get_action_input(name: str, default: str = None) -> str:
     @param default: The default value to return if the environment variable is not set.
     @return: The value of the specified input parameter, or an empty string
     """
-    return os.getenv(f"INPUT_{name}", default)
+    return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default)
 
 
 def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:
@@ -107,5 +108,5 @@ def set_action_failed(message: str) -> None:
     @param message: The error message to display.
     @return: None
     """
-    logger.error("::error:: %s", message)
+    print(f"::error::{message}")
     sys.exit(1)
