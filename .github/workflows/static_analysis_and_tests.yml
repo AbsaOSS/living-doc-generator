@@ -66,6 +66,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.5
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5.1.0
@@ -76,21 +78,9 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install coverage pytest
 
-      - name: Run tests
-        run: coverage run --source='similarity,column2Vec' -m pytest ./tests
+      - name: Set PYTHONPATH environment variable
+        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}/living_documentation_generator/living_documentation_generator" >> $GITHUB_ENV
 
-#      - name: Show coverage
-#        run: coverage report -m
-
-#      - name: Create coverage file
-#        run: coverage xml
-
-#      - name: Get Cover
-#        uses: orgoro/coverage@v3.1
-#        with:
-#          coverageFile: coverage.xml
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          thresholdAll: 0.7
-#          thresholdNew: 0.9
+      - name: Build and run unit tests
+        run: pytest --cov=living_documentation_generator --cov-report=html tests/ -vv --cov-fail-under=80
