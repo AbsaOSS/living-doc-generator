@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import re
 
 from living_documentation_generator.utils.constants import (
     PROJECTS_FROM_REPO_QUERY,
@@ -40,6 +41,8 @@ def test_get_projects_from_repo_query():
     actual_query = get_projects_from_repo_query(organization_name, repository_name)
 
     assert actual_query == expected_query
+    leftover_placeholders = re.findall(r'\{\w+\}', actual_query)
+    assert not leftover_placeholders
 
 
 # get_issues_from_project_query
@@ -55,6 +58,8 @@ def test_get_issues_from_project_query():
     actual_query = get_issues_from_project_query(project_id, after_argument)
 
     assert actual_query == expected_query
+    leftover_placeholders = re.findall(r'\{\w+\}', actual_query)
+    assert not leftover_placeholders
 
 
 # get_project_field_options_query
@@ -71,3 +76,5 @@ def test_get_project_field_options_query():
     actual_query = get_project_field_options_query(organization_name, repository_name, project_number)
 
     assert actual_query == expected_query
+    leftover_placeholders = re.findall(r'\{\w+\}', actual_query)
+    assert not leftover_placeholders

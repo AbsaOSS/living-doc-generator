@@ -65,5 +65,10 @@ def test_safe_call_decorator_exception(rate_limiter, mocker):
 
     assert actual is None
     mock_log_error.assert_called_once()
-    assert "Unexpected error calling %s:" in mock_log_error.call_args[0][0]
-    assert "sample_method" in mock_log_error.call_args[0][1]
+    exception_message = mock_log_error.call_args[0][0]
+    assert "%s by calling %s: %s." in exception_message
+    exception_type = mock_log_error.call_args[0][1]
+    assert "ZeroDivisionError" in exception_type
+    method_name = mock_log_error.call_args[0][2]
+    assert "sample_method" in method_name
+

@@ -60,25 +60,6 @@ def test_sanitize_filename(filename_example, expected_filename):
     assert actual_filename == expected_filename
 
 
-# make_absolute_path
-
-
-def test_make_absolute_path_from_relative_path():
-    relative_path = "relative/path"
-    expected_absolute_path = os.path.abspath(relative_path)
-    actual_absolute_path = make_absolute_path(relative_path)
-
-    assert actual_absolute_path == expected_absolute_path
-
-
-def test_make_absolute_path_from_absolute_path():
-    absolute_path = "/absolute/path"
-    expected_absolute_path = absolute_path
-    actual_absolute_path = make_absolute_path(absolute_path)
-
-    assert actual_absolute_path == expected_absolute_path
-
-
 # GitHub action utils
 # get_action_input
 

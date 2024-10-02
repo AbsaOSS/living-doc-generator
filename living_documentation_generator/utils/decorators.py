@@ -75,7 +75,8 @@ def safe_call_decorator(rate_limiter: GithubRateLimiter) -> Callable:
                 logger.error("HTTP error calling %s: %s.", method.__name__, e, exc_info=True)
                 return None
             except Exception as e:
-                logger.error("Unexpected error calling %s: %s.", method.__name__, e, exc_info=True)
+                exception_type = type(e).__name__
+                logger.error("%s by calling %s: %s.", exception_type, method.__name__, e, exc_info=True)
                 return None
 
         return wrapped
