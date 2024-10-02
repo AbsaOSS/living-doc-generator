@@ -449,7 +449,7 @@ You can modify the directory to control the level of detail or granularity as pe
 
 To run specific test, write the command following the pattern below:
 ```bash
-pytest path/to/test_file.py::name_of_specific_test_method
+pytest tests/utils/test_utils.py::test_make_issue_key
 ```
 
 ## Code Coverage
@@ -459,7 +459,7 @@ The objective of the project is to achieve a minimal score of 80 %.
 
 To generate the coverage report, run the following command:
 ```bash
-pytest --cov=living_documentation_generator --cov-fail-under=80 --cov-report=html
+pytest --cov=. --cov-fail-under=80 --cov-report=html
 ```
 
 See the coverage report on the path:
