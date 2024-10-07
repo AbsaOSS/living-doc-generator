@@ -84,6 +84,18 @@ def test_get_input_without_hyphen(mocker):
 # validate_query_format
 
 
+def test_validate_query_format_right_behaviour(mocker):
+    mock_exit = mocker.patch("sys.exit", return_value=None)
+    mock_log_error = mocker.patch("living_documentation_generator.utils.utils.logger.error")
+
+    # Test case where there are no missing or extra placeholders
+    query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
+    expected_placeholders = {"placeholder1", "placeholder2"}
+    validate_query_format(query_string, expected_placeholders)
+    mock_log_error.assert_not_called()
+    mock_exit.assert_not_called()
+
+
 def test_validate_query_format_missing_placeholder(mocker):
     mock_exit = mocker.patch("sys.exit", return_value=None)
     mock_log_error = mocker.patch("living_documentation_generator.utils.utils.logger.error")
@@ -106,18 +118,6 @@ def test_validate_query_format_extra_placeholder(mocker):
     validate_query_format(query_string, expected_placeholders)
     mock_log_error.assert_called_with('Missing placeholders: %s, Extra placeholders: %s.\n For the query: %s', set(), {'placeholder2'}, 'This is a query with placeholders {placeholder1} and {placeholder2}')
     mock_exit.assert_called_with(1)
-
-
-def test_validate_query_format_right_behaviour(mocker):
-    mock_exit = mocker.patch("sys.exit", return_value=None)
-    mock_log_error = mocker.patch("living_documentation_generator.utils.utils.logger.error")
-
-    # Test case where there are no missing or extra placeholders
-    query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
-    expected_placeholders = {"placeholder1", "placeholder2"}
-    validate_query_format(query_string, expected_placeholders)
-    mock_log_error.assert_not_called()
-    mock_exit.assert_not_called()
 
 
 # set_action_output
