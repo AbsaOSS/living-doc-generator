@@ -58,7 +58,7 @@ jobs:
       - name: Check code format with Black
         id: check-format
         run: |
-          black --check $(git ls-files '*.py'| grep -v '^tests/')
+          black --check $(git ls-files '*.py')
 
   python-tests:
     runs-on: ubuntu-latest
