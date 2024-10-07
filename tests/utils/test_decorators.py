@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from github import GithubException
+from requests import RequestException
 
 from living_documentation_generator.utils.decorators import debug_log_decorator, safe_call_decorator
 
@@ -54,6 +56,66 @@ def test_safe_call_decorator_success(rate_limiter):
     assert actual == 5
 
 
+def test_safe_call_decorator_network_error(rate_limiter, mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.utils.decorators.logger.error")
+
+    @safe_call_decorator(rate_limiter)
+    def sample_method():
+        raise ConnectionError("Test connection error")
+
+    actual = sample_method()
+
+    assert actual is None
+    assert mock_log_error.call_count == 1
+
+    args, kwargs = mock_log_error.call_args
+    assert args[0] == "Network error calling %s: %s."
+    assert args[1] == "sample_method"
+    assert isinstance(args[2], ConnectionError)
+    assert str(args[2]) == "Test connection error"
+    assert kwargs['exc_info']
+
+
+def test_safe_call_decorator_github_api_error(rate_limiter, mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.utils.decorators.logger.error")
+
+    @safe_call_decorator(rate_limiter)
+    def sample_method():
+        raise GithubException(status=404)
+
+    actual = sample_method()
+
+    assert actual is None
+    assert mock_log_error.call_count == 1
+
+    args, kwargs = mock_log_error.call_args
+    assert args[0] == 'GitHub API error calling %s: %s.'
+    assert args[1] == "sample_method"
+    assert isinstance(args[2], GithubException)
+    assert str(args[2]) == "404"
+    assert kwargs['exc_info']
+
+
+def test_safe_call_decorator_http_error(mocker, rate_limiter):
+    mock_log_error = mocker.patch("living_documentation_generator.utils.decorators.logger.error")
+
+    @safe_call_decorator(rate_limiter)
+    def sample_method():
+        raise RequestException("Test HTTP error")
+
+    actual = sample_method()
+
+    assert actual is None
+    assert mock_log_error.call_count == 1
+
+    args, kwargs = mock_log_error.call_args
+    assert args[0] == "HTTP error calling %s: %s."
+    assert args[1] == "sample_method"
+    assert isinstance(args[2], RequestException)
+    assert str(args[2]) == "Test HTTP error"
+    assert kwargs['exc_info']
+
+
 def test_safe_call_decorator_exception(rate_limiter, mocker):
     mock_log_error = mocker.patch("living_documentation_generator.utils.decorators.logger.error")
 
@@ -71,4 +133,6 @@ def test_safe_call_decorator_exception(rate_limiter, mocker):
     assert "ZeroDivisionError" in exception_type
     method_name = mock_log_error.call_args[0][2]
     assert "sample_method" in method_name
+
+
 
