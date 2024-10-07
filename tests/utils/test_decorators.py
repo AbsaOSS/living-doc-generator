@@ -81,7 +81,16 @@ def test_safe_call_decorator_github_api_error(rate_limiter, mocker):
 
     @safe_call_decorator(rate_limiter)
     def sample_method():
-        raise GithubException(status=404)
+        status_code = 404
+        error_data = {
+            "message": "Not Found",
+            "documentation_url": "https://developer.github.com/v3"
+        }
+        response_headers = {
+            "X-RateLimit-Limit": "60",
+            "X-RateLimit-Remaining": "0",
+        }
+        raise GithubException(status_code, error_data, response_headers)
 
     actual = sample_method()
 
@@ -90,9 +99,9 @@ def test_safe_call_decorator_github_api_error(rate_limiter, mocker):
 
     args, kwargs = mock_log_error.call_args
     assert args[0] == 'GitHub API error calling %s: %s.'
-    assert args[1] == "sample_method"
+    assert args[1] == 'sample_method'
     assert isinstance(args[2], GithubException)
-    assert str(args[2]) == "404"
+    assert str(args[2]) == '404 {"message": "Not Found", "documentation_url": "https://developer.github.com/v3"}'
     assert kwargs['exc_info']
 
 
