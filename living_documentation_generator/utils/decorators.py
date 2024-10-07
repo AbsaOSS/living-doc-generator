@@ -24,7 +24,7 @@ import logging
 from typing import Callable, Optional, Any
 from functools import wraps
 from github import GithubException
-from requests.exceptions import Timeout, ConnectionError, RequestException
+from requests.exceptions import Timeout, RequestException
 
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 

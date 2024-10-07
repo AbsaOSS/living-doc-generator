@@ -81,11 +81,13 @@ def validate_query_format(query_string, expected_placeholders) -> None:
     @param expected_placeholders: The set of expected placeholders in the query.
     @return: None
     """
-    actual_placeholders = set(re.findall(r'\{(\w+)\}', query_string))
+    actual_placeholders = set(re.findall(r"\{(\w+)\}", query_string))
     missing = expected_placeholders - actual_placeholders
     extra = actual_placeholders - expected_placeholders
     if missing or extra:
-        logger.error(f"Missing placeholders: {missing}, Extra placeholders: {extra}.\n For the query: {query_string}")
+        logger.error(
+            "Missing placeholders: %s, Extra placeholders: %s.\n For the query: %s", missing, extra, query_string
+        )
         sys.exit(1)
 
 
