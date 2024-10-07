@@ -87,9 +87,7 @@ def validate_query_format(query_string, expected_placeholders) -> None:
     if missing or extra:
         missing_message = f"Missing placeholders: {missing}. " if missing else ""
         extra_message = f"Extra placeholders: {extra}." if extra else ""
-        logger.error(
-            "%s%s\n For the query: %s", missing_message, extra_message, query_string
-        )
+        logger.error("%s%s\n For the query: %s", missing_message, extra_message, query_string)
         sys.exit(1)
 
 
