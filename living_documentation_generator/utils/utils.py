@@ -72,6 +72,23 @@ def make_absolute_path(path: str) -> str:
     return os.path.abspath(path)
 
 
+def validate_query_format(query_string, expected_placeholders) -> None:
+    """
+    Validate the placeholders in the query string.
+    Check if all the expected placeholders are present in the query and exit if not.
+
+    @param query_string: The query string to validate.
+    @param expected_placeholders: The set of expected placeholders in the query.
+    @return: None
+    """
+    actual_placeholders = set(re.findall(r'\{(\w+)\}', query_string))
+    missing = expected_placeholders - actual_placeholders
+    extra = actual_placeholders - expected_placeholders
+    if missing or extra:
+        logger.error(f"Missing placeholders: {missing}, Extra placeholders: {extra}.\n For the query: {query_string}")
+        sys.exit(1)
+
+
 # GitHub action utils
 def get_action_input(name: str, default: Optional[str] = None) -> str:
     """
