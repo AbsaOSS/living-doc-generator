@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from github import GithubException
 from requests import RequestException
 
@@ -73,7 +74,7 @@ def test_safe_call_decorator_network_error(rate_limiter, mocker):
     assert args[1] == "sample_method"
     assert isinstance(args[2], ConnectionError)
     assert str(args[2]) == "Test connection error"
-    assert kwargs['exc_info']
+    assert kwargs["exc_info"]
 
 
 def test_safe_call_decorator_github_api_error(rate_limiter, mocker):
@@ -82,10 +83,7 @@ def test_safe_call_decorator_github_api_error(rate_limiter, mocker):
     @safe_call_decorator(rate_limiter)
     def sample_method():
         status_code = 404
-        error_data = {
-            "message": "Not Found",
-            "documentation_url": "https://developer.github.com/v3"
-        }
+        error_data = {"message": "Not Found", "documentation_url": "https://developer.github.com/v3"}
         response_headers = {
             "X-RateLimit-Limit": "60",
             "X-RateLimit-Remaining": "0",
@@ -98,11 +96,11 @@ def test_safe_call_decorator_github_api_error(rate_limiter, mocker):
     assert mock_log_error.call_count == 1
 
     args, kwargs = mock_log_error.call_args
-    assert args[0] == 'GitHub API error calling %s: %s.'
-    assert args[1] == 'sample_method'
+    assert args[0] == "GitHub API error calling %s: %s."
+    assert args[1] == "sample_method"
     assert isinstance(args[2], GithubException)
     assert str(args[2]) == '404 {"message": "Not Found", "documentation_url": "https://developer.github.com/v3"}'
-    assert kwargs['exc_info']
+    assert kwargs["exc_info"]
 
 
 def test_safe_call_decorator_http_error(mocker, rate_limiter):
@@ -122,7 +120,7 @@ def test_safe_call_decorator_http_error(mocker, rate_limiter):
     assert args[1] == "sample_method"
     assert isinstance(args[2], RequestException)
     assert str(args[2]) == "Test HTTP error"
-    assert kwargs['exc_info']
+    assert kwargs["exc_info"]
 
 
 def test_safe_call_decorator_exception(rate_limiter, mocker):
@@ -142,6 +140,3 @@ def test_safe_call_decorator_exception(rate_limiter, mocker):
     assert "ZeroDivisionError" in exception_type
     method_name = mock_log_error.call_args[0][2]
     assert "sample_method" in method_name
-
-
-

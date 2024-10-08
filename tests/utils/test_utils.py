@@ -104,7 +104,12 @@ def test_validate_query_format_missing_placeholder(mocker):
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
     expected_placeholders = {"placeholder1", "placeholder2", "placeholder3"}
     validate_query_format(query_string, expected_placeholders)
-    mock_log_error.assert_called_with('%s%s\nFor the query: %s', "Missing placeholders: {'placeholder3'}. ", '', 'This is a query with placeholders {placeholder1} and {placeholder2}')
+    mock_log_error.assert_called_with(
+        "%s%s\nFor the query: %s",
+        "Missing placeholders: {'placeholder3'}. ",
+        "",
+        "This is a query with placeholders {placeholder1} and {placeholder2}",
+    )
     mock_exit.assert_called_with(1)
 
 
@@ -116,7 +121,12 @@ def test_validate_query_format_extra_placeholder(mocker):
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
     expected_placeholders = {"placeholder1"}
     validate_query_format(query_string, expected_placeholders)
-    mock_log_error.assert_called_with('%s%s\nFor the query: %s', '', "Extra placeholders: {'placeholder2'}.", 'This is a query with placeholders {placeholder1} and {placeholder2}')
+    mock_log_error.assert_called_with(
+        "%s%s\nFor the query: %s",
+        "",
+        "Extra placeholders: {'placeholder2'}.",
+        "This is a query with placeholders {placeholder1} and {placeholder2}",
+    )
     mock_exit.assert_called_with(1)
 
 
