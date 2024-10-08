@@ -106,8 +106,10 @@ class ActionInputs:
 
         for repository_json in repositories_json:
             config_repository = ConfigRepository()
-            config_repository.load_from_json(repository_json)
-            self.__repositories.append(config_repository)
+            if config_repository.load_from_json(repository_json):
+                self.__repositories.append(config_repository)
+            else:
+                logger.error("Failed to load repository from JSON: %s.", repository_json)
 
         return self
 

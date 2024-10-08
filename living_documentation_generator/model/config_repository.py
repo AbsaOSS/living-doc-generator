@@ -18,7 +18,10 @@
 This module contains a data container for Config Repository, which holds all the essential logic.
 """
 
+import logging
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 class ConfigRepository:
@@ -53,14 +56,21 @@ class ConfigRepository:
         """Getter of the project title filter."""
         return self.__projects_title_filter
 
-    def load_from_json(self, repository_json: dict) -> None:
+    def load_from_json(self, repository_json: dict) -> bool:
         """
         Load the configuration from a JSON object.
 
         @param repository_json: The JSON object containing the repository configuration.
-        @return: None
+        @return: bool
         """
-        self.__organization_name = repository_json["organization-name"]
-        self.__repository_name = repository_json["repository-name"]
-        self.__query_labels = repository_json["query-labels"]
-        self.__projects_title_filter = repository_json["projects-title-filter"]
+        try:
+            self.__organization_name = repository_json["organization-name"]
+            self.__repository_name = repository_json["repository-name"]
+            self.__query_labels = repository_json["query-labels"]
+            self.__projects_title_filter = repository_json["projects-title-filter"]
+            return True
+        except KeyError as e:
+            logger.error("The key is not found in the repository JSON input: %s.", e, exc_info=True)
+        except TypeError as e:
+            logger.error("The repository JSON input does not have a dictionary structure: %s.", e, exc_info=True)
+        return False
