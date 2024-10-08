@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import logging
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +72,27 @@ def make_absolute_path(path: str) -> str:
     return os.path.abspath(path)
 
 
-# Github
-def get_action_input(name: str, default: str = None) -> str:
+def validate_query_format(query_string, expected_placeholders) -> None:
+    """
+    Validate the placeholders in the query string.
+    Check if all the expected placeholders are present in the query and exit if not.
+
+    @param query_string: The query string to validate.
+    @param expected_placeholders: The set of expected placeholders in the query.
+    @return: None
+    """
+    actual_placeholders = set(re.findall(r"\{(\w+)\}", query_string))
+    missing = expected_placeholders - actual_placeholders
+    extra = actual_placeholders - expected_placeholders
+    if missing or extra:
+        missing_message = f"Missing placeholders: {missing}. " if missing else ""
+        extra_message = f"Extra placeholders: {extra}." if extra else ""
+        logger.error("%s%s\nFor the query: %s", missing_message, extra_message, query_string)
+        sys.exit(1)
+
+
+# GitHub action utils
+def get_action_input(name: str, default: Optional[str] = None) -> str:
     """
     Get the input value from the environment variables.
 
@@ -80,7 +100,7 @@ def get_action_input(name: str, default: str = None) -> str:
     @param default: The default value to return if the environment variable is not set.
     @return: The value of the specified input parameter, or an empty string
     """
-    return os.getenv(f"INPUT_{name}", default)
+    return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default)
 
 
 def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:
@@ -107,5 +127,5 @@ def set_action_failed(message: str) -> None:
     @param message: The error message to display.
     @return: None
     """
-    logger.error("::error:: %s", message)
+    print(f"::error::{message}")
     sys.exit(1)

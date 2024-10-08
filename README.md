@@ -16,7 +16,8 @@
 - [Run Scripts Locally](#run-scripts-locally)
 - [Run Pylint Check Locally](#run-pylint-check-locally)
 - [Run Black Tool Locally](#run-black-tool-locally)
-- [Run unit test](#run-unit-test)
+- [Run Unit Test](#run-unit-test)
+- [Code Coverage](#code-coverage)
 - [Deployment](#deployment)
 - [Features](#features)
     - [Data Mining from GitHub Repositories](#data-mining-from-github-repositories)
@@ -355,7 +356,8 @@ chmod +x run_script.sh
 ## Run Pylint Check Locally
 This project uses [Pylint](https://pypi.org/project/pylint/) tool for static code analysis.
 Pylint analyses your code without actually running it.
-It checks for errors, enforces, coding standards, looks for code smells etc. 
+It checks for errors, enforces, coding standards, looks for code smells etc.
+We do exclude the `tests/` file from the pylint check.
 
 Pylint displays a global evaluation score for the code, rated out of a maximum score of 10.0.
 We are aiming to keep our code quality high above the score 9.5.
@@ -403,6 +405,7 @@ The coding style used can be viewed as a strict subset of PEP 8.
 
 The project root file `pyproject.toml` defines the Black tool configuration.
 In this project we are accepting the line length of 120 characters.
+We also do exclude the `tests/` file from the black formatting.
 
 Follow these steps to format your code with Black locally:
 
@@ -438,35 +441,33 @@ All done! ✨ 🍰 ✨
 ```
 
 ## Run Unit Test
-TODO - check this chapter and update by latest state
-### Launch Unit Tests
-```
-pytest
+
+Unit tests are written using Pytest framework. To run alle the tests, use the following command:
+```bash
+pytest tests/
 ```
 
-### To Run Specific Tests or Get Verbose Output:
-```
-pytest -v  # Verbose mode
-pytest path/to/test_file.py  # Run specific test file
+You can modify the directory to control the level of detail or granularity as per your needs.
+
+To run specific test, write the command following the pattern below:
+```bash
+pytest tests/utils/test_utils.py::test_make_issue_key
 ```
 
-### To Check Test Coverage:
-```
-pytest --cov=../scripts
+## Code Coverage
+
+This project uses [pytest-cov](https://pypi.org/project/pytest-cov/) plugin to generate test coverage reports.
+The objective of the project is to achieve a minimal score of 80 %. We do exclude the `tests/` file from the coverage report.
+
+To generate the coverage report, run the following command:
+```bash
+pytest --cov=. tests/ --cov-fail-under=80 --cov-report=html
 ```
 
-### After running the tests
-```
-deactivate
-```
-
-### Commit Changes
-After testing and ensuring that everything is functioning as expected, prepare your files for deployment:
+See the coverage report on the path:
 
 ```
-git add action.yml dist/index.js  # Adjust paths as needed
-git commit -m "Prepare GitHub Action for deployment"
-git push
+htmlcov/index.html
 ```
 
 ## Deployment

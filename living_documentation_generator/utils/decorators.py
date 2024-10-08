@@ -23,6 +23,8 @@ import logging
 
 from typing import Callable, Optional, Any
 from functools import wraps
+from github import GithubException
+from requests.exceptions import Timeout, RequestException
 
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 
@@ -63,8 +65,17 @@ def safe_call_decorator(rate_limiter: GithubRateLimiter) -> Callable:
         def wrapped(*args, **kwargs) -> Optional[Any]:
             try:
                 return method(*args, **kwargs)
-            except (ValueError, TypeError) as e:
-                logger.error("Error calling %s: %s", method.__name__, e, exc_info=True)
+            except (ConnectionError, Timeout) as e:
+                logger.error("Network error calling %s: %s.", method.__name__, e, exc_info=True)
+                return None
+            except GithubException as e:
+                logger.error("GitHub API error calling %s: %s.", method.__name__, e, exc_info=True)
+                return None
+            except RequestException as e:
+                logger.error("HTTP error calling %s: %s.", method.__name__, e, exc_info=True)
+                return None
+            except Exception as e:
+                logger.error("%s by calling %s: %s.", type(e).__name__, method.__name__, e, exc_info=True)
                 return None
 
         return wrapped
