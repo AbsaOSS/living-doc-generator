@@ -16,33 +16,18 @@
 from github.Issue import Issue
 
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
-from living_documentation_generator.model.project_status import ProjectStatus
-
-
-# update_with_project_data
-
-
-# THIS MIGHT NOT BE NEEDED, SINCE WE TEST ASSIGN AND APPEND
-def test_update_with_project_data_correct_behaviour():
-    actual_consolidated_issue = ConsolidatedIssue("organization/repo")
-    project_status = ProjectStatus()
-
-    actual_consolidated_issue.update_with_project_data(project_status)
-
-    assert actual_consolidated_issue.linked_to_project
-    assert actual_consolidated_issue.project_issue_statuses == [project_status]
 
 
 # generate_page_filename
 
 
 def test_generate_page_filename_correct_behaviour():
-    mock_issue = Issue(None, None, {"number": 1, "title": None}, completed=True)
+    mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
     actual = consolidated_issue.generate_page_filename()
 
-    assert actual == "1.md"
+    assert actual == "1_issue_title.md"
 
 
 def test_generate_page_filename_with_none_title(mocker):
