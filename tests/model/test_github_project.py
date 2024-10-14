@@ -23,25 +23,14 @@ from living_documentation_generator.model.github_project import GithubProject
 
 def test_loads_with_valid_input_loads_correctly(mocker):
     github_project = GithubProject()
-    project_json = {
-        "id": "123",
-        "number": 1,
-        "title": "Test Project"
-    }
+    project_json = {"id": "123", "number": 1, "title": "Test Project"}
     repository = mocker.Mock(spec=Repository)
     repository.owner.login = "organizationABC"
     repository.full_name = "organizationABC/repoABC"
     field_option_response = {
         "repository": {
             "projectV2": {
-                "fields": {
-                    "nodes": [
-                        {
-                            "name": "field",
-                            "options": [{"name": "option1"}, {"name": "option2"}]
-                        }
-                    ]
-                }
+                "fields": {"nodes": [{"name": "field", "options": [{"name": "option1"}, {"name": "option2"}]}]}
             }
         }
     }
@@ -58,25 +47,14 @@ def test_loads_with_valid_input_loads_correctly(mocker):
 def test_loads_with_missing_key(mocker):
     github_project = GithubProject()
     mock_log_error = mocker.patch("living_documentation_generator.model.github_project.logger.error")
-    project_json = {
-        "id": "123",
-        "title": "Test Project",
-        "unexpected_key": "unexpected_value"
-    }
+    project_json = {"id": "123", "title": "Test Project", "unexpected_key": "unexpected_value"}
     repository = mocker.Mock(spec=Repository)
     repository.owner.login = "organizationABC"
     repository.full_name = "organizationABC/repoABC"
     field_option_response = {
         "repository": {
             "projectV2": {
-                "fields": {
-                    "nodes": [
-                        {
-                            "name": "field1",
-                            "options": [{"name": "option1"}, {"name": "option2"}]
-                        }
-                    ]
-                }
+                "fields": {"nodes": [{"name": "field1", "options": [{"name": "option1"}, {"name": "option2"}]}]}
             }
         }
     }
@@ -84,7 +62,8 @@ def test_loads_with_missing_key(mocker):
     github_project.loads(project_json, repository, field_option_response)
 
     mock_log_error.assert_called_once_with(
-        'There is no expected response structure for the project json: %s', 'organizationABC/repoABC', exc_info=True)
+        "There is no expected response structure for the project json: %s", "organizationABC/repoABC", exc_info=True
+    )
 
 
 # _update_field_options
@@ -97,14 +76,8 @@ def test_update_field_options_with_valid_input():
             "projectV2": {
                 "fields": {
                     "nodes": [
-                        {
-                            "name": "field1",
-                            "options": [{"name": "option1"}, {"name": "option2"}]
-                        },
-                        {
-                            "wrong_name": "field2",
-                            "wrong_options": [{"name": "option3"}, {"name": "option4"}]
-                        }
+                        {"name": "field1", "options": [{"name": "option1"}, {"name": "option2"}]},
+                        {"wrong_name": "field2", "wrong_options": [{"name": "option3"}, {"name": "option4"}]},
                     ]
                 }
             }
@@ -119,11 +92,7 @@ def test_update_field_options_with_valid_input():
 def test_update_field_options_with_no_expected_response_structure(mocker):
     github_project = GithubProject()
     mock_log_error = mocker.patch("living_documentation_generator.model.github_project.logger.error")
-    field_option_response = {
-        "unexpected_structure": {
-            "unexpected_key": "unexpected_value"
-        }
-    }
+    field_option_response = {"unexpected_structure": {"unexpected_key": "unexpected_value"}}
 
     github_project._update_field_options(field_option_response)
 
@@ -133,4 +102,3 @@ def test_update_field_options_with_no_expected_response_structure(mocker):
         github_project.title,
         exc_info=True,
     )
-
