@@ -45,14 +45,14 @@ def test_loads_with_valid_input():
     actual = project_issue.loads(issue_json, project)
 
     assert actual is not None
-    assert actual.number == issue_json["content"]["number"]
-    assert actual.organization_name == issue_json["content"]["repository"]["owner"]["login"]
-    assert actual.repository_name == issue_json["content"]["repository"]["name"]
-    assert actual.project_status.project_title == project.title
-    assert actual.project_status.status == "Status1"
-    assert actual.project_status.priority == "Priority1"
-    assert actual.project_status.size == "Size1"
-    assert actual.project_status.moscow == "MoSCoW1"
+    assert issue_json["content"]["number"] == actual.number
+    assert issue_json["content"]["repository"]["owner"]["login"] == actual.organization_name
+    assert issue_json["content"]["repository"]["name"] == actual.repository_name
+    assert project.title == actual.project_status.project_title
+    assert "Status1" == actual.project_status.status
+    assert "Priority1" == actual.project_status.priority
+    assert "Size1" == actual.project_status.size
+    assert "MoSCoW1" == actual.project_status.moscow
 
 
 def test_loads_without_content_key_logs_debug(mocker):
@@ -75,7 +75,7 @@ def test_loads_with_incorrect_json_structure_for_repository_name(mocker):
 
     actual = project_issue.loads(incorrect_json, project)
 
-    assert actual.number == 1
-    assert actual.organization_name == ""
-    assert actual.repository_name == ""
+    assert 1 == actual.number
+    assert "" == actual.organization_name
+    assert "" == actual.repository_name
     mock_log.debug.assert_called_once_with("KeyError occurred while parsing issue json: %s.", incorrect_json)

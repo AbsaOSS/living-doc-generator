@@ -37,7 +37,7 @@ def test_make_issue_key():
     expected_key = "org/repo/123"
     actual_key = make_issue_key(organization_name, repository_name, issue_number)
 
-    assert actual_key == expected_key
+    assert expected_key == actual_key
 
 
 # sanitize_filename
@@ -56,7 +56,7 @@ def test_make_issue_key():
 )
 def test_sanitize_filename(filename_example, expected_filename):
     actual_filename = sanitize_filename(filename_example)
-    assert actual_filename == expected_filename
+    assert expected_filename == actual_filename
 
 
 # GitHub action utils
@@ -69,7 +69,7 @@ def test_get_input_with_hyphen(mocker):
     actual = get_action_input("test-input", default=None)
 
     mock_getenv.assert_called_with("INPUT_TEST_INPUT", default=None)
-    assert actual == "test_value"
+    assert "test_value" == actual
 
 
 def test_get_input_without_hyphen(mocker):
@@ -78,7 +78,7 @@ def test_get_input_without_hyphen(mocker):
     actual = get_action_input("anotherinput", default=None)
 
     mock_getenv.assert_called_with("INPUT_ANOTHERINPUT", default=None)
-    assert actual == "another_test_value"
+    assert "another_test_value" == actual
 
 
 # validate_query_format
