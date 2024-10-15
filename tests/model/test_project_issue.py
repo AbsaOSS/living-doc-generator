@@ -20,7 +20,7 @@ from living_documentation_generator.model.project_issue import ProjectIssue
 # loads
 
 
-def test_loads_with_valid_input():
+def test_loads_with_valid_input(github_project_setup):
     project_issue = ProjectIssue()
     issue_json = {
         "content": {"number": 1, "repository": {"owner": {"login": "organizationABC"}, "name": "repoABC"}},
@@ -33,8 +33,7 @@ def test_loads_with_valid_input():
             ]
         },
     }
-    project = GithubProject()
-    project.title = "Test Project"
+    project = github_project_setup()
     project.field_options = {
         "Status": ["Status1", "Status2"],
         "Priority": ["Priority1", "Priority2"],
