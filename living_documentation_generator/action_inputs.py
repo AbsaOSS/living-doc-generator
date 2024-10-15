@@ -142,27 +142,28 @@ class ActionInputs:
 
         # Validate INPUT_GITHUB_TOKEN
         if not self.github_token:
-            errors.append("Input GitHub token could not be loaded from the environment.")
+            errors.append("INPUT_GITHUB_TOKEN could not be loaded from the environment.")
         if not isinstance(self.github_token, str):
-            errors.append("Input GitHub token must be a string.")
+            errors.append("INPUT_GITHUB_TOKEN must be a string.")
 
         # Validate INPUT_REPOSITORIES and its correct JSON format
         try:
             json.loads(repositories_json)
         except json.JSONDecodeError:
-            errors.append("Input Repositories is not a valid JSON string.")
+            errors.append("INPUT_REPOSITORIES is not a valid JSON string.")
 
         # Validate INPUT_OUTPUT_PATH
         if out_path == "":
-            errors.append("Input Output path can not be an empty string.")
+            errors.append("INPUT_OUTPUT_PATH can not be an empty string.")
 
         # Check that the INPUT_OUTPUT_PATH is not a directory in the project
         # Note: That would cause a rewriting project files
         project_directories = get_all_project_directories()
         if out_path in project_directories:
-            errors.append("Output path can not be a directory in the project.")
+            errors.append("INPUT_OUTPUT_PATH can not be a project directory.")
 
         if errors:
             for error in errors:
-                logger.error(error, exc_info=True)
+                logger.error(error)
+            logger.info("GitHub Action is terminating as a cause of an input validation error.")
             sys.exit(1)
