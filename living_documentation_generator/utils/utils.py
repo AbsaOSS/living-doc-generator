@@ -91,7 +91,7 @@ def validate_query_format(query_string, expected_placeholders) -> None:
         sys.exit(1)
 
 
-def get_all_project_directories(path: str = '.') -> list[str]:
+def get_all_project_directories(path: str = ".") -> list[str]:
     """
     Get all directories in the project starting from the specified path.
 
