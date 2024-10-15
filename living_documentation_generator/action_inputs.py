@@ -30,7 +30,8 @@ from living_documentation_generator.utils.constants import (
     PROJECT_STATE_MINING,
     REPOSITORIES,
     OUTPUT_PATH,
-    STRUCTURED_OUTPUT, DEFAULT_OUTPUT_PATH,
+    STRUCTURED_OUTPUT,
+    DEFAULT_OUTPUT_PATH,
 )
 
 logger = logging.getLogger(__name__)
@@ -73,23 +74,6 @@ class ActionInputs:
     def structured_output(self) -> bool:
         """Getter of the structured output switch."""
         return self.__structured_output
-
-    @staticmethod
-    def validate_instance(input_value, expected_type: type, error_message: str, error_buffer: list) -> bool:
-        """
-        Validates the input value against the expected type.
-
-        @param input_value: The input value to validate.
-        @param expected_type: The expected type of the input value.
-        @param error_message: The error message to log if the validation fails.
-        @param error_buffer: The buffer to store the error messages.
-        @return: The boolean result of the validation.
-        """
-
-        if not isinstance(input_value, expected_type):
-            error_buffer.append(error_message)
-            return False
-        return True
 
     def load_from_environment(self, validate: bool = True) -> "ActionInputs":
         """
