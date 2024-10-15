@@ -91,6 +91,19 @@ def validate_query_format(query_string, expected_placeholders) -> None:
         sys.exit(1)
 
 
+def get_all_project_directories(path: str = '.') -> list[str]:
+    """
+    Get all directories in the project starting from the specified path.
+
+    @param path: The path to start searching for directories.
+    @return: A list of all directories in the project.
+    """
+    directories = []
+    for dir_path, dir_names, _ in os.walk(path):
+        directories.extend([os.path.join(dir_path, d) for d in dir_names])
+    return directories
+
+
 # GitHub action utils
 def get_action_input(name: str, default: Optional[str] = None) -> str:
     """
