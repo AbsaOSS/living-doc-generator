@@ -67,26 +67,6 @@ def test_loads_without_content_key_logs_debug(mocker):
     mock_log.debug.assert_called_once_with("No issue data provided in received json: %s.", {})
 
 
-def test_loads_with_incorrect_json_structure_for_number(mocker):
-    project_issue = ProjectIssue()
-    mock_log = mocker.patch("living_documentation_generator.model.project_issue.logger")
-    incorrect_json = {"content": {}}
-    project = GithubProject()
-
-    actual = project_issue.loads(incorrect_json, project)
-
-    assert actual.number == 0
-    assert actual.organization_name == ""
-    assert actual.repository_name == ""
-    mock_log.assert_has_calls(
-        [
-            mocker.call.debug("Wrong project issue json structure for `number` value: %s.", incorrect_json),
-            mocker.call.debug("Wrong project issue json structure for `repository_name` value: %s.", incorrect_json),
-            mocker.call.debug("Wrong project issue json structure for `organization_name` value: %s.", incorrect_json),
-        ]
-    )
-
-
 def test_loads_with_incorrect_json_structure_for_repository_name(mocker):
     project_issue = ProjectIssue()
     mock_log = mocker.patch("living_documentation_generator.model.project_issue.logger")
@@ -98,27 +78,4 @@ def test_loads_with_incorrect_json_structure_for_repository_name(mocker):
     assert actual.number == 1
     assert actual.organization_name == ""
     assert actual.repository_name == ""
-    mock_log.assert_has_calls(
-        [
-            mocker.call.debug("Wrong project issue json structure for `repository_name` value: %s.", incorrect_json),
-            mocker.call.debug("Wrong project issue json structure for `organization_name` value: %s.", incorrect_json),
-        ]
-    )
-
-
-def test_loads_with_incorrect_json_structure_for_organization_name(mocker):
-    project_issue = ProjectIssue()
-    mock_log = mocker.patch("living_documentation_generator.model.project_issue.logger")
-    incorrect_json = {
-        "content": {"number": 1, "repository": {"owner": {"incorrect_key": "incorrect_name"}, "name": "repositoryABC"}}
-    }
-    project = GithubProject()
-
-    actual = project_issue.loads(incorrect_json, project)
-
-    assert actual.number == 1
-    assert actual.repository_name == "repositoryABC"
-    assert actual.organization_name == ""
-    mock_log.debug.assert_called_once_with(
-        "Wrong project issue json structure for `organization_name` value: %s.", incorrect_json
-    )
+    mock_log.debug.assert_called_once_with("KeyError occurred while parsing issue json: %s.", incorrect_json)

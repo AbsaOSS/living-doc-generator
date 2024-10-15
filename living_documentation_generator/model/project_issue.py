@@ -73,16 +73,10 @@ class ProjectIssue:
 
         try:
             self.__number = issue_json["content"]["number"]
-        except KeyError:
-            logger.debug("Wrong project issue json structure for `number` value: %s.", issue_json)
-        try:
             self.__repository_name = issue_json["content"]["repository"]["name"]
-        except KeyError:
-            logger.debug("Wrong project issue json structure for `repository_name` value: %s.", issue_json)
-        try:
             self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
-        except KeyError:
-            logger.debug("Wrong project issue json structure for `organization_name` value: %s.", issue_json)
+        except KeyError as e:
+            logger.debug("KeyError occurred while parsing issue json: %s.", issue_json)
 
         self.__project_status.project_title = project.title
 
