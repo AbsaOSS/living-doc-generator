@@ -53,11 +53,6 @@ class GithubProject:
         """Getter of the project title."""
         return self.__title
 
-    @title.setter
-    def title(self, title: str) -> None:
-        """Setter of the project title."""
-        self.__title = title
-
     @property
     def organization_name(self) -> str:
         """Getter of the organization name."""
@@ -67,11 +62,6 @@ class GithubProject:
     def field_options(self) -> dict[str, str]:
         """Getter of the project field options."""
         return self.__field_options
-
-    @field_options.setter
-    def field_options(self, field_options: dict[str, str]) -> None:
-        """Setter of the project field options."""
-        self.__field_options = field_options
 
     def loads(self, project_json: dict, repository: Repository, field_option_response: dict) -> "GithubProject":
         """
@@ -89,10 +79,11 @@ class GithubProject:
             self.__organization_name = repository.owner.login
 
             logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
-        except KeyError:
+        except KeyError as e:
             logger.error(
-                "There is no expected response structure for the project json: %s",
+                "Missing key in the project json for repository `%s`: %s",
                 repository.full_name,
+                str(e),
                 exc_info=True,
             )
             return self

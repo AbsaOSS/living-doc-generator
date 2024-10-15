@@ -63,7 +63,7 @@ def test_loads_with_missing_key(mocker):
     github_project.loads(project_json, repository, field_option_response)
 
     mock_log_error.assert_called_once_with(
-        "There is no expected response structure for the project json: %s", "organizationABC/repoABC", exc_info=True
+        "Missing key in the project json for repository `%s`: %s", "organizationABC/repoABC", "'number'", exc_info=True
     )
 
 
