@@ -27,7 +27,7 @@ def test_generate_page_filename_correct_behaviour():
 
     actual = consolidated_issue.generate_page_filename()
 
-    assert actual == "1_issue_title.md"
+    assert "1_issue_title.md" == actual
 
 
 def test_generate_page_filename_with_none_title(mocker):
@@ -36,8 +36,8 @@ def test_generate_page_filename_with_none_title(mocker):
     consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
     actual = consolidated_issue.generate_page_filename()
-
-    assert actual == "1.md"
+    
+    assert "1.md" == actual
     mock_log_error.assert_called_once_with(
         "Issue page filename generation failed for Issue %s/%s (%s). Issue does not have a title.",
         "organization",

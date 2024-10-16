@@ -24,6 +24,7 @@ from living_documentation_generator.model.github_project import GithubProject
 def test_loads_with_valid_input_loads_correctly(mocker):
     github_project = GithubProject()
     project_json = {"id": "123", "number": 1, "title": "Test Project"}
+    expected_field_options = {"field": ["option1", "option2"]}
     repository = mocker.Mock(spec=Repository)
     repository.owner.login = "organizationABC"
     repository.full_name = "organizationABC/repoABC"
@@ -37,11 +38,11 @@ def test_loads_with_valid_input_loads_correctly(mocker):
 
     actual = github_project.loads(project_json, repository, field_option_response)
 
-    assert actual.id == project_json["id"]
-    assert actual.number == project_json["number"]
-    assert actual.title == project_json["title"]
-    assert actual.organization_name == repository.owner.login
-    assert actual.field_options == {"field": ["option1", "option2"]}
+    assert project_json["id"] == actual.id
+    assert project_json["number"] == actual.number
+    assert project_json["title"] == actual.title
+    assert repository.owner.login == actual.organization_name
+    assert expected_field_options == actual.field_options
 
 
 def test_loads_with_missing_key(mocker):
@@ -62,7 +63,7 @@ def test_loads_with_missing_key(mocker):
     github_project.loads(project_json, repository, field_option_response)
 
     mock_log_error.assert_called_once_with(
-        "There is no expected response structure for the project json: %s", "organizationABC/repoABC", exc_info=True
+        "Missing key in the project json for repository `%s`: %s", "organizationABC/repoABC", "'number'", exc_info=True
     )
 
 
@@ -86,7 +87,7 @@ def test_update_field_options_with_valid_input():
 
     github_project._update_field_options(field_option_response)
 
-    assert github_project.field_options == {"field1": ["option1", "option2"]}
+    assert {"field1": ["option1", "option2"]} == github_project.field_options
 
 
 def test_update_field_options_with_no_expected_response_structure(mocker):
@@ -96,7 +97,7 @@ def test_update_field_options_with_no_expected_response_structure(mocker):
 
     github_project._update_field_options(field_option_response)
 
-    assert github_project.field_options == {}
+    assert {} == github_project.field_options
     mock_log_error.assert_called_once_with(
         "There is no expected response structure for field options fetched from project: %s",
         github_project.title,
