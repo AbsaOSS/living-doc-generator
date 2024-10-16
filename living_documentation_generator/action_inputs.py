@@ -142,7 +142,11 @@ class ActionInputs:
 
         # Check that the INPUT_OUTPUT_PATH is not a directory in the project
         # Note: That would cause a rewriting project files
-        project_directories = get_all_project_directories()
+        # TODO: Do not know how to make sure, that we exclude folder that is made for output in the project
+        project_directories = get_all_project_directories(out_path)
+        if DEFAULT_OUTPUT_PATH in project_directories:
+            project_directories.remove(DEFAULT_OUTPUT_PATH)
+
         if out_path in project_directories:
             errors.append("INPUT_OUTPUT_PATH can not be a project directory.")
 
