@@ -75,8 +75,8 @@ class ProjectIssue:
             self.__number = issue_json["content"]["number"]
             self.__repository_name = issue_json["content"]["repository"]["name"]
             self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
-        except KeyError:
-            logger.debug("KeyError occurred while parsing issue json: %s.", issue_json)
+        except KeyError as e:
+            logger.debug("KeyError(%s) occurred while parsing issue json: %s.", str(e), issue_json)
 
         self.__project_status.project_title = project.title
 

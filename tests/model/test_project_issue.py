@@ -77,4 +77,4 @@ def test_loads_with_incorrect_json_structure_for_repository_name(mocker):
     assert 1 == actual.number
     assert "" == actual.organization_name
     assert "" == actual.repository_name
-    mock_log.debug.assert_called_once_with("KeyError occurred while parsing issue json: %s.", incorrect_json)
+    mock_log.debug.assert_called_once_with("KeyError(%s) occurred while parsing issue json: %s.", "'repository'", incorrect_json)
