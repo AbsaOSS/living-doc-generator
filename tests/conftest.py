@@ -18,7 +18,10 @@ import pytest
 from github import Github
 from github.Rate import Rate
 from github.RateLimit import RateLimit
+from github.Repository import Repository
+from pytest_mock import mocker
 
+from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 
 
@@ -48,3 +51,18 @@ def mock_rate_limiter(mocker):
 def mock_logging_setup(mocker):
     mock_log_config = mocker.patch("logging.basicConfig")
     yield mock_log_config
+
+
+@pytest.fixture
+def github_project_setup(mocker):
+    project = mocker.Mock(spec=GithubProject)
+    project_json = {"id": "123", "number": 1, "title": "Test Project"}
+
+    repository = mocker.Mock(spec=Repository)
+    repository.owner.login = "organizationABC"
+    repository.full_name = "organizationABC/repoABC"
+
+    field_option_response = {}
+    project.loads(project_json, repository, field_option_response)
+
+    return project

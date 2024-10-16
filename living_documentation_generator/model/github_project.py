@@ -89,10 +89,11 @@ class GithubProject:
             self.__organization_name = repository.owner.login
 
             logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
-        except KeyError:
+        except KeyError as e:
             logger.error(
-                "There is no expected response structure for the project json: %s",
+                "Missing key in the project json for repository `%s`: %s",
                 repository.full_name,
+                str(e),
                 exc_info=True,
             )
             return self
