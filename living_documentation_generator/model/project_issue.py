@@ -67,14 +67,17 @@ class ProjectIssue:
         @param: project: The GithubProject object representing the project the issue belongs to.
         @return: The ProjectIssue object with the loaded data.
         """
-        if not issue_json["content"]:
-            logger.debug("No issue data provided in received json.")
-            logger.debug(issue_json)
+        if "content" not in issue_json:
+            logger.debug("No issue data provided in received json: %s.", issue_json)
             return None
 
-        self.__number = issue_json["content"]["number"]
-        self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
-        self.__repository_name = issue_json["content"]["repository"]["name"]
+        try:
+            self.__number = issue_json["content"]["number"]
+            self.__repository_name = issue_json["content"]["repository"]["name"]
+            self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
+        except KeyError as e:
+            logger.debug("KeyError(%s) occurred while parsing issue json: %s.", str(e), issue_json)
+
         self.__project_status.project_title = project.title
 
         # Parse the field types from the response

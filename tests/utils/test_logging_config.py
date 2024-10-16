@@ -35,7 +35,7 @@ def validate_logging_config(mock_logging_setup, caplog, expected_level, expected
 
     # Check that the handler is a StreamHandler and outputs to sys.stdout
     handlers = call_args["handlers"]
-    assert len(handlers) == 1  # Only one handler is expected
+    assert 1 == len(handlers)  # Only one handler is expected
     assert isinstance(handlers[0], StreamHandler)  # Handler should be StreamHandler
     assert handlers[0].stream is sys.stdout  # Stream should be sys.stdout
 

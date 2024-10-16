@@ -17,13 +17,15 @@
 """
 This module contains a data container for Consolidated Issue, which holds all the essential logic.
 """
-
+import logging
 from typing import Optional
 
 from github.Issue import Issue
 
 from living_documentation_generator.utils.utils import sanitize_filename
 from living_documentation_generator.model.project_status import ProjectStatus
+
+logger = logging.getLogger(__name__)
 
 
 class ConsolidatedIssue:
@@ -145,7 +147,17 @@ class ConsolidatedIssue:
 
         @return: The generated page filename.
         """
-        md_filename_base = f"{self.number}_{self.title.lower()}.md"
-        page_filename = sanitize_filename(md_filename_base)
+        try:
+            md_filename_base = f"{self.number}_{self.title.lower()}.md"
+            page_filename = sanitize_filename(md_filename_base)
+        except AttributeError:
+            logger.error(
+                "Issue page filename generation failed for Issue %s/%s (%s). Issue does not have a title.",
+                self.organization_name,
+                self.repository_name,
+                self.number,
+                exc_info=True,
+            )
+            return f"{self.number}.md"
 
         return page_filename

@@ -72,17 +72,27 @@ class GithubProject:
         @param field_option_response: The response containing the field options for the project.
         @return: The GithubProject object with the loaded data.
         """
-        self.__id = project_json["id"]
-        self.__number = project_json["number"]
-        self.__title = project_json["title"]
-        self.__organization_name = repository.owner.login
+        try:
+            self.__id = project_json["id"]
+            self.__number = project_json["number"]
+            self.__title = project_json["title"]
+            self.__organization_name = repository.owner.login
 
-        logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
-        self.__update_field_options(field_option_response)
+            logger.debug("Updating field options for projects in repository `%s`.", repository.full_name)
+        except KeyError as e:
+            logger.error(
+                "Missing key in the project json for repository `%s`: %s",
+                repository.full_name,
+                str(e),
+                exc_info=True,
+            )
+            return self
+
+        self._update_field_options(field_option_response)
 
         return self
 
-    def __update_field_options(self, field_option_response: dict) -> None:
+    def _update_field_options(self, field_option_response: dict) -> None:
         """
         Parse and update the field options of the project from a JSON response.
 
