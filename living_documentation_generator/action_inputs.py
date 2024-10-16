@@ -24,13 +24,14 @@ import logging
 import sys
 
 from living_documentation_generator.model.config_repository import ConfigRepository
-from living_documentation_generator.utils.utils import get_action_input, make_absolute_path
+from living_documentation_generator.utils.utils import get_action_input, make_absolute_path, get_all_project_directories
 from living_documentation_generator.utils.constants import (
     GITHUB_TOKEN,
     PROJECT_STATE_MINING,
     REPOSITORIES,
     OUTPUT_PATH,
     STRUCTURED_OUTPUT,
+    DEFAULT_OUTPUT_PATH,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,18 +85,18 @@ class ActionInputs:
         self.__github_token = get_action_input(GITHUB_TOKEN)
         self.__is_project_state_mining_enabled = get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
         self.__structured_output = get_action_input(STRUCTURED_OUTPUT, "false").lower() == "true"
-        out_path = get_action_input(OUTPUT_PATH, "./output")
-        self.__output_directory = make_absolute_path(out_path)
         repositories_json = get_action_input(REPOSITORIES, "")
+        out_path = get_action_input(OUTPUT_PATH, default=DEFAULT_OUTPUT_PATH)
+        self.__output_directory = make_absolute_path(out_path)
+
+        # Validate inputs
+        if validate:
+            self.validate_inputs(repositories_json, out_path)
 
         logger.debug("Is project state mining allowed: %s.", self.is_project_state_mining_enabled)
         logger.debug("JSON repositories to fetch from: %s.", repositories_json)
         logger.debug("Output directory: %s.", self.output_directory)
         logger.debug("Is output directory structured: %s.", self.structured_output)
-
-        # Validate inputs
-        if validate:
-            self.validate_inputs(repositories_json)
 
         # Parse repositories json string into json dictionary format
         try:
@@ -113,22 +114,40 @@ class ActionInputs:
 
         return self
 
-    def validate_inputs(self, repositories_json: str) -> None:
+    def validate_inputs(self, repositories_json: str, out_path: str) -> None:
         """
         Validate the input attributes of the action.
 
         @param repositories_json: The JSON string containing the repositories to fetch.
+        @param out_path: The output path to save the results to.
         @return: None
         """
+        errors = []
 
-        # Validate correct format of input repositories_json
+        # Validate INPUT_GITHUB_TOKEN
+        if not self.github_token:
+            errors.append("INPUT_GITHUB_TOKEN could not be loaded from the environment.")
+        if not isinstance(self.github_token, str):
+            errors.append("INPUT_GITHUB_TOKEN must be a string.")
+
+        # Validate INPUT_REPOSITORIES and its correct JSON format
         try:
             json.loads(repositories_json)
         except json.JSONDecodeError:
-            logger.error("Input attr `repositories_json` is not a valid JSON string.", exc_info=True)
-            sys.exit(1)
+            errors.append("INPUT_REPOSITORIES is not a valid JSON string.")
 
-        # Validate GitHub token
-        if not self.__github_token:
-            logger.error("GitHub token could not be loaded from the environment.", exc_info=True)
+        # Validate INPUT_OUTPUT_PATH
+        if out_path == "":
+            errors.append("INPUT_OUTPUT_PATH can not be an empty string.")
+
+        # Check that the INPUT_OUTPUT_PATH is not a directory in the project
+        # Note: That would cause a rewriting project files
+        project_directories = get_all_project_directories()
+        if out_path in project_directories:
+            errors.append("INPUT_OUTPUT_PATH can not be a project directory.")
+
+        if errors:
+            for error in errors:
+                logger.error(error)
+            logger.info("GitHub Action is terminating as a cause of an input validation error.")
             sys.exit(1)
