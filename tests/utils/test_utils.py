@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 
 import pytest
 
@@ -24,7 +23,6 @@ from living_documentation_generator.utils.utils import (
     get_action_input,
     set_action_output,
     set_action_failed,
-    get_all_project_directories,
 )
 
 
@@ -59,29 +57,6 @@ def test_make_issue_key():
 def test_sanitize_filename(filename_example, expected_filename):
     actual_filename = sanitize_filename(filename_example)
     assert expected_filename == actual_filename
-
-
-# get_all_project_directories
-
-def test_get_all_project_directories_correct_behaviour():
-    base_path = "test_dir"
-    expected_directories = ["test_dir/sub_dir1", "test_dir/sub_dir2", "test_dir/sub_dir1/sub_sub_dir1"]
-
-    os.makedirs(os.path.join(base_path, "sub_dir1", "sub_sub_dir1"), exist_ok=True)
-    os.makedirs(os.path.join(base_path, "sub_dir2"), exist_ok=True)
-
-    actual_directories = get_all_project_directories(base_path)
-
-    assert expected_directories == actual_directories
-
-
-def test_get_all_project_directories_empty_dir():
-    base_path = "empty_dir"
-    expected_directories = []
-
-    actual_directories = get_all_project_directories(base_path)
-
-    assert expected_directories == actual_directories
 
 
 # GitHub action utils
