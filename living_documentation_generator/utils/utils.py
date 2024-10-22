@@ -98,10 +98,7 @@ def get_all_project_directories(path: str = ".") -> list[str]:
     @param path: The path to start searching for directories.
     @return: A list of all directories in the project.
     """
-    directories = []
-    for dir_path, dir_names, _ in os.walk(path):
-        directories.extend([os.path.join(dir_path, d) for d in dir_names])
-    return directories
+    return [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
 
 # GitHub action utils

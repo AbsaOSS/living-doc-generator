@@ -21,6 +21,7 @@ which are essential for running the GH action.
 
 import json
 import logging
+import os
 import sys
 
 from living_documentation_generator.model.config_repository import ConfigRepository
@@ -43,60 +44,26 @@ class ActionInputs:
     and validating the inputs required for running the GH Action.
     """
 
-    def __init__(self):
-        self.__github_token: str = ""
-        self.__is_project_state_mining_enabled: bool = False
-        self.__repositories: list[ConfigRepository] = []
-        self.__output_directory: str = ""
-        self.__structured_output: bool = False
-
-    @property
-    def github_token(self) -> str:
+    @staticmethod
+    def get_github_token() -> str:
         """Getter of the GitHub authorization token."""
-        return self.__github_token
+        return get_action_input(GITHUB_TOKEN)
 
-    @property
-    def is_project_state_mining_enabled(self) -> bool:
+    @staticmethod
+    def get_is_project_state_mining_enabled() -> bool:
         """Getter of the project state mining switch."""
-        return self.__is_project_state_mining_enabled
+        return get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
 
-    @property
-    def repositories(self) -> list[ConfigRepository]:
-        """Getter of the list of repositories to fetch from."""
-        return self.__repositories
-
-    @property
-    def output_directory(self) -> str:
-        """Getter of the output directory."""
-        return self.__output_directory
-
-    @property
-    def structured_output(self) -> bool:
+    @staticmethod
+    def get_is_structured_output_enabled() -> bool:
         """Getter of the structured output switch."""
-        return self.__structured_output
+        return get_action_input(STRUCTURED_OUTPUT, "false").lower() == "true"
 
-    def load_from_environment(self, validate: bool = True) -> "ActionInputs":
-        """
-        Load the action inputs from the environment variables and validate them if needed.
-
-        @param validate: Switch indicating if the inputs should be validated.
-        @return: The instance of the ActionInputs class.
-        """
-        self.__github_token = get_action_input(GITHUB_TOKEN)
-        self.__is_project_state_mining_enabled = get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
-        self.__structured_output = get_action_input(STRUCTURED_OUTPUT, "false").lower() == "true"
+    @staticmethod
+    def get_repositories() -> list[ConfigRepository]:
+        """Getter of the list of repositories to fetch from."""
+        repositories = []
         repositories_json = get_action_input(REPOSITORIES, "")
-        out_path = get_action_input(OUTPUT_PATH, default=DEFAULT_OUTPUT_PATH)
-        self.__output_directory = make_absolute_path(out_path)
-
-        # Validate inputs
-        if validate:
-            self.validate_inputs(repositories_json, out_path)
-
-        logger.debug("Is project state mining allowed: %s.", self.is_project_state_mining_enabled)
-        logger.debug("JSON repositories to fetch from: %s.", repositories_json)
-        logger.debug("Output directory: %s.", self.output_directory)
-        logger.debug("Is output directory structured: %s.", self.structured_output)
 
         # Parse repositories json string into json dictionary format
         try:
@@ -108,50 +75,49 @@ class ActionInputs:
         for repository_json in repositories_json:
             config_repository = ConfigRepository()
             if config_repository.load_from_json(repository_json):
-                self.__repositories.append(config_repository)
+                repositories.append(config_repository)
             else:
                 logger.error("Failed to load repository from JSON: %s.", repository_json)
 
-        return self
+        return repositories
 
-    def validate_inputs(self, repositories_json: str, out_path: str) -> None:
+    @staticmethod
+    def get_output_directory() -> str:
+        """Getter of the output directory."""
+        out_path = get_action_input(OUTPUT_PATH, default=DEFAULT_OUTPUT_PATH)
+        return make_absolute_path(out_path)
+
+    @staticmethod
+    def validate_inputs(out_path: str) -> None:
         """
-        Validate the input attributes of the action.
+        Loads the inputs provided for the Living documentation generator.
+        Logs any validation errors and exits if any are found.
 
-        @param repositories_json: The JSON string containing the repositories to fetch.
-        @param out_path: The output path to save the results to.
+        @param out_path: The output path for the generated documentation.
         @return: None
         """
-        errors = []
 
-        # Validate INPUT_GITHUB_TOKEN
-        if not self.github_token:
-            errors.append("INPUT_GITHUB_TOKEN could not be loaded from the environment.")
-        if not isinstance(self.github_token, str):
-            errors.append("INPUT_GITHUB_TOKEN must be a string.")
-
-        # Validate INPUT_REPOSITORIES and its correct JSON format
-        try:
-            json.loads(repositories_json)
-        except json.JSONDecodeError:
-            errors.append("INPUT_REPOSITORIES is not a valid JSON string.")
+        # Validate INPUT_REPOSITORIES
+        ActionInputs.get_repositories()
 
         # Validate INPUT_OUTPUT_PATH
         if out_path == "":
-            errors.append("INPUT_OUTPUT_PATH can not be an empty string.")
+            logger.error("INPUT_OUTPUT_PATH can not be an empty string.")
+            sys.exit(1)
 
-        # Check that the INPUT_OUTPUT_PATH is not a directory in the project
+        # Check that the INPUT_OUTPUT_PATH is not a project directory
         # Note: That would cause a rewriting project files
-        # TODO: Do not know how to make sure, that we exclude folder that is made for output in the project
-        project_directories = get_all_project_directories(out_path)
+        project_directories = get_all_project_directories()
         if DEFAULT_OUTPUT_PATH in project_directories:
             project_directories.remove(DEFAULT_OUTPUT_PATH)
 
-        if out_path in project_directories:
-            errors.append("INPUT_OUTPUT_PATH can not be a project directory.")
+        for project_directory in project_directories:
+            # Finds the common path between the absolute paths of out_path and project_directory
+            common_path = os.path.commonpath([os.path.abspath(out_path), os.path.abspath(project_directory)])
 
-        if errors:
-            for error in errors:
-                logger.error(error)
-            logger.info("GitHub Action is terminating as a cause of an input validation error.")
-            sys.exit(1)
+            # Check if common path is equal to the absolute path of project_directory
+            if common_path == os.path.abspath(project_directory):
+                logger.error("INPUT_OUTPUT_PATH cannot be chosen as a part of any project folder.")
+                sys.exit(1)
+
+        logger.debug("Action inputs validation successfully completed.")
