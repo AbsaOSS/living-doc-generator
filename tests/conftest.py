@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import time
 import pytest
 from github import Github
 from github.Rate import Rate
 from github.RateLimit import RateLimit
 from github.Repository import Repository
-from pytest_mock import mocker
 
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
