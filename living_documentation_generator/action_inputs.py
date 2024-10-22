@@ -46,38 +46,55 @@ class ActionInputs:
 
     @staticmethod
     def get_github_token() -> str:
-        """Getter of the GitHub authorization token."""
+        """
+        Getter of the GitHub authorization token.
+        @return: The GitHub authorization token.
+        """
         return get_action_input(GITHUB_TOKEN)
 
     @staticmethod
     def get_is_project_state_mining_enabled() -> bool:
-        """Getter of the project state mining switch."""
+        """
+        Getter of the project state mining switch.
+        @return: True if project state mining is enabled, False otherwise.
+        """
         return get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
 
     @staticmethod
     def get_is_structured_output_enabled() -> bool:
-        """Getter of the structured output switch."""
+        """
+        Getter of the structured output switch.
+        @return: True if structured output is enabled, False otherwise.
+        """
         return get_action_input(STRUCTURED_OUTPUT, "false").lower() == "true"
 
     @staticmethod
     def get_repositories() -> list[ConfigRepository]:
-        """Getter of the list of repositories to fetch from."""
+        """
+        Getter and parser of the Config Repositories.
+        @return: A list of Config Repositories.
+        """
         repositories = []
         repositories_json = get_action_input(REPOSITORIES, "")
-
-        # Parse repositories json string into json dictionary format
         try:
-            repositories_json = json.loads(repositories_json)
-        except json.JSONDecodeError as e:
-            logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            sys.exit(1)
+            # Parse repositories json string into json dictionary format
+            try:
+                repositories_json = json.loads(repositories_json)
+            except json.JSONDecodeError as e:
+                logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
+                sys.exit(1)
 
-        for repository_json in repositories_json:
-            config_repository = ConfigRepository()
-            if config_repository.load_from_json(repository_json):
-                repositories.append(config_repository)
-            else:
-                logger.error("Failed to load repository from JSON: %s.", repository_json)
+            # Load repositories into ConfigRepository object from JSON
+            for repository_json in repositories_json:
+                config_repository = ConfigRepository()
+                if config_repository.load_from_json(repository_json):
+                    repositories.append(config_repository)
+                else:
+                    logger.error("Failed to load repository from JSON: %s.", repository_json)
+
+        except TypeError:
+            logger.error("Type error parsing input JSON repositories: `%s.`", repositories_json)
+            sys.exit(1)
 
         return repositories
 

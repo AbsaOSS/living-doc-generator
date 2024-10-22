@@ -544,8 +544,6 @@ class LivingDocumentationGenerator:
         if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(output_path, organization_name, repository_name)
-        else:
-            output_path = output_path
 
         os.makedirs(output_path, exist_ok=True)
 
