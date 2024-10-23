@@ -61,7 +61,7 @@ class GithubProjects:
 
         return self.__session
 
-    def __send_graphql_query(self, query: str) -> Optional[dict[str, dict]]:
+    def _send_graphql_query(self, query: str) -> Optional[dict[str, dict]]:
         """
         Send a GraphQL query to the GitHub API and returns the response.
         If an HTTP error occurs, it prints the error and returns None instead.
@@ -105,7 +105,7 @@ class GithubProjects:
             organization_name=repository.owner.login, repository_name=repository.name
         )
 
-        projects_from_repo_response = self.__send_graphql_query(projects_from_repo_query)
+        projects_from_repo_response = self._send_graphql_query(projects_from_repo_query)
 
         if projects_from_repo_response is None:
             logger.warning(
@@ -129,9 +129,6 @@ class GithubProjects:
                 # If no filter is provided, all projects are required
                 is_project_required = True if not projects_title_filter else project_title in projects_title_filter
 
-                if not is_project_required:
-                    logger.debug("Project `%s` is not required based on the filter.", project_title)
-
                 # Main project structure is loaded and added to the projects list
                 if is_project_required:
                     # Fetch the project field options from the GraphQL API
@@ -140,12 +137,14 @@ class GithubProjects:
                         repository_name=repository.name,
                         project_number=project_number,
                     )
-                    field_option_response = self.__send_graphql_query(project_field_options_query)
+                    field_option_response = self._send_graphql_query(project_field_options_query)
 
                     # Create the GitHub project instance and add it to the output list
                     project = GithubProject().loads(project_json, repository, field_option_response)
                     if project not in projects:
                         projects.append(project)
+                else:
+                    logger.debug("Project `%s` is not required based on the filter.", project_title)
 
         else:
             logger.warning("Repository information is not present in the response")
@@ -173,7 +172,7 @@ class GithubProjects:
                 project_id=project.id, after_argument=after_argument
             )
 
-            project_issues_response = self.__send_graphql_query(issues_from_project_query)
+            project_issues_response = self._send_graphql_query(issues_from_project_query)
 
             # Return empty list, if project has no issues attached
             if not project_issues_response:
@@ -185,7 +184,7 @@ class GithubProjects:
 
             # Extend project issues list per every page during pagination
             project_issues_raw.extend(project_issue_data)
-            logger.debug("Received `%s` issue records from project: %s.", len(project_issue_data), project.title)
+            logger.debug("Received `%i` issue/s records from project: %s.", len(project_issue_data), project.title)
 
             # Check for closing the pagination process
             if not page_info["hasNextPage"]:
@@ -197,6 +196,6 @@ class GithubProjects:
             for issue in (ProjectIssue().loads(issue_json, project) for issue_json in project_issues_raw)
             if issue is not None
         ]
-        logger.debug("Loaded `%s` issues from project: %s.", len(project_issues), project.title)
+        logger.debug("Loaded `%i` issue/s from project: %s.", len(project_issues), project.title)
 
         return project_issues
