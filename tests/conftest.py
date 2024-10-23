@@ -19,7 +19,6 @@ from github import Github
 from github.Rate import Rate
 from github.RateLimit import RateLimit
 from github.Repository import Repository
-from pytest_mock import mocker
 
 from living_documentation_generator.model.github_project import GithubProject
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
@@ -66,3 +65,13 @@ def github_project_setup(mocker):
     project.loads(project_json, repository, field_option_response)
 
     return project
+
+
+@pytest.fixture
+def repository_setup(mocker):
+    repository = mocker.Mock(spec=Repository)
+    repository.owner.login = "test_owner"
+    repository.name = "test_repo"
+    repository.full_name = "test_owner/test_repo"
+
+    return repository
