@@ -222,8 +222,8 @@ def test_get_project_issues_correct_behaviour(mocker, github_project_setup):
     mock_send_query.assert_called()
     mock_project_issue_instance.loads.assert_any_call({"id": "issue_1", "title": "Issue 1"}, mock_project)
     mock_project_issue_instance.loads.assert_any_call({"id": "issue_4", "title": "Issue 4"}, mock_project)
-    mock_logger_debug.assert_any_call("Received `%i` issue/s records from project: %s.", 2, mock_project.title)
-    mock_logger_debug.assert_any_call("Loaded `%i` issue/s from project: %s.", 4, mock_project.title)
+    mock_logger_debug.assert_any_call("Received `%i` issue(s) records from project: %s.", 2, mock_project.title)
+    mock_logger_debug.assert_any_call("Loaded `%i` issue(s) from project: %s.", 4, mock_project.title)
 
 
 def test_get_project_issues_no_response(mocker, github_project_setup):
