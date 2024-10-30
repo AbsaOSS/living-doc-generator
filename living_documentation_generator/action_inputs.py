@@ -75,7 +75,7 @@ class ActionInputs:
         @return: A list of Config Repositories.
         """
         repositories = []
-        repositories_json = get_action_input(REPOSITORIES, "")
+        repositories_json = get_action_input(REPOSITORIES, "[]")
         try:
             # Parse repositories json string into json dictionary format
             repositories_json = json.loads(repositories_json)
@@ -125,10 +125,8 @@ class ActionInputs:
         # Check that the INPUT_OUTPUT_PATH is not a project directory
         # Note: That would cause a rewriting project files
         project_directories = get_all_project_directories()
-        default_output_abs_path = os.path.abspath(DEFAULT_OUTPUT_PATH)
-
-        if default_output_abs_path in project_directories:
-            project_directories.remove(default_output_abs_path)
+        if DEFAULT_OUTPUT_PATH in project_directories:
+            project_directories.remove(DEFAULT_OUTPUT_PATH)
 
         for project_directory in project_directories:
             # Finds the common path between the absolute paths of out_path and project_directory

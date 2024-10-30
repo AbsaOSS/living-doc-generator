@@ -68,15 +68,28 @@ def test_get_repositories_correct_behaviour(mocker):
 #     mock_exit.assert_called_once_with(1)
 
 
-def test_get_repositories_type_error_parsing_json(mocker):
+def test_get_repositories_default_value_as_json(mocker):
     mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
-    mocker.patch("living_documentation_generator.action_inputs.get_action_input", return_value=1)
+    mocker.patch("living_documentation_generator.action_inputs.get_action_input", return_value="[]")
     mock_exit = mocker.patch("sys.exit")
 
-    ActionInputs.get_repositories()
+    actual = ActionInputs.get_repositories()
 
-    mock_log_error.assert_called_once_with("Type error parsing input JSON repositories: `%s.`", mocker.ANY)
-    mock_exit.assert_called_once_with(1)
+    assert actual == []
+    mock_exit.assert_not_called()
+    mock_log_error.assert_not_called()
+
+
+def test_get_repositories_empty_object_as_input(mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
+    mocker.patch("living_documentation_generator.action_inputs.get_action_input", return_value="{}")
+    mock_exit = mocker.patch("sys.exit")
+
+    actual = ActionInputs.get_repositories()
+
+    assert actual == []
+    mock_exit.assert_not_called()
+    mock_log_error.assert_not_called()
 
 
 def test_get_repositories_error_with_loading_repository_json(mocker):
@@ -87,8 +100,43 @@ def test_get_repositories_error_with_loading_repository_json(mocker):
 
     ActionInputs.get_repositories()
 
-    mock_log_error.assert_called_once_with("Failed to load repository from JSON: %s.", {})
     mock_exit.assert_not_called()
+    mock_log_error.assert_called_once_with("Failed to load repository from JSON: %s.", {})
+
+
+def test_get_repositories_number_instead_of_json(mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
+    mocker.patch("living_documentation_generator.action_inputs.get_action_input", return_value=1)
+    mock_exit = mocker.patch("sys.exit")
+
+    ActionInputs.get_repositories()
+
+    mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with("Type error parsing input JSON repositories: `%s.`", mocker.ANY)
+
+
+def test_get_repositories_empty_string_as_input(mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
+    mocker.patch("living_documentation_generator.action_inputs.get_action_input", return_value="")
+    mock_exit = mocker.patch("sys.exit")
+
+    actual = ActionInputs.get_repositories()
+
+    assert actual == []
+    mock_exit.assert_called_once()
+    mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
+
+
+def test_get_repositories_invalid_string_as_input(mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
+    mocker.patch("living_documentation_generator.action_inputs.get_action_input", return_value="string")
+    mock_exit = mocker.patch("sys.exit")
+
+    actual = ActionInputs.get_repositories()
+
+    assert actual == []
+    mock_exit.assert_called_once()
+    mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
 
 
 # validate_inputs
