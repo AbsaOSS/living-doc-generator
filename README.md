@@ -12,6 +12,10 @@
 - [Expected Output](#expected-output)
     - [Index page example](#index-page-example)
     - [Issue page example](#issue-page-example)
+- [Documentation Issue Introduction](#documentation-issue-introduction)
+  - [Labels](#labels)
+  - [Relation Among Doc Issue Types](#relation-among-doc-issue-types)
+  - [Hosting Doc Issues in a Solo Repository](#hosting-doc-issues-in-a-solo-repository)
 - [Project Setup](#project-setup)
 - [Run Scripts Locally](#run-scripts-locally)
 - [Run Pylint Check Locally](#run-pylint-check-locally)
@@ -28,7 +32,9 @@
 - [License Information](#license-information)
 - [Contact or Support Information](#contact-or-support-information)
 
-A tool designed to data-mine GitHub repositories for issues containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in Markdown format, providing detailed feature overview pages and in-depth feature descriptions.
+![vision.jpg](img/vision.jpg)
+
+A tool designed to data-mine GitHub repositories for [documentation issues](#documentation-issue-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in Markdown format, providing detailed feature overview pages and in-depth feature descriptions.
 
 ## Motivation
 Addresses the need for continuously updated documentation accessible to all team members and stakeholders. Achieves this by extracting information directly from GitHub issues and integrating this functionality to deliver real-time, markdown-formatted output. Ensures everyone has the most current project details, fostering better communication and efficiency throughout development.
@@ -285,6 +291,42 @@ Users often struggle to find specific books in a large catalog. An advanced sear
 ### Background
 ...
 ```
+
+## Documentation Issue Introduction
+A **Documentation Issue** is a focused, ongoing issue dedicated to project documentation. Unlike development-focused issues, Documentation Issues remain open continuously, evolving as updates are needed, and can be reopened or revised indefinitely. They are not directly tied to Pull Requests (PRs) but can be referenced for context.
+
+- **Content Rules**:
+  - **Non-technical Focus:** 
+    - Keep the documentation body free of technical solution specifics.
+    - Technical insights should be accessible through linked PRs or Issues within the development repository.
+  - **Independent Documentation:** 
+    - Ensure the content remains independent of implementation details to allow a clear, high-level view of the feature or user story's purpose and functionality.
+
+### Labels
+To enhance clarity, the following label groups define and categorize each Documentation Issue:
+- **Topic**:
+  - **{Name}Topic:** Designates the main focus area or theme relevant to the issue, assigned by the editor for consistency across related documentation.
+  - **noTopic:** Indicates that the issue does not align with a specific topic, based on the editor's discretion.
+- **Type**:
+  - **DocumentedUserStory:** Describes a user-centric functionality or process, highlighting its purpose and value.
+    - Encompasses multiple features, capturing the broader goal from a user perspective.
+  - **DocumentedFeature:** Details a specific feature, providing a breakdown of its components and intended outcomes.
+    - Built from various requirements and can relate to multiple User Stories, offering an in-depth look at functionality.
+  - **DocumentedRequirement:** Outlines individual requirements or enhancements tied to the feature or user story.
+- **Issue States**:
+  - **Upcoming:** The feature, story, or requirement is planned but not yet implemented.
+  - **Implemented:** The feature or requirement has been completed and is in active use.
+  - **Deprecated:** The feature or requirement has been phased out or replaced and is no longer supported.
+
+**DocumentedUserStory** and **DocumentedFeature** serve as **Epics**, whereas **DocumentedRequirement** represents specific items similar to feature enhancements or individual requirements.
+
+### Hosting Doc Issues in a Solo Repository
+Using a dedicated repository solely for documentation issues provides multiple advantages:
+- **Streamlined Management:** This avoids cross-project conflicts and board exclusions and enables specialized templates solely for documentation purposes.
+- **Focused Access Control:** This allows a small team to manage and edit documentation without interference, maintaining high-quality content.
+- **Optimized Data Mining:** Supports easier and more efficient data extraction for feedback and review cycles through Release Notes.
+- **Implementation Reflection:** Mirrors elements from the implementation repositories, providing a high-level knowledge source that is valuable for both business and technical teams.
+- **Release Notes Integration:** Documentation can evolve based on insights from release notes, serving as a dynamic feedback loop back to the documentation repository.
 
 ## Project Setup
 If you need to build the action locally, follow these steps:
