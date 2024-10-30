@@ -160,48 +160,42 @@ def test_validate_inputs_correct_behaviour(mocker):
 
     ActionInputs.validate_inputs("./output")
 
+    mock_exit.assert_not_called()
     mock_log_debug.assert_called_once_with("Action inputs validation successfully completed.")
     mock_log_error.assert_not_called()
-    mock_exit.assert_not_called()
 
 
 def test_validate_inputs_error_output_path_as_empty_string(mocker):
     mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
-    repositories_json = [
-        {
-            "organization-name": "organizationABC",
-            "repository-name": "repositoryABC",
-            "query-labels": ["feature"],
-            "projects-title-filter": [],
-        }
-    ]
-    mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_repositories", return_value=repositories_json
-    )
     mock_exit = mocker.patch("sys.exit")
 
     ActionInputs.validate_inputs("")
 
-    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH can not be an empty string.")
     mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH can not be an empty string.")
 
 
 def test_validate_inputs_error_output_path_as_project_directory(mocker):
     mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
-    repositories_json = [
-        {
-            "organization-name": "organizationABC",
-            "repository-name": "repositoryABC",
-            "query-labels": ["feature"],
-            "projects-title-filter": [],
-        }
-    ]
-    mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_repositories", return_value=repositories_json
-    )
     mock_exit = mocker.patch("sys.exit")
 
     ActionInputs.validate_inputs("./templates/template_subfolder")
 
-    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH cannot be chosen as a part of any project folder.")
     mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH cannot be chosen as a part of any project folder.")
+
+
+def test_validate_inputs_absolute_output_path_with_relative_project_directories(mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.action_inputs.logger.error")
+    mock_exit = mocker.patch("sys.exit")
+    mocker.patch(
+        "living_documentation_generator.action_inputs.get_all_project_directories",
+        return_value=["project/dir1", "project/dir2"],
+    )
+    mocker.patch("os.path.abspath", side_effect=lambda path: f"/root/{path}" if not path.startswith("/") else path)
+    absolute_out_path = "/root/project/dir1/subfolder"
+
+    ActionInputs.validate_inputs(absolute_out_path)
+
+    mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH cannot be chosen as a part of any project folder.")

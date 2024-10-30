@@ -125,10 +125,15 @@ class ActionInputs:
         # Check that the INPUT_OUTPUT_PATH is not a project directory
         # Note: That would cause a rewriting project files
         project_directories = get_all_project_directories()
-        if DEFAULT_OUTPUT_PATH in project_directories:
-            project_directories.remove(DEFAULT_OUTPUT_PATH)
+        default_abspath_output_path = os.path.abspath(DEFAULT_OUTPUT_PATH)
 
-        for project_directory in project_directories:
+        # Ensure project directories are absolute paths
+        project_abspath_directories = [os.path.abspath(d) for d in project_directories]
+
+        if default_abspath_output_path in project_abspath_directories:
+            project_abspath_directories.remove(default_abspath_output_path)
+
+        for project_directory in project_abspath_directories:
             # Finds the common path between the absolute paths of out_path and project_directory
             common_path = os.path.commonpath([os.path.abspath(out_path), os.path.abspath(project_directory)])
 
