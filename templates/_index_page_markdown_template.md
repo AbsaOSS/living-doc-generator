@@ -1,9 +1,9 @@
 ---
-title: "Issue Summary"
-toolbar_title: "Issue Summary"
-description_title: "Brief overview of all mined issues."
-description: "This is a comprehensive list and brief overview of all issues."
-date: "{date}"
+title: Issue Summary
+toolbar_title: Issue Summary
+description_title: Brief overview of all mined issues.
+description: This is a comprehensive list and brief overview of all issues.
+date: {date}
 weight: 0
 ---
 
@@ -13,4 +13,4 @@ Our project is designed with a myriad of issues to ensure seamless user experien
 
 ## Issue Overview
 
-{issues}
+{issue-overview-table}

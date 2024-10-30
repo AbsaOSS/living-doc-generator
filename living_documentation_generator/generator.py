@@ -58,7 +58,7 @@ class LivingDocumentationGenerator:
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
     ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "issue_detail_page_template.md")
-    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_page_template.md")
+    INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_page_html_template.md")
 
     def __init__(self):
         github_token = ActionInputs.get_github_token()
@@ -395,7 +395,7 @@ class LivingDocumentationGenerator:
         # Prepare issues replacement for the index page
         replacement = {
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "issues": issue_table,
+            "issue-overview-table": issue_table,
         }
 
         # Replace the issue placeholders in the index template
