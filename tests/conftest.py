@@ -66,3 +66,13 @@ def github_project_setup(mocker):
     project.loads(project_json, repository, field_option_response)
 
     return project
+
+
+@pytest.fixture
+def repository_setup(mocker):
+    repository = mocker.Mock(spec=Repository)
+    repository.owner.login = "test_owner"
+    repository.name = "test_repo"
+    repository.full_name = "test_owner/test_repo"
+
+    return repository
