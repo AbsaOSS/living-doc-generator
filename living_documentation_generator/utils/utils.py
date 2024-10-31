@@ -47,7 +47,7 @@ def sanitize_filename(filename: str) -> str:
     @return: The sanitized filename
     """
     # Remove invalid characters for Windows filenames
-    sanitized_name = re.sub(r'[<>:"/|?*`]', "", filename)
+    sanitized_name = re.sub(r'[<>:"/|?*#{}()`]', "", filename)
     # Reduce consecutive periods
     sanitized_name = re.sub(r"\.{2,}", ".", sanitized_name)
     # Reduce consecutive spaces to a single space
