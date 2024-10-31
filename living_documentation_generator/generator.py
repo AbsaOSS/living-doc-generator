@@ -31,7 +31,6 @@ from github.Issue import Issue
 from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.github_projects import GithubProjects
 from living_documentation_generator.model.github_project import GithubProject
-from living_documentation_generator.model.config_repository import ConfigRepository
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.decorators import safe_call_decorator
@@ -61,34 +60,13 @@ class LivingDocumentationGenerator:
     ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "issue_detail_page_template.md")
     INDEX_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_page_template.md")
 
-    def __init__(self, action_inputs: ActionInputs):
-        self.__action_inputs = action_inputs
+    def __init__(self):
+        github_token = ActionInputs.get_github_token()
 
-        github_token = self.__action_inputs.github_token
         self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
         self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
         self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
-
-    @property
-    def repositories(self) -> list[ConfigRepository]:
-        """Getter of the list of config repository objects to fetch from."""
-        return self.__action_inputs.repositories
-
-    @property
-    def project_state_mining_enabled(self) -> bool:
-        """Getter of the project state mining switch."""
-        return self.__action_inputs.is_project_state_mining_enabled
-
-    @property
-    def structured_output(self) -> bool:
-        """Getter of the structured output switch."""
-        return self.__action_inputs.structured_output
-
-    @property
-    def output_path(self) -> str:
-        """Getter of the output directory."""
-        return self.__action_inputs.output_directory
 
     def generate(self) -> None:
         """
@@ -123,15 +101,18 @@ class LivingDocumentationGenerator:
         self._generate_markdown_pages(consolidated_issues)
         logger.info("Markdown page generation - finished.")
 
-    def _clean_output_directory(self) -> None:
+    @staticmethod
+    def _clean_output_directory() -> None:
         """
         Clean the output directory from the previous run.
 
         @return: None
         """
-        if os.path.exists(self.output_path):
-            shutil.rmtree(self.output_path)
-        os.makedirs(self.output_path)
+        output_path = ActionInputs.get_output_directory()
+
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
 
     def _fetch_github_issues(self) -> dict[str, list[Issue]]:
         """
@@ -144,7 +125,7 @@ class LivingDocumentationGenerator:
         total_issues_number = 0
 
         # Run the fetching logic for every config repository
-        for config_repository in self.repositories:
+        for config_repository in ActionInputs.get_repositories():
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
             repository = self.__safe_call(self.__github_instance.get_repo)(repository_id)
@@ -194,7 +175,7 @@ class LivingDocumentationGenerator:
 
         @return: A dictionary containing project issue objects with unique key.
         """
-        if not self.project_state_mining_enabled:
+        if not ActionInputs.get_is_project_state_mining_enabled():
             logger.info("Fetching GitHub project data - project mining is not allowed.")
             return {}
 
@@ -203,7 +184,7 @@ class LivingDocumentationGenerator:
         # Mine project issues for every repository
         all_project_issues: dict[str, list[ProjectIssue]] = {}
 
-        for config_repository in self.repositories:
+        for config_repository in ActionInputs.get_repositories():
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
             projects_title_filter = config_repository.projects_title_filter
             logger.debug("Filtering projects: %s. If filter is empty, fetching all.", projects_title_filter)
@@ -320,7 +301,7 @@ class LivingDocumentationGenerator:
         logger.info("Markdown page generation - generated `%s` issue pages.", len(issues))
 
         # Generate an index page with a summary table about all issues
-        if self.structured_output:
+        if ActionInputs.get_is_structured_output_enabled():
             self._generate_structured_index_page(issue_index_page_template, issues)
         else:
             issues = list(issues.values())
@@ -402,7 +383,9 @@ class LivingDocumentationGenerator:
         """
         # Initializing the issue table header based on the project mining state
         issue_table = (
-            TABLE_HEADER_WITH_PROJECT_DATA if self.project_state_mining_enabled else TABLE_HEADER_WITHOUT_PROJECT_DATA
+            TABLE_HEADER_WITH_PROJECT_DATA
+            if ActionInputs.get_is_project_state_mining_enabled()
+            else TABLE_HEADER_WITHOUT_PROJECT_DATA
         )
 
         # Create an issue summary table for every issue
@@ -426,7 +409,8 @@ class LivingDocumentationGenerator:
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(index_page)
 
-    def _generate_markdown_line(self, consolidated_issue: ConsolidatedIssue) -> str:
+    @staticmethod
+    def _generate_markdown_line(consolidated_issue: ConsolidatedIssue) -> str:
         """
         Generates a markdown summary line for a single issue.
 
@@ -446,7 +430,7 @@ class LivingDocumentationGenerator:
         status = ", ".join(status_list) if status_list else "---"
 
         # Change the bool values to more user-friendly characters
-        if self.project_state_mining_enabled:
+        if ActionInputs.get_is_project_state_mining_enabled():
             if consolidated_issue.linked_to_project:
                 linked_to_project = LINKED_TO_PROJECT_TRUE
             else:
@@ -466,7 +450,8 @@ class LivingDocumentationGenerator:
 
         return md_issue_line
 
-    def _generate_issue_summary_table(self, consolidated_issue: ConsolidatedIssue) -> str:
+    @staticmethod
+    def _generate_issue_summary_table(consolidated_issue: ConsolidatedIssue) -> str:
         """
         Generates a string representation of feature info in a table format.
 
@@ -508,7 +493,7 @@ class LivingDocumentationGenerator:
         ]
 
         # Update the summary table, based on the project data mining situation
-        if self.project_state_mining_enabled:
+        if ActionInputs.get_is_project_state_mining_enabled():
             project_statuses = consolidated_issue.project_issue_statuses
 
             if consolidated_issue.linked_to_project:
@@ -546,18 +531,19 @@ class LivingDocumentationGenerator:
 
         return issue_info
 
-    def _generate_directory_path(self, repository_id: Optional[str]) -> str:
+    @staticmethod
+    def _generate_directory_path(repository_id: Optional[str]) -> str:
         """
         Generates a directory path based on if structured output is required.
 
         @param repository_id: The repository id.
         @return: The generated directory path.
         """
-        if self.structured_output and repository_id:
+        output_path = ActionInputs.get_output_directory()
+
+        if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
-            output_path = os.path.join(self.output_path, organization_name, repository_name)
-        else:
-            output_path = self.output_path
+            output_path = os.path.join(output_path, organization_name, repository_name)
 
         os.makedirs(output_path, exist_ok=True)
 

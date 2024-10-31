@@ -220,6 +220,7 @@ Configure the action by customizing the following parameters based on your needs
 
 ## Action Outputs
 The Living Documentation Generator action provides a key output that allows users to locate and access the generated documentation easily. This output can be utilized in various ways within your CI/CD pipeline to ensure the documentation is effectively distributed and accessible.
+The output-path can not be an empty string. It can not aim to the root and other project directories as well.
 
 - **output-path**
   - **Description**: This output provides the path to the directory where the generated living documentation files are stored.
@@ -316,7 +317,8 @@ Add the shebang line at the top of the sh script file.
 
 ### Set the Environment Variables
 Set the configuration environment variables in the shell script following the structure below. 
-Also make sure that the GITHUB_TOKEN is configured in your environment variables.
+Also make sure that the INPUT_GITHUB_TOKEN is configured in your environment variables.
+INPUT_OUTPUT_PATH can not be an empty string. It can not aim to the root and other project directories as well.
 ```
 export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
 export INPUT_REPOSITORIES='[

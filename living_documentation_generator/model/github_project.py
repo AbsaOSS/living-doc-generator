@@ -53,6 +53,11 @@ class GithubProject:
         """Getter of the project title."""
         return self.__title
 
+    @title.setter
+    def title(self, title: str) -> None:
+        """Setter of the project title."""
+        self.__title = title
+
     @property
     def organization_name(self) -> str:
         """Getter of the organization name."""
@@ -62,6 +67,11 @@ class GithubProject:
     def field_options(self) -> dict[str, str]:
         """Getter of the project field options."""
         return self.__field_options
+
+    @field_options.setter
+    def field_options(self, field_options: dict[str, str]) -> None:
+        """Setter of the project field options."""
+        self.__field_options = field_options
 
     def loads(self, project_json: dict, repository: Repository, field_option_response: dict) -> "GithubProject":
         """
