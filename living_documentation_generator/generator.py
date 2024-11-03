@@ -74,9 +74,6 @@ class LivingDocumentationGenerator:
     def __init__(self):
         github_token = ActionInputs.get_github_token()
 
-    def __init__(self):
-        github_token = ActionInputs.get_github_token()
-
         self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
         self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
