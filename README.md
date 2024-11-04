@@ -36,10 +36,13 @@
 A tool designed to data-mine GitHub repositories for [documentation tickets](#documentation-ticket-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in Markdown format, providing detailed feature overview pages and in-depth feature descriptions.
 
 ## Motivation
+
 Addresses the need for continuously updated documentation accessible to all team members and stakeholders. Achieves this by extracting information directly from GitHub issues and integrating this functionality to deliver real-time, markdown-formatted output. Ensures everyone has the most current project details, fostering better communication and efficiency throughout development.
 
 ## Usage
+
 ### Prerequisites
+
 Before we begin, ensure you have a GitHub Token with permission to fetch repository data such as Issues and Pull Requests.
 
 ### Adding the Action to Your Workflow
@@ -120,9 +123,11 @@ See the full example of action step definition (in example are used non-default 
 ```
 
 ## Action Configuration
+
 Configure the action by customizing the following parameters based on your needs:
 
 ### Environment Variables
+
 - **LIV_DOC_ACCESS_TOKEN** (required):
   - **Description**: GitHub access token for authentication, that has a permission to fetch from requested repositories.
   - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.LIV_DOC_ACCESS_TOKEN }}`.
@@ -133,6 +138,7 @@ Configure the action by customizing the following parameters based on your needs
     ```
 
 #### How to Create a Token with Required Scope
+
 1. Go to your GitHub account settings.
 2. Click on the `Developer settings` tab in the left sidebar.
 3. In the left sidebar, click on `Personal access tokens` and choose `Tokens (classic)`.
@@ -160,6 +166,7 @@ Configure the action by customizing the following parameters based on your needs
 8. Authorize new token to organization you want to fetch from.
     
 #### How to Store Token as a Secret
+
 1. Go to the GitHub repository, from which you want to run the GitHub Action.
 2. Click on the `Settings` tab in the top bar.
 3. In the left sidebar, click on `Secrets and variables` > `Actions`.
@@ -167,6 +174,7 @@ Configure the action by customizing the following parameters based on your needs
 5. Name the token `LIV_DOC_ACCESS_TOKEN` and paste the token value.
 
 ### Inputs
+
 - **repositories** (required)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
   - **Usage**: List each repository with its organization name, repository name, query labels and attached projects you want to filter if any. Only projects with these titles will be considered. For no filtering projects, leave the list empty.
@@ -196,6 +204,7 @@ Configure the action by customizing the following parameters based on your needs
     ```
 
 ### Features De/Activation
+
 - **project-state-mining** (optional, `default: false`)
   - **Description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).
   - **Usage**: Set to true to activate.
@@ -224,6 +233,7 @@ Configure the action by customizing the following parameters based on your needs
     ```
 
 ## Action Outputs
+
 The Living Documentation Generator action provides a key output that allows users to locate and access the generated documentation easily. This output can be utilized in various ways within your CI/CD pipeline to ensure the documentation is effectively distributed and accessible.
 The output-path can not be an empty string. It can not aim to the root and other project directories as well.
 
@@ -240,9 +250,11 @@ The output-path can not be an empty string. It can not aim to the root and other
     ```
   
 ## Expected Output
+
 The Living Documentation Generator is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
 
 ### Index Page Example
+
 
 ```markdown
 # Issue Summary page
@@ -293,7 +305,8 @@ Users often struggle to find specific books in a large catalog. An advanced sear
 ```
 
 ## Documentation Ticket Introduction
-A **Documentation Ticket** is a focused, ongoing ticket written as GitHub Issues dedicated to project documentation.  Unlike development-focused tickets, Documentation Ticket remain open continuously, evolving as updates are needed, and can be reopened or revised indefinitely. They are not directly tied to Pull Requests (PRs) but can be referenced for context.
+
+A **Documentation Ticket** is a focused, ongoing ticket written as GitHub Issue dedicated to project documentation.  Unlike development-focused tickets, Documentation Ticket remain open continuously, evolving as updates are needed, and can be reopened or revised indefinitely. They are not directly tied to Pull Requests (PRs) but can be referenced for context.
 
 - **Content Rules**:
   - **Non-technical Focus:** 
@@ -303,6 +316,7 @@ A **Documentation Ticket** is a focused, ongoing ticket written as GitHub Issues
     - Ensure the content remains independent of implementation details to allow a clear, high-level view of the feature or user story's purpose and functionality.
 
 ### Labels
+
 To enhance clarity, the following label groups define and categorize each Documentation Issue:
 - **Topic**:
   - **{Name}Topic:** Designates the main focus area or theme relevant to the ticket, assigned by the editor for consistency across related documentation.
@@ -321,6 +335,7 @@ To enhance clarity, the following label groups define and categorize each Docume
 **DocumentedUserStory** and **DocumentedFeature** serve as **Epics**, whereas **DocumentedRequirement** represents specific items similar to feature enhancements or individual requirements.
 
 ### Hosting Documentation Tickets in a Solo Repository
+
 Using a dedicated repository solely for documentation tickets provides multiple advantages:
 - **Streamlined Management:** This avoids cross-project conflicts and board exclusions and enables specialized templates solely for documentation purposes.
 - **Focused Access Control:** This allows a small team to manage and edit documentation without interference, maintaining high-quality content.
@@ -329,14 +344,17 @@ Using a dedicated repository solely for documentation tickets provides multiple 
 - **Release Notes Integration:** Documentation can evolve based on insights from release notes, serving as a dynamic feedback loop back to the documentation repository.
 
 ## Project Setup
+
 If you need to build the action locally, follow these steps:
 
 ### Prepare the Environment
+
 ```shell
 python3 --version
 ```
 
 ### Set Up Python Environment
+
 ```shell
 python3 -m venv venv
 source venv/bin/activate
@@ -344,9 +362,11 @@ pip install -r requirements.txt
 ```
 
 ## Run Scripts Locally
+
 If you need to run the scripts locally, follow these steps:
 
 ### Create the Shell Script
+
 Create the shell file in the root directory. We will use `run_script.sh`.
 ```shell
 touch run_script.sh
@@ -357,6 +377,7 @@ Add the shebang line at the top of the sh script file.
 ```
 
 ### Set the Environment Variables
+
 Set the configuration environment variables in the shell script following the structure below. 
 Also make sure that the INPUT_GITHUB_TOKEN is configured in your environment variables.
 INPUT_OUTPUT_PATH can not be an empty string. It can not aim to the root and other project directories as well.
@@ -376,6 +397,7 @@ export INPUT_VERBOSE_LOGGING="true"
 ```
 
 ### Running the script locally
+
 For running the GitHub action incorporate these commands into the shell script and save it.
 ```
 cd src || exit 1
@@ -386,17 +408,20 @@ cd .. || exit 1
 ```
 
 ### Make the Script Executable
+
 From the terminal that is in the root of this project, make the script executable:
 ```shell
 chmod +x run_script.sh
 ```
 
 ### Run the Script
+
 ```shell
 ./run_script.sh
 ```
 
 ## Run Pylint Check Locally
+
 This project uses [Pylint](https://pypi.org/project/pylint/) tool for static code analysis.
 Pylint analyses your code without actually running it.
 It checks for errors, enforces, coding standards, looks for code smells etc.
@@ -408,6 +433,7 @@ We are aiming to keep our code quality high above the score 9.5.
 Follow these steps to run Pylint check locally:
 
 ### Set Up Python Environment
+
 From terminal in the root of the project, run the following command:
 
 ```shell
@@ -419,6 +445,7 @@ pip install -r requirements.txt
 This command will also install a Pylint tool, since it is listed in the project requirements.
 
 ### Run Pylint
+
 Run Pylint on all files that are currently tracked by Git in the project.
 ```shell
 pylint $(git ls-files '*.py')
@@ -432,6 +459,7 @@ pylint living_documentation_generator/generator.py
 ``` 
 
 ### Expected Output
+
 This is the console expected output example after running the tool:
 ```
 ************* Module main
@@ -442,6 +470,7 @@ Your code has been rated at 9.41/10 (previous run: 8.82/10, +0.59)
 ```
 
 ## Run Black Tool Locally
+
 This project uses the [Black](https://github.com/psf/black) tool for code formatting.
 Black aims for consistency, generality, readability and reducing git diffs.
 The coding style used can be viewed as a strict subset of PEP 8.
@@ -453,6 +482,7 @@ We also do exclude the `tests/` file from the black formatting.
 Follow these steps to format your code with Black locally:
 
 ### Set Up Python Environment
+
 From terminal in the root of the project, run the following command:
 
 ```shell
@@ -464,6 +494,7 @@ pip install -r requirements.txt
 This command will also install a Black tool, since it is listed in the project requirements.
 
 ### Run Black
+
 Run Black on all files that are currently tracked by Git in the project.
 ```shell
 black $(git ls-files '*.py')
@@ -477,6 +508,7 @@ black living_documentation_generator/generator.py
 ``` 
 
 ### Expected Output
+
 This is the console expected output example after running the tool:
 ```
 All done! ✨ 🍰 ✨
@@ -514,6 +546,7 @@ htmlcov/index.html
 ```
 
 ## Deployment
+
 This project uses GitHub Actions for deployment draft creation. The deployment process is semi-automated by a workflow defined in `.github/workflows/release_draft.yml`.
 
 - **Trigger the workflow**: The `release_draft.yml` workflow is triggered on workflow_dispatch.
@@ -579,6 +612,7 @@ This feature allows you to generate structured output for the living documentati
 We welcome contributions to the Living Documentation Generator! Whether you're fixing bugs, improving documentation, or proposing new features, your help is appreciated.
 
 #### How to Contribute
+
 Before contributing, please review our [contribution guidelines](https://github.com/AbsaOSS/living-doc-generator/blob/master/CONTRIBUTING.md) for more detailed information.
 
 ### License Information
