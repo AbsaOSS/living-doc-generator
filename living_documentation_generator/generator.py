@@ -88,7 +88,7 @@ class LivingDocumentationGenerator:
         self._clean_output_directory()
         logger.debug("Output directory cleaned.")
 
-        # Data mine GitHub issues with defined labels from all repositories
+        # Data mine GitHub issues with defined topics from all repositories
         logger.info("Fetching repository GitHub issues - started.")
         repository_issues: dict[str, list[Issue]] = self._fetch_github_issues()
         # Note: got dict of list of issues for each repository (key is repository id)
@@ -127,8 +127,8 @@ class LivingDocumentationGenerator:
 
     def _fetch_github_issues(self) -> dict[str, list[Issue]]:
         """
-        Fetch GitHub repository issues using the GitHub library. Only issues with correct labels are fetched,
-        if no labels are defined in the configuration, all repository issues are fetched.
+        Fetch GitHub repository issues using the GitHub library. Only issues with correct topic are fetched,
+        if no topics are defined in the configuration, all repository issues are fetched.
 
         @return: A dictionary containing repository issue objects with unique key.
         """
@@ -145,8 +145,8 @@ class LivingDocumentationGenerator:
 
             logger.info("Fetching repository GitHub issues - from `%s`.", repository.full_name)
 
-            # If the query labels are not defined, fetch all issues from the repository
-            if not config_repository.query_labels:
+            # If the query topics are not defined, fetch all issues from the repository
+            if not config_repository.topics:
                 logger.debug("Fetching all issues in the repository")
                 issues[repository_id] = self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
                 amount_of_issues_per_repo = len(list(issues[repository_id]))
@@ -156,13 +156,13 @@ class LivingDocumentationGenerator:
                     repository.full_name,
                 )
             else:
-                # Fetch only issues with required labels from configuration
+                # Fetch only issues with required topics from configuration
                 issues[repository_id] = []
-                logger.debug("Labels to be fetched from: %s.", config_repository.query_labels)
-                for label in config_repository.query_labels:
-                    logger.debug("Fetching issues with label `%s`.", label)
+                logger.debug("Topics to be fetched from: %s.", config_repository.topics)
+                for topic in config_repository.topics:
+                    logger.debug("Fetching issues with topic `%s`.", topic)
                     issues[repository_id].extend(
-                        self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
+                        self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[topic])
                     )
                 amount_of_issues_per_repo = len(issues[repository_id])
 
@@ -543,9 +543,9 @@ class LivingDocumentationGenerator:
         @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
         @return: The string representation of the issue info in a table format.
         """
-        # Join issue labels into one string
-        labels = consolidated_issue.labels
-        labels = ", ".join(labels) if labels else None
+        # Join issue topics into one string
+        topics = consolidated_issue.topics
+        topics = ", ".join(topics) if topics else None
 
         # Format issue URL as a Markdown link
         issue_url = consolidated_issue.html_url
@@ -561,7 +561,7 @@ class LivingDocumentationGenerator:
             "Created at",
             "Updated at",
             "Closed at",
-            "Labels",
+            "Topics",
         ]
 
         # Define the values for the issue summary table
@@ -574,7 +574,7 @@ class LivingDocumentationGenerator:
             consolidated_issue.created_at,
             consolidated_issue.updated_at,
             consolidated_issue.closed_at,
-            labels,
+            topics,
         ]
 
         # Update the summary table, based on the project data mining situation

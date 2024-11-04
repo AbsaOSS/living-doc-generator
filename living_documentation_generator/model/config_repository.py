@@ -33,7 +33,7 @@ class ConfigRepository:
     def __init__(self):
         self.__organization_name: str = ""
         self.__repository_name: str = ""
-        self.__query_labels: list[Optional[str]] = [None]
+        self.__topics: list[Optional[str]] = [None]
         self.__projects_title_filter: list[Optional[str]] = [None]
 
     @property
@@ -47,9 +47,9 @@ class ConfigRepository:
         return self.__repository_name
 
     @property
-    def query_labels(self) -> list[str]:
-        """Getter of the query labels."""
-        return self.__query_labels
+    def topics(self) -> list[str]:
+        """Getter of the topics."""
+        return self.__topics
 
     @property
     def projects_title_filter(self) -> list[str]:
@@ -66,7 +66,7 @@ class ConfigRepository:
         try:
             self.__organization_name = repository_json["organization-name"]
             self.__repository_name = repository_json["repository-name"]
-            self.__query_labels = repository_json["query-labels"]
+            self.__topics = repository_json["topics"]
             self.__projects_title_filter = repository_json["projects-title-filter"]
             return True
         except KeyError as e:

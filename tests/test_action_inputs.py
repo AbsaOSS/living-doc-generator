@@ -27,13 +27,13 @@ def test_get_repositories_correct_behaviour(mocker):
         {
             "organization-name": "organizationABC",
             "repository-name": "repositoryABC",
-            "query-labels": ["feature"],
+            "topics": ["DocumentedFeature"],
             "projects-title-filter": [],
         },
         {
             "organization-name": "organizationXYZ",
             "repository-name": "repositoryXYZ",
-            "query-labels": ["bug"],
+            "topics": ["DocumentedUserStory"],
             "projects-title-filter": ["wanted_project"],
         },
     ]
@@ -47,12 +47,12 @@ def test_get_repositories_correct_behaviour(mocker):
     assert isinstance(actual[0], ConfigRepository)
     assert "organizationABC" == actual[0].organization_name
     assert "repositoryABC" == actual[0].repository_name
-    assert ["feature"] == actual[0].query_labels
+    assert ["DocumentedFeature"] == actual[0].topics
     assert [] == actual[0].projects_title_filter
     assert isinstance(actual[1], ConfigRepository)
     assert "organizationXYZ" == actual[1].organization_name
     assert "repositoryXYZ" == actual[1].repository_name
-    assert ["bug"] == actual[1].query_labels
+    assert ["DocumentedUserStory"] == actual[1].topics
     assert ["wanted_project"] == actual[1].projects_title_filter
 
 

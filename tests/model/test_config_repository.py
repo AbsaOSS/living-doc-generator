@@ -21,13 +21,13 @@ def test_load_from_json_with_valid_input_loads_correctly():
     config_repository = ConfigRepository()
     organization_name = "organizationABC"
     repository_name = "repositoryABC"
-    query_labels = ["feature", "bug"]
+    topics = ["DocumentedUserStory", "DocumentedFeature"]
     projects_title_filter = ["project1"]
     other_value = "other-value"
     repository_json = {
         "organization-name": organization_name,
         "repository-name": repository_name,
-        "query-labels": query_labels,
+        "topics": topics,
         "projects-title-filter": projects_title_filter,
         "other-field": other_value,
     }
@@ -37,7 +37,7 @@ def test_load_from_json_with_valid_input_loads_correctly():
     assert actual
     assert organization_name == config_repository.organization_name
     assert repository_name == config_repository.repository_name
-    assert query_labels == config_repository.query_labels
+    assert topics == config_repository.topics
     assert projects_title_filter == config_repository.projects_title_filter
 
 
