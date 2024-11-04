@@ -306,7 +306,7 @@ Users often struggle to find specific books in a large catalog. An advanced sear
 
 ## Documentation Ticket Introduction
 
-A **Documentation Ticket** is a focused, ongoing ticket written as GitHub Issue dedicated to project documentation.  Unlike development-focused tickets, Documentation Ticket remain open continuously, evolving as updates are needed, and can be reopened or revised indefinitely. They are not directly tied to Pull Requests (PRs) but can be referenced for context.
+A **Documentation Ticket** is a small piece of documentation realised as GitHub Issue dedicated to project documentation. Unlike development-focused tickets, Documentation Ticket remain open continuously, evolving as updates are needed, and can be reopened or revised indefinitely. They are not directly tied to Pull Requests (PRs) but can be referenced for context.
 
 - **Content Rules**:
   - **Non-technical Focus:** 
@@ -320,6 +320,7 @@ A **Documentation Ticket** is a focused, ongoing ticket written as GitHub Issue 
 To enhance clarity, the following label groups define and categorize each Documentation Issue:
 - **Topic**:
   - **{Name}Topic:** Designates the main focus area or theme relevant to the ticket, assigned by the editor for consistency across related documentation.
+    - Examples: `ReportingTopic`, `UserManagementTopic`, `SecurityTopic`.
   - **noTopic:** Indicates that the ticket does not align with a specific topic, based on the editor's discretion.
 - **Type**:
   - **DocumentedUserStory:** Describes a user-centric functionality or process, highlighting its purpose and value.

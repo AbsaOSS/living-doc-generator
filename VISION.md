@@ -27,6 +27,7 @@ The goals of this document are to:
 ## Regimes and Their Usage
 
 Outlined below are the various regimes, their intended purposes, and the specific inputs and outputs associated with each.
+- Term **regime**: a User configurable set of features that can be enabled or disabled. Each regime controls the generation of a specific type of documentation.
 
 ### DocumentedUserStories
 
@@ -83,22 +84,18 @@ Hosting documentation tickets in a dedicated GitHub repository offers several ke
 
 Here are structural suggestions for key documentation types, using examples to clarify content organization:
 - **User Stories (US):** Outlines overarching user needs and goals, providing context for related features.
-- **Features:** Describes specific aspects or components supporting the User Story, broken down into clear, actionable tasks.
+- **Features (Feat):** Describes specific aspects or components supporting the User Story, broken down into clear, actionable tasks.
 - **Requirements (Req)**: Lists individual requirements essential for completing a feature, enhancing detail and traceability.
 
 **Using Task Lists:** Leverage task lists in both User Stories and Features to improve clarity and progress tracking.
 
-## Content Formatting for Documentation Types (US, Features, Req)
+## Content Formatting for Documentation Types (US, Feat, Req)
 
 A consistent structure helps standardize documentation across different types:
 - **Open Format:**
   - **Information Collection:** Use an initial section to gather relevant information at the start.
   - **Description:** Separate sections for high-level descriptions to serve both documentation and User Guide purposes (in case of US).
 - **Body (Markdown):**
-  - **Topic:**
-    - Requirements do not need a topic.
-    - For Features, each issue should focus on a single topic (as a label). 
-    - User Stories are broader in scope.
   - **Versioning:**
     - **Expected:** Specifies the target version for initial release.
     - **Available:** Indicates the actual version released.
@@ -106,7 +103,16 @@ A consistent structure helps standardize documentation across different types:
     - Note: Version can link to Release Notes.
   - **Dependencies:**
     - No direct linkage to development tickets or PRs is required.
-    
+- **Labels:**
+  - **Topic:**
+    - Requirements do not need a topic.
+    - For Features, each issue should focus on a single topic (as a label).
+    - User Stories are broader in scope.
+  - **Type:**
+    - DocumentedUserStory, DocumentedFeature, DocumentedRequirement
+  - **State:**
+    - Upcoming, In Progress, Implemented, Deprecated
+
 This structure is intended to ensure consistency, clarity, and easy navigation across documentation types, fostering a cohesive understanding of project features and requirements.
 
 ## Examples
