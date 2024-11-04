@@ -30,8 +30,9 @@ from living_documentation_generator.utils.constants import (
     GITHUB_TOKEN,
     PROJECT_STATE_MINING,
     REPOSITORIES,
-    OUTPUT_PATH,
+    GROUP_OUTPUT_BY_TOPICS,
     STRUCTURED_OUTPUT,
+    OUTPUT_PATH,
     DEFAULT_OUTPUT_PATH,
 )
 
@@ -59,6 +60,14 @@ class ActionInputs:
         @return: True if project state mining is enabled, False otherwise.
         """
         return get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
+
+    @staticmethod
+    def get_is_grouping_by_topics_enabled() -> bool:
+        """
+        Getter of the switch, that will group the tickets in the index.md file by topics.
+        @return: True if grouping by topics is enabled, False otherwise.
+        """
+        return get_action_input(GROUP_OUTPUT_BY_TOPICS, "false").lower() == "true"
 
     @staticmethod
     def get_is_structured_output_enabled() -> bool:
