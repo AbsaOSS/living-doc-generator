@@ -1,13 +1,11 @@
 ---
 title: "{title}"
-date: "{date}"
+date: {date}
 weight: 1
 ---
 
-# {page_issue_title}
-
 {issue_summary_table}
-
-## Issue Content
+ 
+<h3>Issue Content</h3>
 
 {issue_content}
