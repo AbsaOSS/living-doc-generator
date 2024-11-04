@@ -47,7 +47,7 @@ def sanitize_filename(filename: str) -> str:
     @return: The sanitized filename
     """
     # Remove invalid characters for Windows filenames
-    sanitized_name = re.sub(r'[<>:"/|?*`]', "", filename)
+    sanitized_name = re.sub(r'[<>:"/|?*#{}()`]', "", filename)
     # Reduce consecutive periods
     sanitized_name = re.sub(r"\.{2,}", ".", sanitized_name)
     # Reduce consecutive spaces to a single space
@@ -89,6 +89,16 @@ def validate_query_format(query_string, expected_placeholders) -> None:
         extra_message = f"Extra placeholders: {extra}." if extra else ""
         logger.error("%s%s\nFor the query: %s", missing_message, extra_message, query_string)
         sys.exit(1)
+
+
+def get_all_project_directories(path: str = ".") -> list[str]:
+    """
+    Get all directories in the project starting from the specified path.
+
+    @param path: The path to start searching for directories.
+    @return: A list of all directories in the project.
+    """
+    return [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
 
 # GitHub action utils

@@ -46,7 +46,7 @@ def test_make_issue_key():
 @pytest.mark.parametrize(
     "filename_example, expected_filename",
     [
-        ("in<>va::lid//.fi|le?na*me.txt", "invalid.filename.txt"),  # Remove invalid characters for Windows filenames
+        ("in<>va::l#(){}id//.fi|le?*.txt", "invalid.file.txt"),  # Remove invalid characters for Windows filenames
         ("another..invalid...filename.txt", "another.invalid.filename.txt"),  # Reduce consecutive periods
         (
             "filename   with   spaces.txt",
