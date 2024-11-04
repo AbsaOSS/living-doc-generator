@@ -108,10 +108,10 @@ class ConsolidatedIssue:
         return self.__issue.body if self.__issue else ""
 
     @property
-    def topics(self) -> list[str]:
-        """Getter of the topics."""
+    def labels(self) -> list[str]:
+        """Getter of the issue labels."""
         if self.__issue:
-            return [topic.name for topic in self.__issue.labels]
+            return [label.name for label in self.__issue.labels]
         return []
 
     # Project properties
