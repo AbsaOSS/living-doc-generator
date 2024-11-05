@@ -365,7 +365,7 @@ class LivingDocumentationGenerator:
             generate_root_level_index_page(index_root_level_page, output_path)
 
             for topic in topics:
-                self._generate_index_page(index_page_template, issues, topic=topic)
+                self._generate_index_page(index_data_level_template, issues, topic=topic)
 
         # Generate an index page with a summary table about all issues
         else:
@@ -508,8 +508,10 @@ class LivingDocumentationGenerator:
             "issue_overview_table": issue_table,
         }
 
-        if ActionInputs.get_is_structured_output_enabled():
-            replacement["repository_name"] = repository_id.split("/")[1]
+        if ActionInputs.get_is_grouping_by_topics_enabled():
+            replacement["data_level_name"] = topic
+        elif ActionInputs.get_is_structured_output_enabled():
+            replacement["data_level_name"] = repository_id.split("/")[1]
 
         # Replace the issue placeholders in the index template
         index_page = issue_index_page_template.format(**replacement)

@@ -1,10 +1,10 @@
 ---
-title: "{repository_name}"
+title: "{data_level_name}"
 date: {date}
 weight: 0
 ---
 
-This section displays all the information about mined features for the repository: {repository_name}.
+This section displays all the information about mined features for **{data_level_name}**.
 
 <h3>Feature Summary page</h3>
 
