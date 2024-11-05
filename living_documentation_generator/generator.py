@@ -380,7 +380,8 @@ class LivingDocumentationGenerator:
         issue_md_page_content = issue_page_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        page_directory_path = self._generate_directory_path(consolidated_issue.repository_id)
+        page_directory_path = consolidated_issue.generate_directory_path(issue_table)
+        os.makedirs(page_directory_path, exist_ok=True)
 
         # Save the single issue Markdown page
         page_filename = consolidated_issue.generate_page_filename()
@@ -464,7 +465,7 @@ class LivingDocumentationGenerator:
 
         # Generate a directory structure path for the index page
         # Note: repository_id is used only, if the structured output is generated
-        index_directory_path = self._generate_directory_path(repository_id)
+        index_directory_path = self._generate_index_directory_path(repository_id)
 
         # Create an index page file
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
@@ -617,7 +618,7 @@ class LivingDocumentationGenerator:
         return issue_info
 
     @staticmethod
-    def _generate_directory_path(repository_id: Optional[str]) -> str:
+    def _generate_index_directory_path(repository_id: Optional[str]) -> str:
         """
         Generates a directory path based on if structured output is required.
 

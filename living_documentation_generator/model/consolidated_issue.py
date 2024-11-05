@@ -18,10 +18,13 @@
 This module contains a data container for Consolidated Issue, which holds all the essential logic.
 """
 import logging
+import os
+import re
 from typing import Optional
 
 from github.Issue import Issue
 
+from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.utils.utils import sanitize_filename
 from living_documentation_generator.model.project_status import ProjectStatus
 
@@ -161,3 +164,30 @@ class ConsolidatedIssue:
             return f"{self.number}.md"
 
         return page_filename
+
+    def generate_directory_path(self, issue_table: str) -> str:
+        output_path = ActionInputs.get_output_directory()
+
+        # If structured output is enabled, create a directory path based on the repository
+        if ActionInputs.get_is_structured_output_enabled() and self.repository_id:
+            organization_name, repository_name = self.repository_id.split("/")
+            output_path = os.path.join(output_path, organization_name, repository_name)
+
+        # If grouping by topics is enabled, create a directory path based on the issue topic
+        if ActionInputs.get_is_grouping_by_topics_enabled():
+            # Extract labels from the issue table
+            labels = re.findall(r"\| Labels \| (.*?) \|", issue_table)
+            if labels:
+                labels = labels[0].split(", ")
+
+            # Check for labels ending with "Topic" and generate a directory path based on it
+            for label in labels:
+                if label.endswith("Topic"):
+                    topic_path = os.path.join(output_path, label)
+                    return topic_path
+
+            # If no label ends with "Topic", create a "noTopic" issue directory path
+            no_topic_path = os.path.join(output_path, "noTopic")
+            return no_topic_path
+
+        return output_path
