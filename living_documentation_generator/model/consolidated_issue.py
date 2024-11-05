@@ -47,6 +47,7 @@ class ConsolidatedIssue:
         parts = repository_id.split("/")
         self.__organization_name: str = parts[0] if len(parts) == 2 else ""
         self.__repository_name: str = parts[1] if len(parts) == 2 else ""
+        self.__topic: str = ""
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
@@ -74,6 +75,11 @@ class ConsolidatedIssue:
     def repository_name(self) -> str:
         """Getter of the repository name where the issue was fetched from."""
         return self.__repository_name
+
+    @property
+    def topic(self) -> str:
+        """Getter of the issue topic."""
+        return self.__topic
 
     @property
     def title(self) -> str:
@@ -183,10 +189,12 @@ class ConsolidatedIssue:
             # Check for labels ending with "Topic" and generate a directory path based on it
             for label in labels:
                 if label.endswith("Topic"):
+                    self.__topic = label
                     topic_path = os.path.join(output_path, label)
                     return topic_path
 
             # If no label ends with "Topic", create a "noTopic" issue directory path
+            self.__topic = "noTopic"
             no_topic_path = os.path.join(output_path, "noTopic")
             return no_topic_path
 

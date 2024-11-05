@@ -290,6 +290,7 @@ class LivingDocumentationGenerator:
 
         @param issues: A dictionary containing all consolidated issues.
         """
+        output_path = ActionInputs.get_output_directory()
         issue_page_detail_template = None
         index_page_template = None
         index_root_level_page = None
@@ -342,7 +343,13 @@ class LivingDocumentationGenerator:
         if ActionInputs.get_is_structured_output_enabled():
             self._generate_structured_index_pages(index_repo_level_template, index_org_level_template, issues)
 
-            output_path = ActionInputs.get_output_directory()
+            with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
+                f.write(index_root_level_page)
+        elif ActionInputs.get_is_grouping_by_topics_enabled():
+            issues = list(issues.values())
+            topics = set([issue.topic for issue in issues])
+            for topic in topics:
+                self._generate_index_page(index_page_template, issues, topic=topic)
             with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
                 f.write(index_root_level_page)
         else:
@@ -430,7 +437,7 @@ class LivingDocumentationGenerator:
             logger.info("Markdown page generation - generated `_index.md` pages for %s.", repository_id)
 
     def _generate_index_page(
-        self, issue_index_page_template: str, consolidated_issues: list[ConsolidatedIssue], repository_id: str = None
+        self, issue_index_page_template: str, consolidated_issues: list[ConsolidatedIssue], repository_id: str = None, topic: str = None
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
@@ -438,6 +445,7 @@ class LivingDocumentationGenerator:
         @param issue_index_page_template: The template string for generating the index markdown page.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @param repository_id: The repository id used if the structured output is generated.
+        @param topic: The topic used if the grouping issues by topics is enabled.
         @return: None
         """
         # Initializing the issue table header based on the project mining state
@@ -449,7 +457,11 @@ class LivingDocumentationGenerator:
 
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues:
-            issue_table += self._generate_markdown_line(consolidated_issue)
+            if ActionInputs.get_is_grouping_by_topics_enabled():
+                if topic == consolidated_issue.topic:
+                    issue_table += self._generate_markdown_line(consolidated_issue)
+            else:
+                issue_table += self._generate_markdown_line(consolidated_issue)
 
         # Prepare issues replacement for the index page
         replacement = {
@@ -465,7 +477,7 @@ class LivingDocumentationGenerator:
 
         # Generate a directory structure path for the index page
         # Note: repository_id is used only, if the structured output is generated
-        index_directory_path = self._generate_index_directory_path(repository_id)
+        index_directory_path = self._generate_index_directory_path(repository_id, topic)
 
         # Create an index page file
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
@@ -618,7 +630,7 @@ class LivingDocumentationGenerator:
         return issue_info
 
     @staticmethod
-    def _generate_index_directory_path(repository_id: Optional[str]) -> str:
+    def _generate_index_directory_path(repository_id: Optional[str], topic: Optional[str]) -> str:
         """
         Generates a directory path based on if structured output is required.
 
@@ -630,6 +642,9 @@ class LivingDocumentationGenerator:
         if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(output_path, organization_name, repository_name)
+
+        if ActionInputs.get_is_grouping_by_topics_enabled():
+            output_path = os.path.join(output_path, topic)
 
         os.makedirs(output_path, exist_ok=True)
 
