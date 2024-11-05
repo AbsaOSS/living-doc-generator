@@ -113,6 +113,22 @@ def generate_root_level_index_page(index_root_level_page: str, output_path: str)
         f.write(index_root_level_page)
 
 
+def load_template(file_path: str, error_message: str) -> Optional[str]:
+    """
+    Load the content of the template file.
+
+    @param file_path: The path to the template file.
+    @param error_message: The error message to log if the file cannot be read.
+    @return: The content of the template file or None if the file cannot be read.
+    """
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except IOError:
+        logger.error(error_message, exc_info=True)
+        return None
+
+
 # GitHub action utils
 def get_action_input(name: str, default: Optional[str] = None) -> str:
     """

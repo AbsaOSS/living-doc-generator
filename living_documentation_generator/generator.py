@@ -35,7 +35,7 @@ from living_documentation_generator.model.consolidated_issue import Consolidated
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.decorators import safe_call_decorator
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
-from living_documentation_generator.utils.utils import make_issue_key, generate_root_level_index_page
+from living_documentation_generator.utils.utils import make_issue_key, generate_root_level_index_page, load_template
 from living_documentation_generator.utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
     ISSUE_STATE_ALL,
@@ -294,57 +294,16 @@ class LivingDocumentationGenerator:
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
         output_path = ActionInputs.get_output_directory()
-        issue_page_detail_template = None
-        index_page_template = None
-        index_root_level_page = None
-        index_org_level_template = None
-        index_repo_page_template = None
-        index_data_level_template = None
 
         # Load the template files for generating the Markdown pages
-        try:
-            with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                issue_page_detail_template = f.read()
-        except IOError:
-            logger.error("Issue page template file was not successfully loaded.", exc_info=True)
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_NO_STRUCT_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_page_template = f.read()
-        except IOError:
-            logger.error("Index page template file was not successfully loaded.", exc_info=True)
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_ROOT_LEVEL_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_root_level_page = f.read()
-        except IOError:
-            logger.error(
-                "Structured index page template file for root level was not successfully loaded.", exc_info=True
-            )
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_ORG_LEVEL_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_org_level_template = f.read()
-        except IOError:
-            logger.error(
-                "Structured index page template file for organization level was not successfully loaded.", exc_info=True
-            )
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_TOPIC_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_repo_page_template = f.read()
-        except IOError:
-            logger.error(
-                "Structured index page template file for repository level was not successfully loaded.", exc_info=True
-            )
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_DATA_LEVEL_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_data_level_template = f.read()
-        except IOError:
-            logger.error(
-                "Structured index page template file for data level was not successfully loaded.", exc_info=True
-            )
+        (
+            issue_page_detail_template,
+            index_page_template,
+            index_root_level_page,
+            index_org_level_template,
+            index_repo_page_template,
+            index_data_level_template,
+        ) = self._load_all_templates()
 
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
@@ -361,7 +320,7 @@ class LivingDocumentationGenerator:
         # Generate an index page with a summary table about all issues grouped by topics
         elif is_grouping_by_topics:
             issues = list(issues.values())
-            topics = set([issue.topic for issue in issues])
+            topics = {issue.topic for issue in issues}
             generate_root_level_index_page(index_root_level_page, output_path)
 
             for topic in topics:
@@ -447,6 +406,7 @@ class LivingDocumentationGenerator:
                 organization_name,
             )
 
+            # Generate an index pages for the documentation based on the grouped issues by topics
             if ActionInputs.get_is_grouping_by_topics_enabled():
                 self._generate_sub_level_index_page(index_repo_level_template, "repo", repository_id)
                 logger.debug(
@@ -454,7 +414,7 @@ class LivingDocumentationGenerator:
                     repository_name,
                 )
 
-                topics = set([issue.topic for issue in issues])
+                topics = {issue.topic for issue in issues}
                 for topic in topics:
                     self._generate_index_page(index_data_level_template, issues, repository_id, topic)
                     logger.debug(
@@ -465,7 +425,7 @@ class LivingDocumentationGenerator:
             else:
                 self._generate_index_page(index_data_level_template, issues, repository_id)
                 logger.debug(
-                    "Generated repository level `_index.md` for %s",
+                    "Generated data level `_index.md` for %s",
                     repository_id,
                 )
 
@@ -700,3 +660,44 @@ class LivingDocumentationGenerator:
         os.makedirs(output_path, exist_ok=True)
 
         return output_path
+
+    @staticmethod
+    def _load_all_templates() -> tuple[str, ...]:
+        """
+        Load all template files for generating the Markdown pages.
+
+        @return: A tuple containing all loaded template files.
+        """
+        issue_page_detail_template = load_template(
+            LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE,
+            "Issue page template file was not successfully loaded.",
+        )
+        index_page_template = load_template(
+            LivingDocumentationGenerator.INDEX_NO_STRUCT_TEMPLATE_FILE,
+            "Index page template file was not successfully loaded.",
+        )
+        index_root_level_page = load_template(
+            LivingDocumentationGenerator.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
+            "Structured index page template file for root level was not successfully loaded.",
+        )
+        index_org_level_template = load_template(
+            LivingDocumentationGenerator.INDEX_ORG_LEVEL_TEMPLATE_FILE,
+            "Structured index page template file for organization level was not successfully loaded.",
+        )
+        index_repo_page_template = load_template(
+            LivingDocumentationGenerator.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
+            "Structured index page template file for repository level was not successfully loaded.",
+        )
+        index_data_level_template = load_template(
+            LivingDocumentationGenerator.INDEX_DATA_LEVEL_TEMPLATE_FILE,
+            "Structured index page template file for data level was not successfully loaded.",
+        )
+
+        return (
+            issue_page_detail_template,
+            index_page_template,
+            index_root_level_page,
+            index_org_level_template,
+            index_repo_page_template,
+            index_data_level_template,
+        )

@@ -42,11 +42,7 @@ class ConsolidatedIssue:
         # save issue from repository (got from GitHub library & keep connection to repository for lazy loading)
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
-
         self.__repository_id: str = repository_id
-        parts = repository_id.split("/")
-        self.__organization_name: str = parts[0] if len(parts) == 2 else ""
-        self.__repository_name: str = parts[1] if len(parts) == 2 else ""
         self.__topic: str = ""
 
         # Extra project data (optionally provided from GithubProjects class)
@@ -69,12 +65,14 @@ class ConsolidatedIssue:
     @property
     def organization_name(self) -> str:
         """Getter of the organization where the issue was fetched from."""
-        return self.__organization_name
+        parts = self.__repository_id.split("/")
+        return parts[0] if len(parts) == 2 else ""
 
     @property
     def repository_name(self) -> str:
         """Getter of the repository name where the issue was fetched from."""
-        return self.__repository_name
+        parts = self.__repository_id.split("/")
+        return parts[1] if len(parts) == 2 else ""
 
     @property
     def topic(self) -> str:
@@ -172,6 +170,12 @@ class ConsolidatedIssue:
         return page_filename
 
     def generate_directory_path(self, issue_table: str) -> str:
+        """
+        Generate a directory path based on enabled features.
+
+        @param issue_table: The consolidated issue summary table.
+        @return: The generated directory path.
+        """
         output_path = ActionInputs.get_output_directory()
 
         # If structured output is enabled, create a directory path based on the repository
