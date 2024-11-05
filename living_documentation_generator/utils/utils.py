@@ -101,6 +101,18 @@ def get_all_project_directories(path: str = ".") -> list[str]:
     return [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
 
+def generate_root_level_index_page(index_root_level_page: str, output_path: str) -> None:
+    """
+    Generate the root level index page for the output living documentation.
+
+    @param index_root_level_page: The content of the root level index page.
+    @param output_path: The path to the output directory.
+    @return: None
+    """
+    with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
+        f.write(index_root_level_page)
+
+
 # GitHub action utils
 def get_action_input(name: str, default: Optional[str] = None) -> str:
     """
