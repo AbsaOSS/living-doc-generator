@@ -27,6 +27,7 @@
     - [Data Mining from GitHub Projects](#data-mining-from-github-projects)
     - [Living Documentation Page Generation](#living-documentation-page-generation)
     - [Structured Output](#structured-output)
+    - [Grouped Output by Issue Topics](#grouped-output-by-issue-topics)
 - [Contribution Guidelines](#contribution-guidelines)
 - [License Information](#license-information)
 - [Contact or Support Information](#contact-or-support-information)
@@ -114,12 +115,15 @@ See the full example of action step definition (in example are used non-default 
 
     # project state mining feature de/activation
     project-state-mining: true
-    
-    # project verbose (debug) logging feature de/activation
-    verbose-logging: true
 
     # structured output feature de/activation
     structured-output: true
+    
+    # group output by topics feature de/activation
+    group-output-by-topics: true
+
+    # project verbose (debug) logging feature de/activation
+    verbose-logging: true
 ```
 
 ## Action Configuration
@@ -214,15 +218,6 @@ Configure the action by customizing the following parameters based on your needs
       project-state-mining: true
     ```
     
-- **verbose-logging** (optional, `default: false`)
-  - **Description**: Enables or disables verbose (debug) logging.
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      verbose-logging: true
-    ```
-    
 - **structured-output** (optional, `default: false`)
   - **Description**: Enables or disables structured output.
   - **Usage**: Set to true to activate.
@@ -230,6 +225,24 @@ Configure the action by customizing the following parameters based on your needs
     ```yaml
     with:
       structured-output: true
+    ```
+
+- **group-output-by-topics** (optional, `default: false`)
+  - **Description**: Enable or disable grouping tickets by topics in the summary index.md file.
+  - **Usage**: Set to true to activate.
+  - **Example**:
+    ```yaml
+    with:
+      group-output-by-topics: true
+    ```
+
+- **verbose-logging** (optional, `default: false`)
+  - **Description**: Enables or disables verbose (debug) logging.
+  - **Usage**: Set to true to activate.
+  - **Example**:
+    ```yaml
+    with:
+      verbose-logging: true
     ```
 
 ## Action Outputs
@@ -394,6 +407,8 @@ export INPUT_REPOSITORIES='[
           ]'
 export INPUT_OUTPUT_PATH="/output/directory/path
 export INPUT_PROJECT_STATE_MINING="true"
+export INPUT_STRUCTURED_OUTPUT="true"
+export INPUT_GROUP_OUTPUT_BY_TOPICS="true"
 export INPUT_VERBOSE_LOGGING="true"
 ```
 
@@ -601,13 +616,40 @@ This feature allows you to generate structured output for the living documentati
          |-- issue md page 1
          |-- issue md page 2
          |-- _index.md
+      |-- _index.md
     |- org 2
       |--repo 1
          |-- issue md page 1
          |-- _index.md
       |--repo 2
+          ...
+      |-- _index.md
+    |- _index.md
     ```
+
+### Grouped Output by Issue Topics
+
+The feature allows you to generate output grouped by issue topics. This feature is useful when you want to group issues by specific topics or themes.
+
+To gain a better understanding of the term "Topic", refer to the [Labels](#labels) section.
+
+- **Default Behavior**: By default, the action generates all the documentation in a single directory.
+- **Non-default Example**: Use the grouped output feature to organize the generated documentation by issue topics.
+  - `group-output-by-topics: true` activates the grouped output feature.
+    ```
+    output
+    |- topic 1
+      |-- issue md page 1
+      |-- issue md page 2
+      |-- _index.md
+    |- topic 2
+      |-- issue md page 1
+      |-- _index.md
+    |- _index.md
+    ```
+    
 ---
+
 ## Contribution Guidelines
 
 We welcome contributions to the Living Documentation Generator! Whether you're fixing bugs, improving documentation, or proposing new features, your help is appreciated.
