@@ -190,16 +190,26 @@ class ConsolidatedIssue:
             if labels:
                 labels = labels[0].split(", ")
 
-            # Check for labels ending with "Topic" and generate a directory path based on it
-            for label in labels:
-                if label.endswith("Topic"):
-                    self.__topic = label
-                    topic_path = os.path.join(output_path, label)
-                    return topic_path
+            # Check for all labels ending with "Topic"
+            topic_labels = [label for label in labels if label.endswith("Topic")]
+            if len(topic_labels) > 1:
+                logger.debug(
+                    "Multiple Topic labels found for Issue #%s: %s (%s): %s",
+                    self.number,
+                    self.title,
+                    self.repository_id,
+                    ", ".join(topic_labels),
+                )
+
+            # Generate a directory path based on a Topic label
+            for topic_label in topic_labels:
+                self.__topic = topic_label
+                topic_path = os.path.join(output_path, topic_label)
+                return topic_path
 
             # If no label ends with "Topic", create a "noTopic" issue directory path
-            self.__topic = "noTopic"
-            no_topic_path = os.path.join(output_path, "noTopic")
+            self.__topic = "NoTopic"
+            no_topic_path = os.path.join(output_path, "NoTopic")
             return no_topic_path
 
         return output_path
