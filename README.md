@@ -27,7 +27,7 @@
     - [Data Mining from GitHub Projects](#data-mining-from-github-projects)
     - [Living Documentation Page Generation](#living-documentation-page-generation)
     - [Structured Output](#structured-output)
-    - [Grouped Output by Issue Topics](#grouped-output-by-issue-topics)
+    - [Output Grouped by Topics](#output-grouped-by-topics)
 - [Contribution Guidelines](#contribution-guidelines)
 - [License Information](#license-information)
 - [Contact or Support Information](#contact-or-support-information)
@@ -334,7 +334,7 @@ To enhance clarity, the following label groups define and categorize each Docume
 - **Topic**:
   - **{Name}Topic:** Designates the main focus area or theme relevant to the ticket, assigned by the editor for consistency across related documentation.
     - Examples: `ReportingTopic`, `UserManagementTopic`, `SecurityTopic`.
-  - **noTopic:** Indicates that the ticket does not align with a specific topic, based on the editor's discretion.
+  - **NoTopic:** Indicates that the ticket does not align with a specific topic, based on the editor's discretion.
 - **Type**:
   - **DocumentedUserStory:** Describes a user-centric functionality or process, highlighting its purpose and value.
     - Encompasses multiple features, capturing the broader goal from a user perspective.
@@ -627,14 +627,14 @@ This feature allows you to generate structured output for the living documentati
     |- _index.md
     ```
 
-### Grouped Output by Issue Topics
+### Output Grouped by Topics
 
-The feature allows you to generate output grouped by issue topics. This feature is useful when you want to group issues by specific topics or themes.
+The feature allows you to generate grouped output by topics. This feature is useful when you want to group tickets by specific topics or themes.
 
 To gain a better understanding of the term "Topic", refer to the [Labels](#labels) section.
 
 - **Default Behavior**: By default, the action generates all the documentation in a single directory.
-- **Non-default Example**: Use the grouped output feature to organize the generated documentation by issue topics.
+- **Non-default Example**: Use the grouped output feature to organize the generated documentation by topics.
   - `group-output-by-topics: true` activates the grouped output feature.
     ```
     output
