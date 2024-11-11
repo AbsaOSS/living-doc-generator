@@ -362,15 +362,16 @@ class LivingDocumentationGenerator:
         issue_md_page_content = issue_page_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        page_directory_path = consolidated_issue.generate_directory_path(issue_table)
-        os.makedirs(page_directory_path, exist_ok=True)
+        page_directory_paths: list[str] = consolidated_issue.generate_directory_path(issue_table)
+        for page_directory_path in page_directory_paths:
+            os.makedirs(page_directory_path, exist_ok=True)
 
-        # Save the single issue Markdown page
-        page_filename = consolidated_issue.generate_page_filename()
-        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
-            f.write(issue_md_page_content)
+            # Save the single issue Markdown page
+            page_filename = consolidated_issue.generate_page_filename()
+            with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+                f.write(issue_md_page_content)
 
-        logger.debug("Generated Markdown page: %s.", page_filename)
+            logger.debug("Generated Markdown page: %s.", page_filename)
 
     def _generate_structured_index_pages(
         self,

@@ -169,12 +169,13 @@ class ConsolidatedIssue:
 
         return page_filename
 
-    def generate_directory_path(self, issue_table: str) -> str:
+    def generate_directory_path(self, issue_table: str) -> list[str]:
         """
-        Generate a directory path based on enabled features.
+        Generate a list of directory paths based on enabled features.
+        An issue can be placed in multiple directories if it is associated with more than one topic.
 
         @param issue_table: The consolidated issue summary table.
-        @return: The generated directory path.
+        @return: The list of generated directory paths.
         """
         output_path = ActionInputs.get_output_directory()
 
@@ -185,6 +186,8 @@ class ConsolidatedIssue:
 
         # If grouping by topics is enabled, create a directory path based on the issue topic
         if ActionInputs.get_is_grouping_by_topics_enabled():
+            topic_paths = []
+
             # Extract labels from the issue table
             labels = re.findall(r"\| Labels \| (.*?) \|", issue_table)
             if labels:
@@ -192,6 +195,13 @@ class ConsolidatedIssue:
 
             # Check for all labels ending with "Topic"
             topic_labels = [label for label in labels if label.endswith("Topic")]
+
+            # If no label ends with "Topic", create a "NoTopic" issue directory path
+            if not topic_labels:
+                self.__topic = "NoTopic"
+                no_topic_path = os.path.join(output_path, "NoTopic")
+                return [no_topic_path]
+
             if len(topic_labels) > 1:
                 logger.debug(
                     "Multiple Topic labels found for Issue #%s: %s (%s): %s",
@@ -205,11 +215,7 @@ class ConsolidatedIssue:
             for topic_label in topic_labels:
                 self.__topic = topic_label
                 topic_path = os.path.join(output_path, topic_label)
-                return topic_path
+                topic_paths.append(topic_path)
+            return topic_paths
 
-            # If no label ends with "Topic", create a "noTopic" issue directory path
-            self.__topic = "NoTopic"
-            no_topic_path = os.path.join(output_path, "NoTopic")
-            return no_topic_path
-
-        return output_path
+        return [output_path]
