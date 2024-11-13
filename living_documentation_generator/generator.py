@@ -291,6 +291,7 @@ class LivingDocumentationGenerator:
 
         @param issues: A dictionary containing all consolidated issues.
         """
+        topics = set()
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
         output_path = ActionInputs.get_output_directory()
@@ -308,23 +309,24 @@ class LivingDocumentationGenerator:
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
-        logger.info("Markdown page generation - generated `%s` issue pages.", len(issues))
+            for topic in consolidated_issue.topics:
+                topics.add(topic)
+        logger.info("Markdown page generation - generated `%i` issue pages.", len(issues))
 
         # Generate all structure of the index pages
         if is_structured_output:
             generate_root_level_index_page(index_root_level_page, output_path)
             self._generate_structured_index_pages(
-                index_data_level_template, index_repo_page_template, index_org_level_template, issues
+                index_data_level_template, index_repo_page_template, index_org_level_template, topics, issues
             )
 
         # Generate an index page with a summary table about all issues grouped by topics
         elif is_grouping_by_topics:
             issues = list(issues.values())
-            topics = {issue.topic for issue in issues}
             generate_root_level_index_page(index_root_level_page, output_path)
 
             for topic in topics:
-                self._generate_index_page(index_data_level_template, issues, topic=topic)
+                self._generate_index_page(index_data_level_template, issues, grouping_topic=topic)
 
         # Generate an index page with a summary table about all issues
         else:
@@ -378,6 +380,7 @@ class LivingDocumentationGenerator:
         index_data_level_template: str,
         index_repo_level_template: str,
         index_org_level_template: str,
+        topics: set[str],
         consolidated_issues: dict[str, ConsolidatedIssue],
     ) -> None:
         """
@@ -386,6 +389,7 @@ class LivingDocumentationGenerator:
         @param index_data_level_template: The template string for generating the data level index markdown page.
         @param index_repo_level_template: The template string for generating the repository level index markdown page.
         @param index_org_level_template: The template string for generating the organization level index markdown page.
+        @param topics: A set of topics used for grouping issues.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @return: None
         """
@@ -415,7 +419,6 @@ class LivingDocumentationGenerator:
                     repository_name,
                 )
 
-                topics = {issue.topic for issue in issues}
                 for topic in topics:
                     self._generate_index_page(index_data_level_template, issues, repository_id, topic)
                     logger.debug(
@@ -437,7 +440,7 @@ class LivingDocumentationGenerator:
         issue_index_page_template: str,
         consolidated_issues: list[ConsolidatedIssue],
         repository_id: str = None,
-        topic: str = None,
+        grouping_topic: str = None,
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
@@ -445,7 +448,7 @@ class LivingDocumentationGenerator:
         @param issue_index_page_template: The template string for generating the index markdown page.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @param repository_id: The repository id used if the structured output is generated.
-        @param topic: The topic used if the grouping issues by topics is enabled.
+        @param grouping_topic: The topic used if the grouping issues by topics is enabled.
         @return: None
         """
         # Initializing the issue table header based on the project mining state
@@ -458,8 +461,9 @@ class LivingDocumentationGenerator:
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues:
             if ActionInputs.get_is_grouping_by_topics_enabled():
-                if topic == consolidated_issue.topic:
-                    issue_table += self._generate_markdown_line(consolidated_issue)
+                for topic in consolidated_issue.topics:
+                    if grouping_topic == topic:
+                        issue_table += self._generate_markdown_line(consolidated_issue)
             else:
                 issue_table += self._generate_markdown_line(consolidated_issue)
 
@@ -470,16 +474,16 @@ class LivingDocumentationGenerator:
         }
 
         if ActionInputs.get_is_grouping_by_topics_enabled():
-            replacement["data_level_name"] = topic
+            replacement["data_level_name"] = grouping_topic
         elif ActionInputs.get_is_structured_output_enabled():
             replacement["data_level_name"] = repository_id.split("/")[1]
 
         # Replace the issue placeholders in the index template
-        index_page = issue_index_page_template.format(**replacement)
+        index_page: str = issue_index_page_template.format(**replacement)
 
         # Generate a directory structure path for the index page
         # Note: repository_id is used only, if the structured output is generated
-        index_directory_path = self._generate_index_directory_path(repository_id, topic)
+        index_directory_path: str = self._generate_index_directory_path(repository_id, grouping_topic)
 
         # Create an index page file
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
@@ -649,7 +653,7 @@ class LivingDocumentationGenerator:
         @param repository_id: The repository id.
         @return: The generated directory path.
         """
-        output_path = ActionInputs.get_output_directory()
+        output_path: str = ActionInputs.get_output_directory()
 
         if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
@@ -663,33 +667,33 @@ class LivingDocumentationGenerator:
         return output_path
 
     @staticmethod
-    def _load_all_templates() -> tuple[str, ...]:
+    def _load_all_templates() -> tuple[Optional[str], ...]:
         """
         Load all template files for generating the Markdown pages.
 
         @return: A tuple containing all loaded template files.
         """
-        issue_page_detail_template = load_template(
+        issue_page_detail_template: Optional[str] = load_template(
             LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE,
             "Issue page template file was not successfully loaded.",
         )
-        index_page_template = load_template(
+        index_page_template: Optional[str] = load_template(
             LivingDocumentationGenerator.INDEX_NO_STRUCT_TEMPLATE_FILE,
             "Index page template file was not successfully loaded.",
         )
-        index_root_level_page = load_template(
+        index_root_level_page: Optional[str] = load_template(
             LivingDocumentationGenerator.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for root level was not successfully loaded.",
         )
-        index_org_level_template = load_template(
+        index_org_level_template: Optional[str] = load_template(
             LivingDocumentationGenerator.INDEX_ORG_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for organization level was not successfully loaded.",
         )
-        index_repo_page_template = load_template(
+        index_repo_page_template: Optional[str] = load_template(
             LivingDocumentationGenerator.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
             "Structured index page template file for repository level was not successfully loaded.",
         )
-        index_data_level_template = load_template(
+        index_data_level_template: Optional[str] = load_template(
             LivingDocumentationGenerator.INDEX_DATA_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for data level was not successfully loaded.",
         )
