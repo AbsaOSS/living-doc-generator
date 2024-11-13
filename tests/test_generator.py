@@ -23,12 +23,15 @@ from living_documentation_generator.model.project_issue import ProjectIssue
 # generate
 
 
-def test_generate(mocker, generator):
+def test_generate_correct_behaviour(mocker, generator):
     # Arrange
     mock_clean_output_directory = mocker.patch.object(generator, "_clean_output_directory")
+    mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
+    mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
 
     issue_mock = mocker.Mock()
     project_issue_mock = mocker.Mock()
+    consolidated_issue_mock = mocker.Mock()
 
     mock_fetch_github_issues = mocker.patch.object(
         generator, "_fetch_github_issues", return_value={"test_org/test_repo": [issue_mock]}
@@ -36,15 +39,10 @@ def test_generate(mocker, generator):
     mock_fetch_github_project_issues = mocker.patch.object(
         generator, "_fetch_github_project_issues", return_value={"test_org/test_repo#1": [project_issue_mock]}
     )
-
-    consolidated_issue_mock = mocker.Mock()
     mock_consolidate_issues_data = mocker.patch.object(
         generator, "_consolidate_issues_data", return_value={"test_org/test_repo#1": consolidated_issue_mock}
     )
     mock_generate_markdown_pages = mocker.patch.object(generator, "_generate_markdown_pages")
-
-    mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
-    mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
 
     # Act
     generator.generate()
@@ -57,7 +55,6 @@ def test_generate(mocker, generator):
         {"test_org/test_repo": [issue_mock]}, {"test_org/test_repo#1": [project_issue_mock]}
     )
     mock_generate_markdown_pages.assert_called_once_with({"test_org/test_repo#1": consolidated_issue_mock})
-
     mock_logger_debug.assert_called_once_with("Output directory cleaned.")
     mock_logger_info.assert_has_calls(
         [
@@ -77,7 +74,8 @@ def test_generate(mocker, generator):
 # _clean_output_directory
 
 
-def test_clean_output_directory(mocker):
+def test_clean_output_directory_correct_behaviour(mocker, generator):
+    # Arrange
     mock_output_path = "/test/output/path"
     mock_get_output_directory = mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value=mock_output_path
@@ -86,8 +84,10 @@ def test_clean_output_directory(mocker):
     mock_rmtree = mocker.patch("shutil.rmtree")
     mock_makedirs = mocker.patch("os.makedirs")
 
-    LivingDocumentationGenerator._clean_output_directory()
+    # Act
+    generator._clean_output_directory()
 
+    # Assert
     mock_get_output_directory.assert_called_once()
     mock_exists.assert_called_once_with(mock_output_path)
     mock_rmtree.assert_called_once_with(mock_output_path)
@@ -100,22 +100,22 @@ def test_clean_output_directory(mocker):
 def test_fetch_github_issues_no_query_labels(mocker, generator, config_repository):
     # Arrange
     config_repository.query_labels = []
+    repo = mocker.Mock()
+    repo.full_name = "test_org/test_repo"
+    issue1 = mocker.Mock()
+    issue2 = mocker.Mock()
+    issue3 = mocker.Mock()
+
+    expected_issues = {"test_org/test_repo": [issue1, issue2, issue3]}
+    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
+    mock_get_repo.return_value = repo
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
     mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
-
-    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
-    repo = mocker.Mock()
-    repo.full_name = "test_org/test_repo"
-    mock_get_repo.return_value = repo
-
-    issue1 = mocker.Mock()
-    issue2 = mocker.Mock()
-    issue3 = mocker.Mock()
     mock_get_issues = mocker.patch.object(repo, "get_issues", return_value=[issue1, issue2, issue3])
-    expected_issues = {"test_org/test_repo": [issue1, issue2, issue3]}
 
     # Act
     actual = generator._fetch_github_issues()
@@ -148,23 +148,21 @@ def test_fetch_github_issues_no_query_labels(mocker, generator, config_repositor
 def test_fetch_github_issues_with_given_query_labels(mocker, generator, config_repository):
     # Arrange
     config_repository.query_labels = ["bug", "enhancement"]
+    repo = mocker.Mock()
+    repo.full_name = "test_org/test_repo"
+    issue1 = mocker.Mock()
+    issue2 = mocker.Mock()
+
+    expected_issues = {"test_org/test_repo": [issue1, issue2]}
+    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
+    mock_get_repo.return_value = repo
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
     mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
-
-    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
-    repo = mocker.Mock()
-    repo.full_name = "test_org/test_repo"
-    mock_get_repo.return_value = repo
-
-    issue1 = mocker.Mock()
-    issue2 = mocker.Mock()
-
-    # Use side_effect to return different issues for each label
     mock_get_issues = mocker.patch.object(repo, "get_issues", side_effect=[[issue1], [issue2]])
-    expected_issues = {"test_org/test_repo": [issue1, issue2]}
 
     # Act
     actual = generator._fetch_github_issues()
@@ -197,11 +195,11 @@ def test_fetch_github_issues_with_given_query_labels(mocker, generator, config_r
 
 def test_fetch_github_issues_repository_none(mocker, generator, config_repository):
     # Arrange
+    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
+    mock_get_repo.return_value = None
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_repositories", return_value=[config_repository]
     )
-    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
-    mock_get_repo.return_value = None
 
     # Act
     actual = generator._fetch_github_issues()
@@ -316,36 +314,49 @@ def test_fetch_github_project_issues_correct_behaviour(mocker, generator):
     )
 
 
-def test_fetch_github_project_issues_mining_disabled(mocker, generator):
+def test_fetch_github_project_issues_project_mining_disabled(mocker, generator):
+    # Arrange
     mock_get_project_mining_enabled = mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=False
     )
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
 
+    # Act
     actual = generator._fetch_github_project_issues()
 
+    # Assert
+    assert {} == actual
     mock_get_project_mining_enabled.assert_called_once()
     mock_logger_info.assert_called_once_with("Fetching GitHub project data - project mining is not allowed.")
-    assert {} == actual
 
 
 def test_fetch_github_project_issues_no_repositories(mocker, generator, config_repository):
+    # Arrange
+    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
+    mock_get_repo.return_value = None
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
     )
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_repositories", return_value=[config_repository]
     )
-    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
-    mock_get_repo.return_value = None
 
+    # Act
     actual = generator._fetch_github_project_issues()
 
+    # Assert
     assert {} == actual
     mock_get_repo.assert_called_once_with("test_org/test_repo")
 
 
-def test_fetch_github_project_issues_no_projects(mocker, generator, config_repository):
+def test_fetch_github_project_issues_with_no_projects(mocker, generator, config_repository):
+    # Arrange
+    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
+    repo_a = mocker.Mock()
+    repo_a.full_name = "test_org/test_repo"
+    mock_get_repo.return_value = repo_a
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
     )
@@ -353,19 +364,15 @@ def test_fetch_github_project_issues_no_projects(mocker, generator, config_repos
         "living_documentation_generator.generator.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
-
-    mock_get_repo = generator._LivingDocumentationGenerator__github_instance.get_repo
-    repo_a = mocker.Mock()
-    repo_a.full_name = "test_org/test_repo"
-    mock_get_repo.return_value = repo_a
-
     mock_get_repository_projects = mocker.patch.object(
         generator._LivingDocumentationGenerator__github_projects_instance, "get_repository_projects", return_value=[]
     )
 
+    # Act
     actual = generator._fetch_github_project_issues()
 
-    assert actual == {}
+    # Assert
+    assert {} == actual
     mock_get_repo.assert_called_once_with("test_org/test_repo")
     mock_get_repository_projects.assert_called_once_with(repository=repo_a, projects_title_filter=[])
     mock_logger_info.assert_called_once_with(
@@ -376,27 +383,26 @@ def test_fetch_github_project_issues_no_projects(mocker, generator, config_repos
 # _consolidate_issues_data
 
 
-def test_consolidate_issues_data(mocker, generator):
+def test_consolidate_issues_data_correct_behaviour(mocker, generator):
     # Arrange
+    consolidated_issue_mock_1 = mocker.Mock(spec=ConsolidatedIssue)
+    consolidated_issue_mock_2 = mocker.Mock(spec=ConsolidatedIssue)
+    repository_issues = {"TestOrg/TestRepo": [mocker.Mock(spec=Issue, number=1), mocker.Mock(spec=Issue, number=2)]}
+    project_issues = {
+        "TestOrg/TestRepo#1": [mocker.Mock(spec=ProjectIssue, project_status="In Progress")],
+        "TestOrg/TestRepo#2": [mocker.Mock(spec=ProjectIssue, project_status="Done")],
+    }
+
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
     mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
     mock_make_issue_key = mocker.patch(
         "living_documentation_generator.generator.make_issue_key",
         side_effect=lambda org, repo, num: f"{org}/{repo}#{num}",
     )
-
-    consolidated_issue_mock_1 = mocker.Mock(spec=ConsolidatedIssue)
-    consolidated_issue_mock_2 = mocker.Mock(spec=ConsolidatedIssue)
     mock_consolidated_issue_class = mocker.patch(
         "living_documentation_generator.generator.ConsolidatedIssue",
         side_effect=[consolidated_issue_mock_1, consolidated_issue_mock_2],
     )
-
-    repository_issues = {"TestOrg/TestRepo": [mocker.Mock(spec=Issue, number=1), mocker.Mock(spec=Issue, number=2)]}
-    project_issues = {
-        "TestOrg/TestRepo#1": [mocker.Mock(spec=ProjectIssue, project_status="In Progress")],
-        "TestOrg/TestRepo#2": [mocker.Mock(spec=ProjectIssue, project_status="Done")],
-    }
 
     # Act
     actual = generator._consolidate_issues_data(repository_issues, project_issues)
@@ -422,6 +428,10 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_enabl
     mocker, generator, consolidated_issue, load_all_templates_setup
 ):
     # Arrange
+    mock_load_all_templates = load_all_templates_setup
+    topics = {"documentationTopic"}
+    issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
     )
@@ -431,9 +441,6 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_enabl
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
-
-    mock_load_all_templates = load_all_templates_setup
-    mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
     mock_generate_root_level_index_page = mocker.patch(
         "living_documentation_generator.generator.generate_root_level_index_page"
     )
@@ -442,16 +449,14 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_enabl
     )
     mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
-
-    topics = {"documentationTopic"}
-    issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
+    mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
 
     # Act
     generator._generate_markdown_pages(issues)
 
     # Assert
+    assert 2 == mock_generate_md_issue_page.call_count
     mock_load_all_templates.assert_called_once()
-    assert mock_generate_md_issue_page.call_count == 2
     mock_generate_md_issue_page.assert_any_call("Issue Page Template", consolidated_issue)
     mock_generate_root_level_index_page.assert_called_once_with("Root Level Page Template", "/base/output")
     mock_generate_structured_index_pages.assert_called_once_with(
@@ -465,6 +470,10 @@ def test_generate_markdown_pages_with_structured_output_enabled_and_topic_groupi
     mocker, generator, consolidated_issue, load_all_templates_setup
 ):
     # Arrange
+    topics = {"documentationTopic", "FETopic"}
+    consolidated_issue.topics = ["documentationTopic", "FETopic"]
+    issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue, "issue_3": consolidated_issue}
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
     )
@@ -474,8 +483,6 @@ def test_generate_markdown_pages_with_structured_output_enabled_and_topic_groupi
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
-
-    mock_load_all_templates = load_all_templates_setup
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
     mock_generate_root_level_index_page = mocker.patch(
         "living_documentation_generator.generator.generate_root_level_index_page"
@@ -486,22 +493,17 @@ def test_generate_markdown_pages_with_structured_output_enabled_and_topic_groupi
     mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
 
-    topics = {"documentationTopic", "FETopic"}
-    consolidated_issue.topics = ["documentationTopic", "FETopic"]
-    issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue, "issue_3": consolidated_issue}
-
     # Act
     generator._generate_markdown_pages(issues)
 
     # Assert
-    mock_load_all_templates.assert_called_once()
-    assert mock_generate_md_issue_page.call_count == 3
+    assert 3 == mock_generate_md_issue_page.call_count
+    load_all_templates_setup.assert_called_once()
     mock_generate_md_issue_page.assert_any_call("Issue Page Template", consolidated_issue)
     mock_generate_root_level_index_page.assert_called_once_with("Root Level Page Template", "/base/output")
     mock_generate_structured_index_pages.assert_called_once_with(
         "Data Level Template", "Repo Page Template", "Org Level Template", topics, issues
     )
-    mock_generate_index_page.assert_not_called()
     mock_logger_info.assert_called_once_with("Markdown page generation - generated `%i` issue pages.", 3)
 
 
@@ -509,6 +511,8 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_disab
     mocker, generator, consolidated_issue, load_all_templates_setup
 ):
     # Arrange
+    issues = {"issue_1": consolidated_issue}
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=False
     )
@@ -518,8 +522,6 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_disab
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
-
-    mock_load_all_templates = load_all_templates_setup
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
     mock_generate_root_level_index_page = mocker.patch(
         "living_documentation_generator.generator.generate_root_level_index_page"
@@ -530,13 +532,11 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_disab
     mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
 
-    issues = {"issue_1": consolidated_issue}
-
     # Act
     generator._generate_markdown_pages(issues)
 
     # Assert
-    mock_load_all_templates.assert_called_once()
+    load_all_templates_setup.assert_called_once()
     assert mock_generate_md_issue_page.call_count == 1
     mock_generate_md_issue_page.assert_any_call("Issue Page Template", consolidated_issue)
     mock_generate_root_level_index_page.assert_not_called()
@@ -549,6 +549,10 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_disab
 def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_output_disabled(
     mocker, generator, consolidated_issue, load_all_templates_setup
 ):
+    # Arrange
+    consolidated_issue.topics = ["documentationTopic", "FETopic"]
+    issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=False
     )
@@ -558,8 +562,6 @@ def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_outp
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
-
-    mock_load_all_templates = load_all_templates_setup
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
     mock_generate_root_level_index_page = mocker.patch(
         "living_documentation_generator.generator.generate_root_level_index_page"
@@ -569,14 +571,12 @@ def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_outp
     )
     mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
 
-    consolidated_issue.topics = ["documentationTopic", "FETopic"]
-    issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
-
+    # Act
     generator._generate_markdown_pages(issues)
 
-    # Assertions
-    mock_load_all_templates.assert_called_once()
-    assert mock_generate_md_issue_page.call_count == 2
+    # Assert
+    assert 2 == mock_generate_md_issue_page.call_count
+    load_all_templates_setup.assert_called_once()
     mock_generate_md_issue_page.assert_any_call("Issue Page Template", consolidated_issue)
     mock_generate_root_level_index_page.assert_called_once_with("Root Level Page Template", "/base/output")
     mock_generate_structured_index_pages.assert_not_called()
@@ -591,23 +591,22 @@ def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_outp
 
 def test_generate_md_issue_page(mocker, generator, consolidated_issue):
     # Arrange
+    issue_page_template = "Title: {title}\nDate: {date}\nSummary:\n{issue_summary_table}\nContent:\n{issue_content}"
+    consolidated_issue.generate_directory_path = mocker.Mock(return_value=["/base/output/org/repo/issues"])
+    consolidated_issue.generate_page_filename = mocker.Mock(return_value="issue_42.md")
+    expected_date = datetime.now().strftime("%Y-%m-%d")
+    expected_content = f"Title: Sample Issue\nDate: {expected_date}\nSummary:\nGenerated Issue Summary Table\nContent:\nThis is the issue content."
+
     mock_generate_issue_summary_table = mocker.patch.object(
         LivingDocumentationGenerator, "_generate_issue_summary_table", return_value="Generated Issue Summary Table"
     )
     mock_makedirs = mocker.patch("os.makedirs")
     mock_open = mocker.patch("builtins.open", mocker.mock_open())
 
-    issue_page_template = "Title: {title}\nDate: {date}\nSummary:\n{issue_summary_table}\nContent:\n{issue_content}"
-    consolidated_issue.generate_directory_path = mocker.Mock(return_value=["/base/output/org/repo/issues"])
-    consolidated_issue.generate_page_filename = mocker.Mock(return_value="issue_42.md")
-
     # Act
     generator._generate_md_issue_page(issue_page_template, consolidated_issue)
 
     # Assert
-    expected_date = datetime.now().strftime("%Y-%m-%d")
-    expected_content = f"Title: Sample Issue\nDate: {expected_date}\nSummary:\nGenerated Issue Summary Table\nContent:\nThis is the issue content."
-
     mock_generate_issue_summary_table.assert_called_once_with(consolidated_issue)
     mock_makedirs.assert_called_once_with("/base/output/org/repo/issues", exist_ok=True)
     mock_open.assert_called_once_with("/base/output/org/repo/issues/issue_42.md", "w", encoding="utf-8")
@@ -619,22 +618,21 @@ def test_generate_md_issue_page(mocker, generator, consolidated_issue):
 
 def test_generate_structured_index_pages_with_topic_grouping_enabled(mocker, generator, consolidated_issue):
     # Arrange
+    index_data_level_template = "Data Level Template"
+    index_repo_level_template = "Repo Level Template"
+    index_org_level_template = "Org Level Template"
+    topics = ["documentationTopic"]
+    consolidated_issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
-
     mock_generate_sub_level_index_page = mocker.patch.object(
         LivingDocumentationGenerator, "_generate_sub_level_index_page"
     )
     mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
     mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
-
-    index_data_level_template = "Data Level Template"
-    index_repo_level_template = "Repo Level Template"
-    index_org_level_template = "Org Level Template"
-    topics = ["documentationTopic"]
-    consolidated_issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
 
     # Act
     generator._generate_structured_index_pages(
@@ -663,22 +661,21 @@ def test_generate_structured_index_pages_with_topic_grouping_enabled(mocker, gen
 
 def test_generate_structured_index_pages_with_topic_grouping_disabled(mocker, generator, consolidated_issue):
     # Arrange
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False
-    )
-
-    mock_generate_sub_level_index_page = mocker.patch.object(
-        LivingDocumentationGenerator, "_generate_sub_level_index_page"
-    )
-    mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
-    mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
-
     index_data_level_template = "Data Level Template"
     index_repo_level_template = "Repo Level Template"
     index_org_level_template = "Org Level Template"
     topics = ["documentationTopic"]
     consolidated_issue.repository_id = "TestOrg/TestRepo"
     consolidated_issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
+
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False
+    )
+    mock_generate_sub_level_index_page = mocker.patch.object(
+        LivingDocumentationGenerator, "_generate_sub_level_index_page"
+    )
+    mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
+    mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
 
     # Act
     generator._generate_structured_index_pages(
@@ -707,22 +704,6 @@ TABLE_HEADER_WITH_PROJECT_DATA = """
 
 def test_generate_index_page_with_all_features_enabled(mocker, generator, consolidated_issue, project_status):
     # Arrange
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
-    )
-
-    mock_generate_index_directory_path = mocker.patch.object(
-        LivingDocumentationGenerator, "_generate_index_directory_path", return_value="/base/output/org/repo/topic"
-    )
-    mock_open = mocker.patch("builtins.open", mocker.mock_open())
-    mocker.patch("os.makedirs")
-
     issue_index_page_template = "Date: {date}\nIssues:\n{issue_overview_table}\nData Level: {data_level_name}"
     consolidated_issue.linked_to_project = True
     consolidated_issue.project_issue_statuses = [project_status]
@@ -740,6 +721,21 @@ def test_generate_index_page_with_all_features_enabled(mocker, generator, consol
     )
     expected_output_path = "/base/output/org/repo/topic/_index.md"
 
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
+    )
+    mock_generate_index_directory_path = mocker.patch.object(
+        LivingDocumentationGenerator, "_generate_index_directory_path", return_value="/base/output/org/repo/topic"
+    )
+    mock_open = mocker.patch("builtins.open", mocker.mock_open())
+    mocker.patch("os.makedirs")
+
     # Act
     generator._generate_index_page(issue_index_page_template, consolidated_issues, repository_id, grouping_topic)
 
@@ -753,22 +749,6 @@ def test_generate_index_page_with_topic_grouping_disabled_structured_output_proj
     mocker, generator, consolidated_issue, project_status
 ):
     # Arrange
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
-    )
-
-    mock_generate_index_directory_path = mocker.patch.object(
-        LivingDocumentationGenerator, "_generate_index_directory_path", return_value="/base/output/org/repo"
-    )
-    mock_open = mocker.patch("builtins.open", mocker.mock_open())
-    mocker.patch("os.makedirs")
-
     issue_index_page_template = "Date: {date}\nIssues:\n{issue_overview_table}\nData Level: {data_level_name}"
     consolidated_issue.linked_to_project = True
     consolidated_issue.project_issue_statuses = [project_status]
@@ -786,6 +766,21 @@ def test_generate_index_page_with_topic_grouping_disabled_structured_output_proj
     )
     expected_output_path = "/base/output/org/repo/_index.md"
 
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
+    )
+    mock_generate_index_directory_path = mocker.patch.object(
+        LivingDocumentationGenerator, "_generate_index_directory_path", return_value="/base/output/org/repo"
+    )
+    mock_open = mocker.patch("builtins.open", mocker.mock_open())
+    mocker.patch("os.makedirs")
+
     # Act
     generator._generate_index_page(issue_index_page_template, consolidated_issues, repository_id, grouping_topic)
 
@@ -798,22 +793,7 @@ def test_generate_index_page_with_topic_grouping_disabled_structured_output_proj
 def test_generate_index_page_with_topic_grouping_and_structured_output_disabled_project_mining_enabled(
     mocker, generator, consolidated_issue, project_status
 ):
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=False
-    )
-
-    mock_generate_index_directory_path = mocker.patch.object(
-        LivingDocumentationGenerator, "_generate_index_directory_path", return_value="/base/output"
-    )
-    mock_open = mocker.patch("builtins.open", mocker.mock_open())
-    mocker.patch("os.makedirs")
-
+    # Arrange
     issue_index_page_template = "Date: {date}\nIssues:\n{issue_overview_table}\n"
     consolidated_issue.project_issue_statuses = [project_status]
     consolidated_issues = [consolidated_issue, consolidated_issue]
@@ -827,8 +807,25 @@ def test_generate_index_page_with_topic_grouping_and_structured_output_disabled_
     expected_index_page_content = f"Date: {expected_date}\nIssues:\n{expected_issue_table}\n"
     expected_output_path = "/base/output/_index.md"
 
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=False
+    )
+    mock_generate_index_directory_path = mocker.patch.object(
+        LivingDocumentationGenerator, "_generate_index_directory_path", return_value="/base/output"
+    )
+    mock_open = mocker.patch("builtins.open", mocker.mock_open())
+    mocker.patch("os.makedirs")
+
+    # Act
     generator._generate_index_page(issue_index_page_template, consolidated_issues, repository_id, grouping_topic)
 
+    # Assert
     mock_generate_index_directory_path.assert_called_once_with(repository_id, grouping_topic)
     mock_open.assert_called_once_with(expected_output_path, "w", encoding="utf-8")
     mock_open().write.assert_called_once_with(expected_index_page_content)
@@ -837,43 +834,47 @@ def test_generate_index_page_with_topic_grouping_and_structured_output_disabled_
 # _generate_sub_level_index_page
 
 
-def test_generate_sub_level_index_page_for_org_level(mocker):
+def test_generate_sub_level_index_page_for_org_level(mocker, generator):
+    # Arrange
+    index_template = "Organization: {organization_name}, Date: {date}"
+    level = "org"
+    repository_id = "TestOrg/TestRepo"
+    expected_replacement_content = f"Organization: TestOrg, Date: {datetime.now().strftime('%Y-%m-%d')}"
+    expected_output_path = "/base/output/TestOrg/_index.md"
+
     mock_get_output_directory = mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
     mock_open = mocker.patch("builtins.open", mocker.mock_open())
     mocker.patch("os.makedirs")
 
-    index_template = "Organization: {organization_name}, Date: {date}"
-    level = "org"
-    repository_id = "TestOrg/TestRepo"
+    # Act
+    generator._generate_sub_level_index_page(index_template, level, repository_id)
 
-    expected_replacement_content = f"Organization: TestOrg, Date: {datetime.now().strftime('%Y-%m-%d')}"
-    expected_output_path = "/base/output/TestOrg/_index.md"
-
-    LivingDocumentationGenerator._generate_sub_level_index_page(index_template, level, repository_id)
-
+    # Assert
     mock_get_output_directory.assert_called_once()
     mock_open.assert_called_once_with(expected_output_path, "w", encoding="utf-8")
     mock_open().write.assert_called_once_with(expected_replacement_content)
 
 
-def test_generate_sub_level_index_page_for_repo_level(mocker):
+def test_generate_sub_level_index_page_for_repo_level(mocker, generator):
+    # Arrange
+    index_template = "Repository: {repository_name}, Date: {date}"
+    level = "repo"
+    repository_id = "TestOrg/TestRepo"
+    expected_replacement_content = f"Repository: TestRepo, Date: {datetime.now().strftime('%Y-%m-%d')}"
+    expected_output_path = "/base/output/TestOrg/TestRepo/_index.md"
+
     mock_get_output_directory = mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
     mock_open = mocker.patch("builtins.open", mocker.mock_open())
     mocker.patch("os.makedirs")
 
-    index_template = "Repository: {repository_name}, Date: {date}"
-    level = "repo"
-    repository_id = "TestOrg/TestRepo"
+    # Act
+    generator._generate_sub_level_index_page(index_template, level, repository_id)
 
-    expected_replacement_content = f"Repository: TestRepo, Date: {datetime.now().strftime('%Y-%m-%d')}"
-    expected_output_path = "/base/output/TestOrg/TestRepo/_index.md"
-
-    LivingDocumentationGenerator._generate_sub_level_index_page(index_template, level, repository_id)
-
+    # Assert
     mock_get_output_directory.assert_called_once()
     mock_open.assert_called_once_with(expected_output_path, "w", encoding="utf-8")
     mock_open().write.assert_called_once_with(expected_replacement_content)
@@ -882,69 +883,73 @@ def test_generate_sub_level_index_page_for_repo_level(mocker):
 # _generate_markdown_line
 
 
-def test_generate_markdown_line_with_project_state_mining_enabled_linked_true(
+def test_generate_markdown_line_with_project_state_mining_enabled_linked_to_project_true_symbol(
     mocker, consolidated_issue, project_status
 ):
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
-    )
-
+    # Arrange
     consolidated_issue.linked_to_project = True
     consolidated_issue.project_issue_statuses = [project_status, project_status]
-
     expected_md_issue_line = (
         "| TestOrg | TestRepo | [#42 - Sample Issue](features#sample-issue) | 🟢 | In Progress, In Progress |"
         "<a href='https://github.com/TestOrg/TestRepo/issues/42' target='_blank'>GitHub link</a> |\n"
     )
 
-    actual_md_issue_line = LivingDocumentationGenerator._generate_markdown_line(consolidated_issue)
-
-    assert expected_md_issue_line == actual_md_issue_line
-
-
-def test_generate_markdown_line_with_project_state_mining_enabled_linked_false(
-    mocker, consolidated_issue, project_status
-):
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
     )
 
-    consolidated_issue.project_issue_statuses = [project_status]
+    # Act
+    actual = LivingDocumentationGenerator._generate_markdown_line(consolidated_issue)
 
+    # Assert
+    assert expected_md_issue_line == actual
+
+
+def test_generate_markdown_line_with_project_state_mining_enabled_linked_to_project_false_symbol(
+    mocker, consolidated_issue, project_status
+):
+    # Arrange
+    consolidated_issue.project_issue_statuses = [project_status]
     expected_md_issue_line = (
         "| TestOrg | TestRepo | [#42 - Sample Issue](features#sample-issue) | 🔴 | In Progress |"
         "<a href='https://github.com/TestOrg/TestRepo/issues/42' target='_blank'>GitHub link</a> |\n"
     )
 
-    actual_md_issue_line = LivingDocumentationGenerator._generate_markdown_line(consolidated_issue)
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
+    )
 
-    assert expected_md_issue_line == actual_md_issue_line
+    # Act
+    actual = LivingDocumentationGenerator._generate_markdown_line(consolidated_issue)
+
+    # Assert
+    assert expected_md_issue_line == actual
 
 
 def test_generate_markdown_line_with_project_state_mining_disabled(mocker, consolidated_issue, project_status):
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=False
-    )
-
+    # Arrange
     consolidated_issue.project_issue_statuses = [project_status]
-
     expected_md_issue_line = (
         "| TestOrg | TestRepo | [#42 - Sample Issue](features#sample-issue) | OPEN |"
         "<a href='https://github.com/TestOrg/TestRepo/issues/42' target='_blank'>GitHub link</a> |\n"
     )
 
-    actual_md_issue_line = LivingDocumentationGenerator._generate_markdown_line(consolidated_issue)
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=False
+    )
 
-    assert expected_md_issue_line == actual_md_issue_line
+    # Act
+    actual = LivingDocumentationGenerator._generate_markdown_line(consolidated_issue)
+
+    # Assert
+    assert expected_md_issue_line == actual
 
 
 # _generate_issue_summary_table
 
 
-def test_generate_issue_summary_table_without_project_state_mining(mocker, consolidated_issue):
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=False
-    )
+def test_generate_issue_summary_table_without_project_state_mining(mocker, generator, consolidated_issue):
+    # Arrange
     expected_issue_info = (
         "| Attribute | Content |\n"
         "|---|---|\n"
@@ -959,21 +964,21 @@ def test_generate_issue_summary_table_without_project_state_mining(mocker, conso
         "| Labels | bug, urgent |\n"
     )
 
-    actual_issue_info = LivingDocumentationGenerator._generate_issue_summary_table(consolidated_issue)
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=False
+    )
 
-    assert expected_issue_info == actual_issue_info
+    actual = generator._generate_issue_summary_table(consolidated_issue)
+
+    assert expected_issue_info == actual
 
 
 def test_generate_issue_summary_table_with_project_state_mining_and_multiple_project_statuses(
     mocker, consolidated_issue, project_status
 ):
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
-    )
-
+    # Arrange
     consolidated_issue.linked_to_project = True
     consolidated_issue.project_issue_statuses = [project_status, project_status]
-
     expected_issue_info = (
         "| Attribute | Content |\n"
         "|---|---|\n"
@@ -998,20 +1003,22 @@ def test_generate_issue_summary_table_with_project_state_mining_and_multiple_pro
         "| MoSCoW | Must Have |\n"
     )
 
-    actual_issue_info = LivingDocumentationGenerator._generate_issue_summary_table(consolidated_issue)
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
+    )
 
-    assert expected_issue_info == actual_issue_info
+    # Act
+    actual = LivingDocumentationGenerator._generate_issue_summary_table(consolidated_issue)
+
+    # Assert
+    assert expected_issue_info == actual
 
 
 def test_generate_issue_summary_table_with_project_state_mining_but_no_linked_project(
     mocker, consolidated_issue, project_status
 ):
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
-    )
-
+    # Arrange
     consolidated_issue.linked_to_project = False
-
     expected_issue_info = (
         "| Attribute | Content |\n"
         "|---|---|\n"
@@ -1027,36 +1034,49 @@ def test_generate_issue_summary_table_with_project_state_mining_but_no_linked_pr
         "| Linked to project | 🔴 |\n"
     )
 
-    actual_issue_info = LivingDocumentationGenerator._generate_issue_summary_table(consolidated_issue)
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_project_state_mining_enabled", return_value=True
+    )
 
-    assert expected_issue_info == actual_issue_info
+    # Act
+    actual = LivingDocumentationGenerator._generate_issue_summary_table(consolidated_issue)
+
+    assert expected_issue_info == actual
 
 
 # _generate_index_directory_path
 
 
 def test_generate_index_directory_path_with_structured_output_grouped_by_topics(mocker):
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
-    )
-    mocker.patch(
-        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
-    )
-    mocker.patch("os.makedirs")
-
+    # Arrange
     repository_id = "org123/repo456"
     topic = "documentation"
     expected_path = "/base/output/org123/repo456/documentation"
 
-    actual_path = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_structured_output_enabled", return_value=True
+    )
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
+    )
+    mocker.patch("os.makedirs")
 
-    assert expected_path == actual_path
+    # Act
+    actual = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
+
+    # Assert
+    assert expected_path == actual
 
 
 def test_generate_index_directory_path_with_structured_output_not_grouped_by_topics(mocker):
+    # Arrange
+    repository_id = "org123/repo456"
+    topic = None
+    expected_path = "/base/output/org123/repo456"
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
@@ -1068,16 +1088,19 @@ def test_generate_index_directory_path_with_structured_output_not_grouped_by_top
     )
     mocker.patch("os.makedirs")
 
-    repository_id = "org123/repo456"
-    topic = None
-    expected_path = "/base/output/org123/repo456"
+    # Act
+    actual = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
 
-    actual_path = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
-
-    assert expected_path == actual_path
+    # Assert
+    assert expected_path == actual
 
 
 def test_generate_index_directory_path_with_only_grouping_by_topic_no_structured_output(mocker):
+    # Arrange
+    repository_id = "org123/repo456"
+    topic = "documentation"
+    expected_path = "/base/output/documentation"
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
@@ -1089,16 +1112,18 @@ def test_generate_index_directory_path_with_only_grouping_by_topic_no_structured
     )
     mocker.patch("os.makedirs")
 
-    repository_id = "org123/repo456"
-    topic = "documentation"
-    expected_path = "/base/output/documentation"
+    # Act
+    actual = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
 
-    actual_path = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
-
-    assert expected_path == actual_path
+    assert expected_path == actual
 
 
 def test_generate_index_directory_path_with_no_structured_output_and_no_grouping_by_topics(mocker):
+    # Arrange
+    repository_id = None
+    topic = None
+    expected_path = "/base/output"
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_output_directory", return_value="/base/output"
     )
@@ -1110,19 +1135,27 @@ def test_generate_index_directory_path_with_no_structured_output_and_no_grouping
     )
     mocker.patch("os.makedirs")
 
-    repository_id = None
-    topic = None
-    expected_path = "/base/output"
+    # Act
+    actual = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
 
-    actual_path = LivingDocumentationGenerator._generate_index_directory_path(repository_id, topic)
-
-    assert expected_path == actual_path
+    # Assert
+    assert expected_path == actual
 
 
 # _load_all_templates
 
 
 def test_load_all_templates_loads_correctly(mocker):
+    # Arrange
+    expected_templates = (
+        "Issue Page Template Content",
+        "Index Page Template Content",
+        "Root Level Template Content",
+        "Organization Level Template Content",
+        "Repository Level Template Content",
+        "Data Level Template Content",
+    )
+
     load_template_mock = mocker.patch("living_documentation_generator.generator.load_template")
     load_template_mock.side_effect = [
         "Issue Page Template Content",
@@ -1133,22 +1166,24 @@ def test_load_all_templates_loads_correctly(mocker):
         "Data Level Template Content",
     ]
 
-    expected_templates = (
-        "Issue Page Template Content",
-        "Index Page Template Content",
-        "Root Level Template Content",
-        "Organization Level Template Content",
-        "Repository Level Template Content",
-        "Data Level Template Content",
-    )
+    # Act
+    actual = LivingDocumentationGenerator._load_all_templates()
 
-    actual_templates = LivingDocumentationGenerator._load_all_templates()
-
-    assert actual_templates == expected_templates
+    assert actual == expected_templates
     assert load_template_mock.call_count == 6
 
 
 def test_load_all_templates_loads_just_some_templates(mocker):
+    # Arrange
+    expected_templates = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        "Data Level Template Content",
+    )
+
     load_template_mock = mocker.patch("living_documentation_generator.generator.load_template")
     load_template_mock.side_effect = [
         None,
@@ -1159,16 +1194,9 @@ def test_load_all_templates_loads_just_some_templates(mocker):
         "Data Level Template Content",
     ]
 
-    expected_templates = (
-        None,
-        None,
-        None,
-        None,
-        None,
-        "Data Level Template Content",
-    )
+    # Act
+    actual = LivingDocumentationGenerator._load_all_templates()
 
-    actual_templates = LivingDocumentationGenerator._load_all_templates()
-
-    assert actual_templates == expected_templates
+    # Assert
+    assert actual == expected_templates
     assert load_template_mock.call_count == 6

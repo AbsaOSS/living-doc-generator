@@ -23,6 +23,7 @@ from main import run
 
 
 def test_run_correct_behaviour(mocker):
+    # Arrange
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
     mock_get_action_input = mocker.patch("main.get_action_input")
     mock_get_action_input.side_effect = lambda first_arg, **kwargs: (
@@ -32,11 +33,14 @@ def test_run_correct_behaviour(mocker):
     mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token"})
     mocker.patch.object(LivingDocumentationGenerator, "generate")
 
+    # Act
     run()
 
-    expected_calls = [
-        mocker.call("Starting Living Documentation generation."),
-        mocker.call("Living Documentation generation - output path set to `%s`.", "./user/output/path"),
-        mocker.call("Living Documentation generation completed."),
-    ]
-    mock_log_info.assert_has_calls(expected_calls)
+    # Assert
+    mock_log_info.assert_has_calls(
+        [
+            mocker.call("Starting Living Documentation generation."),
+            mocker.call("Living Documentation generation - output path set to `%s`.", "./user/output/path"),
+            mocker.call("Living Documentation generation completed."),
+        ]
+    )
