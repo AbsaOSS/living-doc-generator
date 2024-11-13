@@ -43,7 +43,7 @@ class ConsolidatedIssue:
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
         self.__repository_id: str = repository_id
-        self.__topic: str = ""
+        self.__topics: list = []
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
@@ -75,9 +75,9 @@ class ConsolidatedIssue:
         return parts[1] if len(parts) == 2 else ""
 
     @property
-    def topic(self) -> str:
-        """Getter of the issue topic."""
-        return self.__topic
+    def topics(self) -> list:
+        """Getter of the issue topics."""
+        return self.__topics
 
     @property
     def title(self) -> str:
@@ -198,7 +198,7 @@ class ConsolidatedIssue:
 
             # If no label ends with "Topic", create a "NoTopic" issue directory path
             if not topic_labels:
-                self.__topic = "NoTopic"
+                self.__topics = ["NoTopic"]
                 no_topic_path = os.path.join(output_path, "NoTopic")
                 return [no_topic_path]
 
@@ -213,7 +213,7 @@ class ConsolidatedIssue:
 
             # Generate a directory path based on a Topic label
             for topic_label in topic_labels:
-                self.__topic = topic_label
+                self.__topics.append(topic_label)
                 topic_path = os.path.join(output_path, topic_label)
                 topic_paths.append(topic_path)
             return topic_paths
