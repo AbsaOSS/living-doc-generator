@@ -25,7 +25,9 @@ from main import run
 def test_run_correct_behaviour(mocker):
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
     mock_get_action_input = mocker.patch("main.get_action_input")
-    mock_get_action_input.side_effect = lambda first_arg, **kwargs: "./user/output/path" if first_arg == "OUTPUT_PATH" else None
+    mock_get_action_input.side_effect = lambda first_arg, **kwargs: (
+        "./user/output/path" if first_arg == "OUTPUT_PATH" else None
+    )
     mocker.patch("main.ActionInputs.get_output_directory", return_value="./user/output/path")
     mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token"})
     mocker.patch.object(LivingDocumentationGenerator, "generate")
@@ -35,6 +37,6 @@ def test_run_correct_behaviour(mocker):
     expected_calls = [
         mocker.call("Starting Living Documentation generation."),
         mocker.call("Living Documentation generation - output path set to `%s`.", "./user/output/path"),
-        mocker.call("Living Documentation generation completed.")
+        mocker.call("Living Documentation generation completed."),
     ]
     mock_log_info.assert_has_calls(expected_calls)
