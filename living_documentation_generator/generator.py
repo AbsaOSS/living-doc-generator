@@ -152,7 +152,7 @@ class LivingDocumentationGenerator:
                 issues[repository_id] = self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
                 amount_of_issues_per_repo = len(list(issues[repository_id]))
                 logger.debug(
-                    "Fetched `%s` repository issues (%s)`.",
+                    "Fetched `%i` repository issues (%s)`.",
                     amount_of_issues_per_repo,
                     repository.full_name,
                 )
@@ -170,13 +170,13 @@ class LivingDocumentationGenerator:
             # Accumulate the count of issues
             total_issues_number += amount_of_issues_per_repo
             logger.info(
-                "Fetching repository GitHub issues - fetched `%s` repository issues (%s).",
+                "Fetching repository GitHub issues - fetched `%i` repository issues (%s).",
                 amount_of_issues_per_repo,
                 repository.full_name,
             )
 
         logger.info(
-            "Fetching repository GitHub issues - loaded `%s` repository issues in total.",
+            "Fetching repository GitHub issues - loaded `%i` repository issues in total.",
             total_issues_number,
         )
         return issues
@@ -213,7 +213,7 @@ class LivingDocumentationGenerator:
 
             if projects:
                 logger.info(
-                    "Fetching GitHub project data - for repository `%s` found `%s` project/s.",
+                    "Fetching GitHub project data - for repository `%s` found `%i` project/s.",
                     repository.full_name,
                     len(projects),
                 )
@@ -278,8 +278,8 @@ class LivingDocumentationGenerator:
                 for project_issue in project_issues[key]:
                     consolidated_issue.update_with_project_data(project_issue.project_status)
 
-        logging.info(
-            "Issue and project data consolidation - consolidated `%s` repository issues with extra project data.",
+        logger.info(
+            "Issue and project data consolidation - consolidated `%i` repository issues with extra project data.",
             len(consolidated_issues),
         )
         return consolidated_issues
@@ -651,6 +651,7 @@ class LivingDocumentationGenerator:
         Generates a directory path based on if structured output is required.
 
         @param repository_id: The repository id.
+        @param topic: The topic used for grouping issues.
         @return: The generated directory path.
         """
         output_path: str = ActionInputs.get_output_directory()

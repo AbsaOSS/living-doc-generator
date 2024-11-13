@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import datetime
 import time
 import pytest
 from github import Github
@@ -83,20 +84,34 @@ def repository_setup(mocker):
 
 @pytest.fixture
 def load_all_templates_setup(mocker):
-    mock_load_all_templates = mocker.patch.object(LivingDocumentationGenerator, "_load_all_templates", return_value=(
-        "Issue Page Template",
-        "Index Page Template",
-        "Root Level Page Template",
-        "Org Level Template",
-        "Repo Page Template",
-        "Data Level Template"
-    ))
+    mock_load_all_templates = mocker.patch.object(
+        LivingDocumentationGenerator,
+        "_load_all_templates",
+        return_value=(
+            "Issue Page Template",
+            "Index Page Template",
+            "Root Level Page Template",
+            "Org Level Template",
+            "Repo Page Template",
+            "Data Level Template",
+        ),
+    )
 
     return mock_load_all_templates
 
 
 @pytest.fixture
 def generator(mocker):
+    mock_github_class = mocker.patch("living_documentation_generator.generator.Github")
+    mock_github_instance = mock_github_class.return_value
+
+    mock_rate_limit = mocker.Mock()
+    mock_rate_limit.remaining = 5000
+    mock_rate_limit.reset = datetime.datetime.now() + datetime.timedelta(minutes=10)
+
+    mock_github_instance.get_rate_limit.return_value = mocker.Mock(core=mock_rate_limit)
+    mock_github_instance.get_repo.return_value = mocker.Mock()
+
     mocker.patch(
         "living_documentation_generator.generator.ActionInputs.get_github_token", return_value="FakeGithubToken"
     )
