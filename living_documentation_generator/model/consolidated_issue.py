@@ -18,10 +18,13 @@
 This module contains a data container for Consolidated Issue, which holds all the essential logic.
 """
 import logging
+import os
+import re
 from typing import Optional
 
 from github.Issue import Issue
 
+from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.utils.utils import sanitize_filename
 from living_documentation_generator.model.project_status import ProjectStatus
 
@@ -39,11 +42,8 @@ class ConsolidatedIssue:
         # save issue from repository (got from GitHub library & keep connection to repository for lazy loading)
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
-
         self.__repository_id: str = repository_id
-        parts = repository_id.split("/")
-        self.__organization_name: str = parts[0] if len(parts) == 2 else ""
-        self.__repository_name: str = parts[1] if len(parts) == 2 else ""
+        self.__topics: list = []
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
@@ -65,12 +65,19 @@ class ConsolidatedIssue:
     @property
     def organization_name(self) -> str:
         """Getter of the organization where the issue was fetched from."""
-        return self.__organization_name
+        parts = self.__repository_id.split("/")
+        return parts[0] if len(parts) == 2 else ""
 
     @property
     def repository_name(self) -> str:
         """Getter of the repository name where the issue was fetched from."""
-        return self.__repository_name
+        parts = self.__repository_id.split("/")
+        return parts[1] if len(parts) == 2 else ""
+
+    @property
+    def topics(self) -> list:
+        """Getter of the issue topics."""
+        return self.__topics
 
     @property
     def title(self) -> str:
@@ -161,3 +168,54 @@ class ConsolidatedIssue:
             return f"{self.number}.md"
 
         return page_filename
+
+    def generate_directory_path(self, issue_table: str) -> list[str]:
+        """
+        Generate a list of directory paths based on enabled features.
+        An issue can be placed in multiple directories if it is associated with more than one topic.
+
+        @param issue_table: The consolidated issue summary table.
+        @return: The list of generated directory paths.
+        """
+        output_path = ActionInputs.get_output_directory()
+
+        # If structured output is enabled, create a directory path based on the repository
+        if ActionInputs.get_is_structured_output_enabled() and self.repository_id:
+            organization_name, repository_name = self.repository_id.split("/")
+            output_path = os.path.join(output_path, organization_name, repository_name)
+
+        # If grouping by topics is enabled, create a directory path based on the issue topic
+        if ActionInputs.get_is_grouping_by_topics_enabled():
+            topic_paths = []
+
+            # Extract labels from the issue table
+            labels = re.findall(r"\| Labels \| (.*?) \|", issue_table)
+            if labels:
+                labels = labels[0].split(", ")
+
+            # Check for all labels ending with "Topic"
+            topic_labels = [label for label in labels if label.endswith("Topic")]
+
+            # If no label ends with "Topic", create a "NoTopic" issue directory path
+            if not topic_labels:
+                self.__topics = ["NoTopic"]
+                no_topic_path = os.path.join(output_path, "NoTopic")
+                return [no_topic_path]
+
+            if len(topic_labels) > 1:
+                logger.debug(
+                    "Multiple Topic labels found for Issue #%s: %s (%s): %s",
+                    self.number,
+                    self.title,
+                    self.repository_id,
+                    ", ".join(topic_labels),
+                )
+
+            # Generate a directory path based on a Topic label
+            for topic_label in topic_labels:
+                self.__topics.append(topic_label)
+                topic_path = os.path.join(output_path, topic_label)
+                topic_paths.append(topic_path)
+            return topic_paths
+
+        return [output_path]

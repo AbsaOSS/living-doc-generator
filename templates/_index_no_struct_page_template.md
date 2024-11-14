@@ -16,6 +16,6 @@ Our project is designed with a myriad of features to ensure seamless user experi
 
 <div class="cps-table sortable searchable filterableByColumns paginator">
 
-{issue-overview-table}
+{issue_overview_table}
 
 </div>

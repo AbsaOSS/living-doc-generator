@@ -1,10 +1,10 @@
 ---
-title: "{repository_name}"
+title: "{data_level_name}"
 date: {date}
 weight: 0
 ---
 
-This section displays all the information about mined features for the repository: {repository_name}.
+This section displays all the information about mined features for **{data_level_name}**.
 
 <h3>Feature Summary page</h3>
 
@@ -14,6 +14,6 @@ Our project is designed with a myriad of features to ensure seamless user experi
 
 <div class="cps-table sortable searchable filterableByColumns paginator">
 
-{issue-overview-table}
+{issue_overview_table}
 
 </div>

@@ -35,7 +35,7 @@ from living_documentation_generator.model.consolidated_issue import Consolidated
 from living_documentation_generator.model.project_issue import ProjectIssue
 from living_documentation_generator.utils.decorators import safe_call_decorator
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
-from living_documentation_generator.utils.utils import make_issue_key
+from living_documentation_generator.utils.utils import make_issue_key, generate_root_level_index_page, load_template
 from living_documentation_generator.utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
     ISSUE_STATE_ALL,
@@ -67,9 +67,10 @@ class LivingDocumentationGenerator:
     INDEX_ORG_LEVEL_TEMPLATE_FILE = os.path.join(
         PROJECT_ROOT, os.pardir, "templates", "_index_org_level_page_template.md"
     )
-    INDEX_REPO_LEVEL_TEMPLATE_FILE = os.path.join(
-        PROJECT_ROOT, os.pardir, "templates", "_index_repo_level_page_template.md"
+    INDEX_DATA_LEVEL_TEMPLATE_FILE = os.path.join(
+        PROJECT_ROOT, os.pardir, "templates", "_index_data_level_page_template.md"
     )
+    INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_repo_page_template.md")
 
     def __init__(self):
         github_token = ActionInputs.get_github_token()
@@ -290,61 +291,44 @@ class LivingDocumentationGenerator:
 
         @param issues: A dictionary containing all consolidated issues.
         """
-        issue_page_detail_template = None
-        index_page_template = None
-        index_root_level_page = None
-        index_org_level_template = None
-        index_repo_level_template = None
+        topics = set()
+        is_structured_output = ActionInputs.get_is_structured_output_enabled()
+        is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
+        output_path = ActionInputs.get_output_directory()
 
         # Load the template files for generating the Markdown pages
-        try:
-            with open(LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                issue_page_detail_template = f.read()
-        except IOError:
-            logger.error("Issue page template file was not successfully loaded.", exc_info=True)
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_NO_STRUCT_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_page_template = f.read()
-        except IOError:
-            logger.error("Index page template file was not successfully loaded.", exc_info=True)
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_ROOT_LEVEL_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_root_level_page = f.read()
-        except IOError:
-            logger.error(
-                "Structured index page template file for root level was not successfully loaded.", exc_info=True
-            )
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_ORG_LEVEL_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_org_level_template = f.read()
-        except IOError:
-            logger.error(
-                "Structured index page template file for organization level was not successfully loaded.", exc_info=True
-            )
-
-        try:
-            with open(LivingDocumentationGenerator.INDEX_REPO_LEVEL_TEMPLATE_FILE, "r", encoding="utf-8") as f:
-                index_repo_level_template = f.read()
-        except IOError:
-            logger.error(
-                "Structured index page template file for repository level was not successfully loaded.", exc_info=True
-            )
+        (
+            issue_page_detail_template,
+            index_page_template,
+            index_root_level_page,
+            index_org_level_template,
+            index_repo_page_template,
+            index_data_level_template,
+        ) = self._load_all_templates()
 
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
-        logger.info("Markdown page generation - generated `%s` issue pages.", len(issues))
+            for topic in consolidated_issue.topics:
+                topics.add(topic)
+        logger.info("Markdown page generation - generated `%i` issue pages.", len(issues))
+
+        # Generate all structure of the index pages
+        if is_structured_output:
+            generate_root_level_index_page(index_root_level_page, output_path)
+            self._generate_structured_index_pages(
+                index_data_level_template, index_repo_page_template, index_org_level_template, topics, issues
+            )
+
+        # Generate an index page with a summary table about all issues grouped by topics
+        elif is_grouping_by_topics:
+            issues = list(issues.values())
+            generate_root_level_index_page(index_root_level_page, output_path)
+
+            for topic in topics:
+                self._generate_index_page(index_data_level_template, issues, grouping_topic=topic)
 
         # Generate an index page with a summary table about all issues
-        if ActionInputs.get_is_structured_output_enabled():
-            self._generate_structured_index_pages(index_repo_level_template, index_org_level_template, issues)
-
-            output_path = ActionInputs.get_output_directory()
-            with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
-                f.write(index_root_level_page)
         else:
             issues = list(issues.values())
             self._generate_index_page(index_page_template, issues)
@@ -380,26 +364,32 @@ class LivingDocumentationGenerator:
         issue_md_page_content = issue_page_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        page_directory_path = self._generate_directory_path(consolidated_issue.repository_id)
+        page_directory_paths: list[str] = consolidated_issue.generate_directory_path(issue_table)
+        for page_directory_path in page_directory_paths:
+            os.makedirs(page_directory_path, exist_ok=True)
 
-        # Save the single issue Markdown page
-        page_filename = consolidated_issue.generate_page_filename()
-        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
-            f.write(issue_md_page_content)
+            # Save the single issue Markdown page
+            page_filename = consolidated_issue.generate_page_filename()
+            with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+                f.write(issue_md_page_content)
 
-        logger.debug("Generated Markdown page: %s.", page_filename)
+            logger.debug("Generated Markdown page: %s.", page_filename)
 
     def _generate_structured_index_pages(
         self,
+        index_data_level_template: str,
         index_repo_level_template: str,
         index_org_level_template: str,
+        topics: set[str],
         consolidated_issues: dict[str, ConsolidatedIssue],
     ) -> None:
         """
         Generates a set of index pages due to a structured output feature.
 
+        @param index_data_level_template: The template string for generating the data level index markdown page.
         @param index_repo_level_template: The template string for generating the repository level index markdown page.
         @param index_org_level_template: The template string for generating the organization level index markdown page.
+        @param topics: A set of topics used for grouping issues.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @return: None
         """
@@ -413,23 +403,44 @@ class LivingDocumentationGenerator:
 
         # Generate an index page for each repository
         for repository_id, issues in issues_by_repository.items():
-            organization_name, _ = repository_id.split("/")
+            organization_name, repository_name = repository_id.split("/")
 
-            self._generate_org_level_index_page(index_org_level_template, organization_name)
+            self._generate_sub_level_index_page(index_org_level_template, "org", repository_id)
             logger.debug(
-                "Generated organization level `_index.md` for %s as a cause of structured output feature.",
+                "Generated organization level `_index.md` for %s.",
                 organization_name,
             )
 
-            self._generate_index_page(index_repo_level_template, issues, repository_id)
-            logger.debug(
-                "Generated repository level `_index.md` for %s as a cause of structured output feature.", repository_id
-            )
+            # Generate an index pages for the documentation based on the grouped issues by topics
+            if ActionInputs.get_is_grouping_by_topics_enabled():
+                self._generate_sub_level_index_page(index_repo_level_template, "repo", repository_id)
+                logger.debug(
+                    "Generated repository level _index.md` for repository: %s.",
+                    repository_name,
+                )
+
+                for topic in topics:
+                    self._generate_index_page(index_data_level_template, issues, repository_id, topic)
+                    logger.debug(
+                        "Generated data level `_index.md` with topic: %s for %s.",
+                        topic,
+                        repository_id,
+                    )
+            else:
+                self._generate_index_page(index_data_level_template, issues, repository_id)
+                logger.debug(
+                    "Generated data level `_index.md` for %s",
+                    repository_id,
+                )
 
             logger.info("Markdown page generation - generated `_index.md` pages for %s.", repository_id)
 
     def _generate_index_page(
-        self, issue_index_page_template: str, consolidated_issues: list[ConsolidatedIssue], repository_id: str = None
+        self,
+        issue_index_page_template: str,
+        consolidated_issues: list[ConsolidatedIssue],
+        repository_id: str = None,
+        grouping_topic: str = None,
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
@@ -437,6 +448,7 @@ class LivingDocumentationGenerator:
         @param issue_index_page_template: The template string for generating the index markdown page.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @param repository_id: The repository id used if the structured output is generated.
+        @param grouping_topic: The topic used if the grouping issues by topics is enabled.
         @return: None
         """
         # Initializing the issue table header based on the project mining state
@@ -448,50 +460,67 @@ class LivingDocumentationGenerator:
 
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues:
-            issue_table += self._generate_markdown_line(consolidated_issue)
+            if ActionInputs.get_is_grouping_by_topics_enabled():
+                for topic in consolidated_issue.topics:
+                    if grouping_topic == topic:
+                        issue_table += self._generate_markdown_line(consolidated_issue)
+            else:
+                issue_table += self._generate_markdown_line(consolidated_issue)
 
         # Prepare issues replacement for the index page
         replacement = {
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "issue-overview-table": issue_table,
+            "issue_overview_table": issue_table,
         }
 
-        if ActionInputs.get_is_structured_output_enabled():
-            replacement["repository_name"] = repository_id.split("/")[1]
+        if ActionInputs.get_is_grouping_by_topics_enabled():
+            replacement["data_level_name"] = grouping_topic
+        elif ActionInputs.get_is_structured_output_enabled():
+            replacement["data_level_name"] = repository_id.split("/")[1]
 
         # Replace the issue placeholders in the index template
-        index_page = issue_index_page_template.format(**replacement)
+        index_page: str = issue_index_page_template.format(**replacement)
 
         # Generate a directory structure path for the index page
         # Note: repository_id is used only, if the structured output is generated
-        index_directory_path = self._generate_directory_path(repository_id)
+        index_directory_path: str = self._generate_index_directory_path(repository_id, grouping_topic)
 
         # Create an index page file
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(index_page)
 
     @staticmethod
-    def _generate_org_level_index_page(index_org_level_template: str, organization_name: str) -> None:
+    def _generate_sub_level_index_page(index_template: str, level: str, repository_id: str) -> None:
         """
-        Generates an organization level index page and save it.
+        Generates an index page for the structured output based on the level.
 
-        @param index_org_level_template: The template string for generating the organization level index markdown page.
-        @param organization_name: The name of the organization.
+        @param index_template: The template string for generating the index markdown page.
+        @param level: The level of the index page. Enum for "org" or "repo".
+        @param repository_id: The repository id of a repository that stores the issues.
         @return: None
         """
-        # Prepare issues replacement for the index page
+        index_level_dir = ""
         replacement = {
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "organization_name": organization_name,
         }
 
+        # Set correct behaviour based on the level
+        if level == "org":
+            organization_name = repository_id.split("/")[0]
+            index_level_dir = organization_name
+            replacement["organization_name"] = organization_name
+        elif level == "repo":
+            repository_name = repository_id.split("/")[1]
+            index_level_dir = repository_id
+            replacement["repository_name"] = repository_name
+
         # Replace the issue placeholders in the index template
-        org_level_index_page = index_org_level_template.format(**replacement)
+        sub_level_index_page = index_template.format(**replacement)
 
         # Create a sub index page file
-        output_path = os.path.join(ActionInputs.get_output_directory(), organization_name)
+        output_path = os.path.join(ActionInputs.get_output_directory(), index_level_dir)
         with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
-            f.write(org_level_index_page)
+            f.write(sub_level_index_page)
 
     @staticmethod
     def _generate_markdown_line(consolidated_issue: ConsolidatedIssue) -> str:
@@ -617,19 +646,63 @@ class LivingDocumentationGenerator:
         return issue_info
 
     @staticmethod
-    def _generate_directory_path(repository_id: Optional[str]) -> str:
+    def _generate_index_directory_path(repository_id: Optional[str], topic: Optional[str]) -> str:
         """
         Generates a directory path based on if structured output is required.
 
         @param repository_id: The repository id.
         @return: The generated directory path.
         """
-        output_path = ActionInputs.get_output_directory()
+        output_path: str = ActionInputs.get_output_directory()
 
         if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(output_path, organization_name, repository_name)
 
+        if ActionInputs.get_is_grouping_by_topics_enabled() and topic:
+            output_path = os.path.join(output_path, topic)
+
         os.makedirs(output_path, exist_ok=True)
 
         return output_path
+
+    @staticmethod
+    def _load_all_templates() -> tuple[Optional[str], ...]:
+        """
+        Load all template files for generating the Markdown pages.
+
+        @return: A tuple containing all loaded template files.
+        """
+        issue_page_detail_template: Optional[str] = load_template(
+            LivingDocumentationGenerator.ISSUE_PAGE_TEMPLATE_FILE,
+            "Issue page template file was not successfully loaded.",
+        )
+        index_page_template: Optional[str] = load_template(
+            LivingDocumentationGenerator.INDEX_NO_STRUCT_TEMPLATE_FILE,
+            "Index page template file was not successfully loaded.",
+        )
+        index_root_level_page: Optional[str] = load_template(
+            LivingDocumentationGenerator.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
+            "Structured index page template file for root level was not successfully loaded.",
+        )
+        index_org_level_template: Optional[str] = load_template(
+            LivingDocumentationGenerator.INDEX_ORG_LEVEL_TEMPLATE_FILE,
+            "Structured index page template file for organization level was not successfully loaded.",
+        )
+        index_repo_page_template: Optional[str] = load_template(
+            LivingDocumentationGenerator.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
+            "Structured index page template file for repository level was not successfully loaded.",
+        )
+        index_data_level_template: Optional[str] = load_template(
+            LivingDocumentationGenerator.INDEX_DATA_LEVEL_TEMPLATE_FILE,
+            "Structured index page template file for data level was not successfully loaded.",
+        )
+
+        return (
+            issue_page_detail_template,
+            index_page_template,
+            index_root_level_page,
+            index_org_level_template,
+            index_repo_page_template,
+            index_data_level_template,
+        )
