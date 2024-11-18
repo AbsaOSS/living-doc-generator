@@ -11,13 +11,71 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 from datetime import datetime
 
 from github.Issue import Issue
 
+from living_documentation_generator.action_inputs import ActionInputs
 from living_documentation_generator.generator import LivingDocumentationGenerator
 from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_generator.model.project_issue import ProjectIssue
+
+
+# Check Action Inputs default values
+
+
+def test_project_state_mining_default():
+    # Arrange
+    os.environ.pop("INPUT_PROJECT_STATE_MINING", None)
+
+    # Act
+    actual = ActionInputs.get_is_project_state_mining_enabled()
+
+    # Assert
+    assert not actual
+
+
+def test_verbose_logging_default():
+    # Act
+    actual = os.getenv("INPUT_VERBOSE_LOGGING", "false").lower() == "true"
+
+    # Assert
+    assert not actual
+
+
+def test_output_path_default():
+    # Arrange
+    os.environ.pop("INPUT_OUTPUT_PATH", None)
+    expected = os.path.abspath("./output")
+
+    # Act
+    actual = ActionInputs.get_output_directory()
+
+    # Assert
+    assert expected == actual
+
+
+def test_structured_output_default():
+    # Arrange
+    os.environ.pop("INPUT_STRUCTURED_OUTPUT", None)
+
+    # Act
+    actual = ActionInputs.get_is_structured_output_enabled()
+
+    # Assert
+    assert not actual
+
+
+def test_group_output_by_topics_default():
+    # Arrange
+    os.environ.pop("INPUT_GROUP_OUTPUT_BY_TOPICS", None)
+
+    # Act
+    actual = ActionInputs.get_is_grouping_by_topics_enabled()
+
+    # Assert
+    assert not actual
 
 
 # generate
