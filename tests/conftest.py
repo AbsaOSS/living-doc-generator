@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import datetime
 import time
 import pytest
 from github import Github
@@ -21,7 +21,11 @@ from github.Rate import Rate
 from github.RateLimit import RateLimit
 from github.Repository import Repository
 
+from living_documentation_generator.generator import LivingDocumentationGenerator
+from living_documentation_generator.model.config_repository import ConfigRepository
+from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_generator.model.github_project import GithubProject
+from living_documentation_generator.model.project_status import ProjectStatus
 from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
 
 
@@ -76,3 +80,83 @@ def repository_setup(mocker):
     repository.full_name = "test_owner/test_repo"
 
     return repository
+
+
+@pytest.fixture
+def load_all_templates_setup(mocker):
+    mock_load_all_templates = mocker.patch.object(
+        LivingDocumentationGenerator,
+        "_load_all_templates",
+        return_value=(
+            "Issue Page Template",
+            "Index Page Template",
+            "Root Level Page Template",
+            "Org Level Template",
+            "Repo Page Template",
+            "Data Level Template",
+        ),
+    )
+
+    return mock_load_all_templates
+
+
+@pytest.fixture
+def generator(mocker):
+    mock_github_class = mocker.patch("living_documentation_generator.generator.Github")
+    mock_github_instance = mock_github_class.return_value
+
+    mock_rate_limit = mocker.Mock()
+    mock_rate_limit.remaining = 5000
+    mock_rate_limit.reset = datetime.datetime.now() + datetime.timedelta(minutes=10)
+
+    mock_github_instance.get_rate_limit.return_value = mocker.Mock(core=mock_rate_limit)
+    mock_github_instance.get_repo.return_value = mocker.Mock()
+
+    mocker.patch(
+        "living_documentation_generator.generator.ActionInputs.get_github_token", return_value="FakeGithubToken"
+    )
+    return LivingDocumentationGenerator()
+
+
+@pytest.fixture
+def config_repository(mocker):
+    config_repository = mocker.Mock(spec=ConfigRepository)
+    config_repository.organization_name = "test_org"
+    config_repository.repository_name = "test_repo"
+    config_repository.labels = []
+    config_repository.projects_title_filter = []
+
+    return config_repository
+
+
+@pytest.fixture
+def consolidated_issue(mocker):
+    consolidated_issue = mocker.Mock(spec=ConsolidatedIssue)
+    consolidated_issue.repository_id = "TestOrg/TestRepo"
+    consolidated_issue.organization_name = "TestOrg"
+    consolidated_issue.repository_name = "TestRepo"
+    consolidated_issue.number = 42
+    consolidated_issue.title = "Sample Issue"
+    consolidated_issue.state = "OPEN"
+    consolidated_issue.html_url = "https://github.com/TestOrg/TestRepo/issues/42"
+    consolidated_issue.created_at = "2024-01-01T00:00:00Z"
+    consolidated_issue.updated_at = "2024-01-02T00:00:00Z"
+    consolidated_issue.closed_at = None
+    consolidated_issue.labels = ["bug", "urgent"]
+    consolidated_issue.body = "This is the issue content."
+    consolidated_issue.linked_to_project = False
+    consolidated_issue.topics = ["documentationTopic"]
+
+    return consolidated_issue
+
+
+@pytest.fixture
+def project_status(mocker):
+    project_status = mocker.Mock(spec=ProjectStatus)
+    project_status.project_title = "Test Project"
+    project_status.status = "In Progress"
+    project_status.priority = "High"
+    project_status.size = "Large"
+    project_status.moscow = "Must Have"
+
+    return project_status
