@@ -29,12 +29,12 @@ def test_generate_correct_behaviour(mocker, generator):
     mock_logger_info = mocker.patch("living_documentation_generator.generator.logger.info")
     mock_logger_debug = mocker.patch("living_documentation_generator.generator.logger.debug")
 
-    issue_mock = mocker.Mock()
+    mock_issue = mocker.Mock()
     project_issue_mock = mocker.Mock()
     consolidated_issue_mock = mocker.Mock()
 
     mock_fetch_github_issues = mocker.patch.object(
-        generator, "_fetch_github_issues", return_value={"test_org/test_repo": [issue_mock]}
+        generator, "_fetch_github_issues", return_value={"test_org/test_repo": [mock_issue]}
     )
     mock_fetch_github_project_issues = mocker.patch.object(
         generator, "_fetch_github_project_issues", return_value={"test_org/test_repo#1": [project_issue_mock]}
@@ -52,7 +52,7 @@ def test_generate_correct_behaviour(mocker, generator):
     mock_fetch_github_issues.assert_called_once()
     mock_fetch_github_project_issues.assert_called_once()
     mock_consolidate_issues_data.assert_called_once_with(
-        {"test_org/test_repo": [issue_mock]}, {"test_org/test_repo#1": [project_issue_mock]}
+        {"test_org/test_repo": [mock_issue]}, {"test_org/test_repo#1": [project_issue_mock]}
     )
     mock_generate_markdown_pages.assert_called_once_with({"test_org/test_repo#1": consolidated_issue_mock})
     mock_logger_debug.assert_called_once_with("Output directory cleaned.")
