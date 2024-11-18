@@ -102,7 +102,7 @@ class ActionInputs:
             sys.exit(1)
 
         except TypeError:
-            logger.error("Type error parsing input JSON repositories: `%s.`", repositories_json)
+            logger.error("Type error parsing input JSON repositories: %s.", repositories_json)
             sys.exit(1)
 
         return repositories
