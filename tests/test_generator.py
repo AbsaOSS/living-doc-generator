@@ -261,6 +261,8 @@ def test_fetch_github_project_issues_correct_behaviour(mocker, generator):
     project_issue_1.number = 1
     project_issue_1.project_status = project_status_1
 
+    # By creating two same Project Issues (same unique issue key) that has different project statuses
+    # we test the situation where one issue is linked to more projects (need of keeping all project statuses)
     project_issue_2 = mocker.Mock(spec=ProjectIssue)
     project_issue_2.organization_name = "OrgA"
     project_issue_2.repository_name = "RepoA"
