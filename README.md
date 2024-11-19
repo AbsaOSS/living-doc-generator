@@ -28,9 +28,6 @@
     - [Living Documentation Page Generation](#living-documentation-page-generation)
     - [Structured Output](#structured-output)
     - [Output Grouped by Topics](#output-grouped-by-topics)
-- [GitHub Workflow Examples](#github-workflow-examples)
-  - [Create Release Tag & Draft Release - By Workflow Dispatch](#create-release-tag--draft-release---by-workflow-dispatch)
-  - [Check Release Notes Presence - in Pull Request Description](#check-release-notes-presence---in-pull-request-description)
 - [Contribution Guidelines](#contribution-guidelines)
 - [License Information](#license-information)
 - [Contact or Support Information](#contact-or-support-information)
@@ -652,20 +649,6 @@ To gain a better understanding of the term "Topic", refer to the [Labels](#label
     ```
     
 ---
-
-## GitHub Workflow Examples
-GitHub Actions enable automating key parts of your development process.
-
-### Create Release Tag & Draft Release - By Workflow Dispatch
-This workflow automates the creation of a release tag and a draft release, triggered manually via a workflow dispatch.
-Tag is created after successful release notes generation to avoid manual removing of the tag if the release notes are not generated due to wrong configuration.
-
-See the [example of workflow](./examples/release_draft.yml).
-
-### Check Release Notes Presence - in Pull Request Description 
-This workflow checks that every pull request includes release notes in the PR description.
-
-See the [example of workflow](./examples/check_pr_release_notes.yml).
 
 ## Contribution Guidelines
 

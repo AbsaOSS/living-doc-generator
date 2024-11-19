@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+# GH workflow example from https://github.com/AbsaOSS/generate-release-notes/blob/master/examples/check_pr_release_notes.yml
 name: Check PR Release Notes in Description
 
 on:
