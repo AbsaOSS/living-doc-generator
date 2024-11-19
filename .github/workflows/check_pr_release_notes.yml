@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# GH workflow source https://github.com/AbsaOSS/release-notes-presence-check
+# GH workflow source https://github.com/AbsaOSS/generate-release-notes/blob/master/.github/workflows/check_pr_release_notes.yml
 name: Check PR Release Notes in Description
 
 on:

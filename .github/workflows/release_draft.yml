@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 
-# GH workflow source https://github.com/AbsaOSS/generate-release-notes
+# GH workflow source https://github.com/AbsaOSS/generate-release-notes/blob/master/.github/workflows/release_draft.yml
 name: Release - create draft release
+
 on:
   workflow_dispatch:
     inputs:
