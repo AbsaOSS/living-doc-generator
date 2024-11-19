@@ -118,6 +118,7 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_no_issue_topics(mocker):
+    mock_log_error = mocker.patch("living_documentation_generator.model.consolidated_issue.logger.error")
     mock_log_debug = mocker.patch("living_documentation_generator.model.consolidated_issue.logger.debug")
     mocker.patch(
         "living_documentation_generator.action_inputs.ActionInputs.get_output_directory",
@@ -135,6 +136,9 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
     actual = consolidated_issue.generate_directory_path("| Labels | feature, bug |")
 
     assert ["/base/output/path/NoTopic"] == actual
+    mock_log_error.assert_called_once_with(
+        "No Topic label found for Issue #%i: %s (%s)", 1, "Issue Title", "organization/repository"
+    )
     mock_log_debug.assert_not_called()
 
 

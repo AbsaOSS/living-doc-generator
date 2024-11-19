@@ -77,7 +77,7 @@ See the default action step definition:
         "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"]
       }
     ]'
-  ```
+```
 
 See the full example of action step definition (in example are used non-default values):
 
@@ -534,14 +534,14 @@ All done! ✨ 🍰 ✨
 ## Run Unit Test
 
 Unit tests are written using Pytest framework. To run alle the tests, use the following command:
-```bash
+```shell
 pytest tests/
 ```
 
 You can modify the directory to control the level of detail or granularity as per your needs.
 
 To run specific test, write the command following the pattern below:
-```bash
+```shell
 pytest tests/utils/test_utils.py::test_make_issue_key
 ```
 
@@ -551,14 +551,14 @@ This project uses [pytest-cov](https://pypi.org/project/pytest-cov/) plugin to g
 The objective of the project is to achieve a minimal score of 80 %. We do exclude the `tests/` file from the coverage report.
 
 To generate the coverage report, run the following command:
-```bash
+```shell
 pytest --cov=. tests/ --cov-fail-under=80 --cov-report=html
 ```
 
 See the coverage report on the path:
 
-```
-htmlcov/index.html
+```shell
+open htmlcov/index.html
 ```
 
 ## Deployment
