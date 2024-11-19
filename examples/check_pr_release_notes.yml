@@ -1,0 +1,27 @@
+name: Check Release Notes in PR description
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+    branches: [ master ]
+
+env:
+  SKIP_LABEL: 'no RN'
+  RLS_NOTES_TAG_REGEX: 'Release Notes:'
+
+jobs:
+  check-release-notes:
+    runs-on: {your-runner} # Place your runner here
+
+    steps:
+      - uses: actions/setup-python@v5.1.1
+        with:
+          python-version: '3.11'
+
+      - name: Check presence of release notes in PR description
+        uses: AbsaOSS/release-notes-presence-check@v0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-repository: ${{ github.repository }}
+          pr-number: ${{ github.event.number }}
