@@ -471,7 +471,7 @@ To run Pylint on a specific file, follow the pattern `pylint <path_to_file>/<nam
 
 Example:
 ```shell
-pylint living_documentation_generator/generator.py
+pylint living_documentation_regime/living_documentation_regime.py
 ``` 
 
 ### Expected Output
@@ -520,7 +520,7 @@ To run Black on a specific file, follow the pattern `black <path_to_file>/<name_
 
 Example:
 ```shell
-black living_documentation_generator/generator.py
+black living_documentation_regime/living_documentation_regime.py
 ``` 
 
 ### Expected Output

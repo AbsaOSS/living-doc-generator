@@ -20,6 +20,8 @@ This module contains all constants used across the project.
 
 # Action inputs environment variables
 GITHUB_TOKEN = "GITHUB_TOKEN"
+MINING_REGIMES = "MINING_REGIMES"
+DEFAULT_MINING_REGIMES = "[]"
 PROJECT_STATE_MINING = "PROJECT_STATE_MINING"
 REPOSITORIES = "REPOSITORIES"
 OUTPUT_PATH = "OUTPUT_PATH"

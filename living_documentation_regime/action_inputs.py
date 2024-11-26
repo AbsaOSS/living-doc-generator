@@ -24,9 +24,9 @@ import logging
 import os
 import sys
 
-from living_documentation_generator.model.config_repository import ConfigRepository
-from living_documentation_generator.utils.utils import get_action_input, make_absolute_path, get_all_project_directories
-from living_documentation_generator.utils.constants import (
+from living_documentation_regime.model.config_repository import ConfigRepository
+from utils.utils import get_action_input, make_absolute_path, get_all_project_directories
+from utils.constants import (
     GITHUB_TOKEN,
     PROJECT_STATE_MINING,
     REPOSITORIES,

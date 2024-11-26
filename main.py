@@ -21,11 +21,11 @@ for the GH Action.
 
 import logging
 
-from living_documentation_generator.action_inputs import ActionInputs
-from living_documentation_generator.generator import LivingDocumentationGenerator
-from living_documentation_generator.utils.constants import OUTPUT_PATH, DEFAULT_OUTPUT_PATH
-from living_documentation_generator.utils.utils import set_action_output, get_action_input
-from living_documentation_generator.utils.logging_config import setup_logging
+from living_documentation_regime.action_inputs import ActionInputs
+from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
+from utils.constants import MINING_REGIMES, DEFAULT_MINING_REGIMES, OUTPUT_PATH, DEFAULT_OUTPUT_PATH
+from utils.utils import set_action_output, get_action_input
+from utils.logging_config import setup_logging
 
 
 def run() -> None:
@@ -40,6 +40,7 @@ def run() -> None:
     logger.info("Starting Living Documentation generation.")
 
     # Validate the action inputs
+    mining_regimes = get_action_input(MINING_REGIMES, default=DEFAULT_MINING_REGIMES).lower()
     out_path_from_config = get_action_input(OUTPUT_PATH, default=DEFAULT_OUTPUT_PATH)
     ActionInputs.validate_inputs(out_path_from_config)
 

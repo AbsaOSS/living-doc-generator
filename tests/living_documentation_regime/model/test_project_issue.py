@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from living_documentation_generator.model.github_project import GithubProject
-from living_documentation_generator.model.project_issue import ProjectIssue
+from living_documentation_regime.model.github_project import GithubProject
+from living_documentation_regime.model.project_issue import ProjectIssue
 
 
 # loads
@@ -56,7 +56,7 @@ def test_loads_with_valid_input(github_project_setup):
 
 def test_loads_without_content_key_logs_debug(mocker):
     project_issue = ProjectIssue()
-    mock_log = mocker.patch("living_documentation_generator.model.project_issue.logger")
+    mock_log = mocker.patch("living_documentation_regime.model.project_issue.logger")
     issue_json = {}
     project = GithubProject()
 
@@ -68,7 +68,7 @@ def test_loads_without_content_key_logs_debug(mocker):
 
 def test_loads_with_incorrect_json_structure_for_repository_name(mocker):
     project_issue = ProjectIssue()
-    mock_log = mocker.patch("living_documentation_generator.model.project_issue.logger")
+    mock_log = mocker.patch("living_documentation_regime.model.project_issue.logger")
     incorrect_json = {"content": {"number": 1}}
     project = GithubProject()
 

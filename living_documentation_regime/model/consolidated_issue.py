@@ -24,9 +24,9 @@ from typing import Optional
 
 from github.Issue import Issue
 
-from living_documentation_generator.action_inputs import ActionInputs
-from living_documentation_generator.utils.utils import sanitize_filename
-from living_documentation_generator.model.project_status import ProjectStatus
+from living_documentation_regime.action_inputs import ActionInputs
+from utils.utils import sanitize_filename
+from living_documentation_regime.model.project_status import ProjectStatus
 
 logger = logging.getLogger(__name__)
 

@@ -26,7 +26,7 @@ from functools import wraps
 from github import GithubException
 from requests.exceptions import Timeout, RequestException
 
-from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
+from utils.github_rate_limiter import GithubRateLimiter
 
 logger = logging.getLogger(__name__)
 

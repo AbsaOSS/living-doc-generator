@@ -15,7 +15,7 @@
 #
 from github.Issue import Issue
 
-from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
+from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 
 
 # generate_page_filename
@@ -31,7 +31,7 @@ def test_generate_page_filename_correct_behaviour():
 
 
 def test_generate_page_filename_with_none_title(mocker):
-    mock_log_error = mocker.patch("living_documentation_generator.model.consolidated_issue.logger.error")
+    mock_log_error = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.error")
     mock_issue = Issue(None, None, {"number": 1, "title": None}, completed=True)
     consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
@@ -52,14 +52,14 @@ def test_generate_page_filename_with_none_title(mocker):
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_disabled(mocker):
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_output_directory",
+        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
         return_value="/base/output/path",
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled",
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled",
         return_value=False,
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
@@ -72,14 +72,14 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_d
 
 def test_generate_directory_path_structured_output_enabled_grouping_by_topics_disabled(mocker):
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_output_directory",
+        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
         return_value="/base/output/path",
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled",
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled",
         return_value=False,
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
@@ -91,16 +91,16 @@ def test_generate_directory_path_structured_output_enabled_grouping_by_topics_di
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_two_issue_topics(mocker):
-    mock_log_debug = mocker.patch("living_documentation_generator.model.consolidated_issue.logger.debug")
+    mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_output_directory",
+        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
         return_value="/base/output/path",
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
@@ -118,17 +118,17 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_no_issue_topics(mocker):
-    mock_log_error = mocker.patch("living_documentation_generator.model.consolidated_issue.logger.error")
-    mock_log_debug = mocker.patch("living_documentation_generator.model.consolidated_issue.logger.debug")
+    mock_log_error = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.error")
+    mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_output_directory",
+        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
         return_value="/base/output/path",
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
@@ -143,16 +143,16 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
 
 def test_generate_directory_path_structured_output_enabled_grouping_by_topics_enabled_one_issue_topic(mocker):
-    mock_log_debug = mocker.patch("living_documentation_generator.model.consolidated_issue.logger.debug")
+    mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_output_directory",
+        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
         return_value="/base/output/path",
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True
     )
     mocker.patch(
-        "living_documentation_generator.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
+        "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)

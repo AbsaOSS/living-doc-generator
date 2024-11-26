@@ -16,13 +16,13 @@
 
 import re
 
-from living_documentation_generator.utils.constants import (
+from living_documentation_regime.utils.constants import (
     PROJECTS_FROM_REPO_QUERY,
     ISSUES_FROM_PROJECT_QUERY,
     PROJECT_FIELD_OPTIONS_QUERY,
     ISSUES_PER_PAGE_LIMIT,
 )
-from living_documentation_generator.utils.github_project_queries import (
+from living_documentation_regime.utils.github_project_queries import (
     get_projects_from_repo_query,
     get_issues_from_project_query,
     get_project_field_options_query,

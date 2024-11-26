@@ -15,7 +15,7 @@
 #
 import os
 
-from living_documentation_generator.generator import LivingDocumentationGenerator
+from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
 from main import run
 
 
