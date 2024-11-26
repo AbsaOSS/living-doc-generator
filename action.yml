@@ -4,6 +4,9 @@ inputs:
   GITHUB_TOKEN:
     description: 'GitHub token for authentication.'
     required: true
+  mining_regimes:
+    description: 'String list of regimes to be included in the documentation generation.'
+    required: true
   repositories:
     description: 'JSON string defining the repositories to be included in the documentation generation.'
     required: true
@@ -51,16 +54,37 @@ runs:
         export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/living-doc-generator"
       shell: bash
 
+    - name: Prepare environment based on mining regimes
+      run: |
+        # Set base environment variables common for all regimes
+        echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB_TOKEN }}" >> $GITHUB_ENV
+        echo "INPUT_MINING_REGIMES=${{ inputs.mining_regimes }}" >> $GITHUB_ENV
+        echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
+        echo "INPUT_OUTPUT_PATH=${{ inputs.output-path }}" >> $GITHUB_ENV
+
+        # Convert mining regimes var to lowercase for case-insensitive matching
+        MINING_REGIMES_LOWER=$(echo "${{ inputs.mining_regimes }}" | tr '[:upper:]' '[:lower:]')
+
+        # Add LivDoc-specific environment variables if the regime is enabled
+        if [[ "$MINING_REGIMES_LOWER" == *"livdoc"* ]]; then
+          echo "INPUT_REPOSITORIES=${{ inputs.repositories }}" >> $GITHUB_ENV
+          echo "INPUT_PROJECT_STATE_MINING=${{ inputs.project-state-mining }}" >> $GITHUB_ENV
+          echo "INPUT_STRUCTURED_OUTPUT=${{ inputs.structured-output }}" >> $GITHUB_ENV
+          echo "INPUT_GROUP_OUTPUT_BY_TOPICS=${{ inputs.group-output-by-topics }}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
     - name: Call Living Documentation Generator
       id: liv-doc-generator
       env:
-        INPUT_GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-        INPUT_REPOSITORIES: ${{ inputs.repositories }}
-        INPUT_PROJECT_STATE_MINING: ${{ inputs.project-state-mining }}
-        INPUT_VERBOSE_LOGGING: ${{ inputs.verbose-logging }}
-        INPUT_OUTPUT_PATH: ${{ inputs.output-path }}
-        INPUT_STRUCTURED_OUTPUT: ${{ inputs.structured-output }}
-
+        INPUT_GITHUB_TOKEN: ${{ env.INPUT_GITHUB_TOKEN }}
+        INPUT_MINING_REGIMES: ${{ env.INPUT_MINING_REGIMES }}
+        INPUT_VERBOSE_LOGGING: ${{ env.INPUT_VERBOSE_LOGGING }}
+        INPUT_OUTPUT_PATH: ${{ env.INPUT_OUTPUT_PATH }}
+        INPUT_REPOSITORIES: ${{ env.INPUT_REPOSITORIES }}
+        INPUT_PROJECT_STATE_MINING: ${{ env.INPUT_PROJECT_STATE_MINING }}
+        INPUT_STRUCTURED_OUTPUT: ${{ env.INPUT_STRUCTURED_OUTPUT }}
+        INPUT_GROUP_OUTPUT_BY_TOPICS: ${{ env.INPUT_GROUP_OUTPUT_BY_TOPICS }}
       run: |
         python ${{ github.action_path }}/main.py
       shell: bash
