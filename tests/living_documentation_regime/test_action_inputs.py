@@ -16,6 +16,8 @@
 import json
 import os
 
+import pytest
+
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.model.config_repository import ConfigRepository
 
@@ -227,12 +229,32 @@ def test_validate_inputs_correct_behaviour(mocker):
     mock_exit = mocker.patch("sys.exit")
 
     # Act
-    ActionInputs.validate_inputs("./output")
+    ActionInputs.validate_inputs("livdoc", "./output")
 
     # Assert
     mock_exit.assert_not_called()
     mock_log_debug.assert_called_once_with("Action inputs validation successfully completed.")
     mock_log_error.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "mining_regime",
+    [
+        "",
+        [],
+    ],
+)
+def test_validate_inputs_empty_string_as_mining_regime(mocker, mining_regime):
+    # Arrange
+    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
+    mock_exit = mocker.patch("sys.exit")
+
+    # Act
+    ActionInputs.validate_inputs(mining_regime, "./output")
+
+    # Assert
+    mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with("INPUT_MINING_REGIMES has to be a non-empty string. Choose a mining regime.")
 
 
 def test_validate_inputs_error_output_path_as_empty_string(mocker):
@@ -241,7 +263,7 @@ def test_validate_inputs_error_output_path_as_empty_string(mocker):
     mock_exit = mocker.patch("sys.exit")
 
     # Act
-    ActionInputs.validate_inputs("")
+    ActionInputs.validate_inputs("livdoc", "")
 
     # Assert
     mock_exit.assert_called_once_with(1)
@@ -254,7 +276,7 @@ def test_validate_inputs_error_output_path_as_project_directory(mocker):
     mock_exit = mocker.patch("sys.exit")
 
     # Act
-    ActionInputs.validate_inputs("./templates/template_subfolder")
+    ActionInputs.validate_inputs("livdoc", "./templates/template_subfolder")
 
     # Assert
     mock_exit.assert_called_once_with(1)
@@ -273,7 +295,7 @@ def test_validate_inputs_absolute_output_path_with_relative_project_directories(
     mocker.patch("os.path.abspath", side_effect=lambda path: f"/root/{path}" if not path.startswith("/") else path)
 
     # Act
-    ActionInputs.validate_inputs(absolute_out_path)
+    ActionInputs.validate_inputs("livdoc", absolute_out_path)
 
     # Assert
     mock_exit.assert_called_once_with(1)

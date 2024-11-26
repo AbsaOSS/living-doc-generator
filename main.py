@@ -47,7 +47,7 @@ def run() -> None:
     if LIV_DOC_REGIME in mining_regimes:
         logger.info("Living Documentation generation - Starting the `LivDoc` generation regime.")
 
-        # Generate the Living Documentation
+        # Generate the Living documentation
         LivingDocumentationGenerator().generate()
 
         logger.info("Living Documentation generation - `LivDoc` generation regime completed.")

@@ -16,7 +16,7 @@
 
 import pytest
 
-from living_documentation_regime.utils.utils import (
+from utils.utils import (
     make_issue_key,
     sanitize_filename,
     validate_query_format,
@@ -86,7 +86,7 @@ def test_get_input_without_hyphen(mocker):
 
 def test_validate_query_format_right_behaviour(mocker):
     mock_exit = mocker.patch("sys.exit", return_value=None)
-    mock_log_error = mocker.patch("living_documentation_regime.utils.utils.logger.error")
+    mock_log_error = mocker.patch("utils.utils.logger.error")
 
     # Test case where there are no missing or extra placeholders
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
@@ -98,7 +98,7 @@ def test_validate_query_format_right_behaviour(mocker):
 
 def test_validate_query_format_missing_placeholder(mocker):
     mock_exit = mocker.patch("sys.exit", return_value=None)
-    mock_log_error = mocker.patch("living_documentation_regime.utils.utils.logger.error")
+    mock_log_error = mocker.patch("utils.utils.logger.error")
 
     # Test case where there are missing placeholders
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
@@ -115,7 +115,7 @@ def test_validate_query_format_missing_placeholder(mocker):
 
 def test_validate_query_format_extra_placeholder(mocker):
     mock_exit = mocker.patch("sys.exit", return_value=None)
-    mock_log_error = mocker.patch("living_documentation_regime.utils.utils.logger.error")
+    mock_log_error = mocker.patch("utils.utils.logger.error")
 
     # Test case where there are extra placeholders
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"

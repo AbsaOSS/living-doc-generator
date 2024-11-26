@@ -26,7 +26,7 @@ from living_documentation_regime.model.config_repository import ConfigRepository
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_regime.model.github_project import GithubProject
 from living_documentation_regime.model.project_status import ProjectStatus
-from living_documentation_regime.utils.github_rate_limiter import GithubRateLimiter
+from utils.github_rate_limiter import GithubRateLimiter
 
 
 @pytest.fixture
@@ -101,8 +101,8 @@ def load_all_templates_setup(mocker):
 
 
 @pytest.fixture
-def generator(mocker):
-    mock_github_class = mocker.patch("living_documentation_regime.generator.Github")
+def living_documentation_generator(mocker):
+    mock_github_class = mocker.patch("living_documentation_regime.living_documentation_generator.Github")
     mock_github_instance = mock_github_class.return_value
 
     mock_rate_limit = mocker.Mock()
@@ -113,7 +113,8 @@ def generator(mocker):
     mock_github_instance.get_repo.return_value = mocker.Mock()
 
     mocker.patch(
-        "living_documentation_regime.generator.ActionInputs.get_github_token", return_value="FakeGithubToken"
+        "living_documentation_regime.living_documentation_generator.ActionInputs.get_github_token",
+        return_value="FakeGithubToken",
     )
     return LivingDocumentationGenerator()
 

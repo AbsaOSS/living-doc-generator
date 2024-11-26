@@ -15,6 +15,7 @@
 #
 import os
 
+from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
 from main import run
 
@@ -22,25 +23,54 @@ from main import run
 # run
 
 
-def test_run_correct_behaviour(mocker):
+def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
     # Arrange
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
-    mock_get_action_input = mocker.patch("main.get_action_input")
-    mock_get_action_input.side_effect = lambda first_arg, **kwargs: (
-        "./user/output/path" if first_arg == "OUTPUT_PATH" else None
+    mock_living_doc_generator = mocker.patch("main.LivingDocumentationGenerator")
+    mocker.patch.dict(
+        os.environ,
+        {
+            "INPUT_GITHUB_TOKEN": "fake_token",
+            "INPUT_MINING_REGIMES": "LivDoc",
+            "INPUT_OUTPUT_PATH": "./user/output/path",
+        },
     )
-    mocker.patch("main.ActionInputs.get_output_directory", return_value="./user/output/path")
-    mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token"})
-    mocker.patch.object(LivingDocumentationGenerator, "generate")
+    expected_output_path = os.path.abspath("./user/output/path")
 
     # Act
     run()
 
     # Assert
+    mock_living_doc_generator.assert_called_once()
     mock_log_info.assert_has_calls(
         [
             mocker.call("Starting Living Documentation generation."),
-            mocker.call("Living Documentation generation - output path set to `%s`.", "./user/output/path"),
+            mocker.call("Living Documentation generation - Starting the `LivDoc` generation regime."),
+            mocker.call("Living Documentation generation - `LivDoc` generation regime completed."),
+            mocker.call("Living Documentation generation - output path set to `%s`.", expected_output_path),
             mocker.call("Living Documentation generation completed."),
-        ]
+        ],
+        any_order=False,
+    )
+
+
+def test_run_with_zero_regimes_enabled(mocker):
+    # Arrange
+    mock_log_info = mocker.patch("logging.getLogger").return_value.info
+    mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token", "INPUT_MINING_REGIMES": "Wrong name of regime"})
+    mock_living_doc_generator = mocker.patch("main.LivingDocumentationGenerator")
+    expected_output_path = os.path.abspath("./output")  # Adding the default value
+
+    # Act
+    run()
+
+    # Assert
+    mock_living_doc_generator.assert_not_called()
+    mock_log_info.assert_has_calls(
+        [
+            mocker.call("Starting Living Documentation generation."),
+            mocker.call("Living Documentation generation - output path set to `%s`.", expected_output_path),
+            mocker.call("Living Documentation generation completed."),
+        ],
+        any_order=False,
     )
