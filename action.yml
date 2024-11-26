@@ -5,7 +5,7 @@ inputs:
     description: 'GitHub token for authentication.'
     required: true
   mining_regimes:
-    description: 'String list of regimes to be included in the documentation generation.'
+    description: 'A string of regimes separated by a space to be included in the documentation generation.'
     required: true
   repositories:
     description: 'JSON string defining the repositories to be included in the documentation generation.'
@@ -56,22 +56,27 @@ runs:
 
     - name: Prepare environment based on mining regimes
       run: |
-        # Set base environment variables common for all regimes
+      # Set base environment variables common for all regimes
         echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB_TOKEN }}" >> $GITHUB_ENV
         echo "INPUT_MINING_REGIMES=${{ inputs.mining_regimes }}" >> $GITHUB_ENV
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
         echo "INPUT_OUTPUT_PATH=${{ inputs.output-path }}" >> $GITHUB_ENV
 
-        # Convert mining regimes var to lowercase for case-insensitive matching
+      # Convert mining regimes var to lowercase for case-insensitive matching
         MINING_REGIMES_LOWER=$(echo "${{ inputs.mining_regimes }}" | tr '[:upper:]' '[:lower:]')
 
-        # Add LivDoc-specific environment variables if the regime is enabled
+      # Add LivDoc-specific environment variables if the regime is enabled
         if [[ "$MINING_REGIMES_LOWER" == *"livdoc"* ]]; then
           echo "INPUT_REPOSITORIES=${{ inputs.repositories }}" >> $GITHUB_ENV
           echo "INPUT_PROJECT_STATE_MINING=${{ inputs.project-state-mining }}" >> $GITHUB_ENV
           echo "INPUT_STRUCTURED_OUTPUT=${{ inputs.structured-output }}" >> $GITHUB_ENV
           echo "INPUT_GROUP_OUTPUT_BY_TOPICS=${{ inputs.group-output-by-topics }}" >> $GITHUB_ENV
         fi
+
+#      # Add CI-specific environment variables if the regime is enabled
+#        if [[ "$MINING_REGIMES_LOWER" == *"ci"* ]]; then
+#          echo "INPUT_CI_ENV_VAR=${{ inputs.ci_env_var }}" >> $GITHUB_ENV
+#        fi
       shell: bash
 
     - name: Call Living Documentation Generator

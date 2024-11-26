@@ -114,17 +114,23 @@ class ActionInputs:
         return make_absolute_path(out_path)
 
     @staticmethod
-    def validate_inputs(out_path: str) -> None:
+    def validate_inputs(mining_regimes: str, out_path: str) -> None:
         """
         Loads the inputs provided for the Living documentation generator.
         Logs any validation errors and exits if any are found.
 
+        @param mining_regimes: The mining regimes to be used for the documentation generation.
         @param out_path: The output path for the generated documentation.
         @return: None
         """
 
         # Validate INPUT_REPOSITORIES
         ActionInputs.get_repositories()
+
+        # Validate MINING_REGIMES
+        if not isinstance(mining_regimes, str) or not mining_regimes.strip():
+            logger.error("INPUT_MINING_REGIMES has to be a non-empty string. Choose a mining regime.")
+            sys.exit(1)
 
         # Validate INPUT_OUTPUT_PATH
         if out_path == "":

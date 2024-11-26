@@ -23,7 +23,7 @@ import logging
 
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
-from utils.constants import MINING_REGIMES, DEFAULT_MINING_REGIMES, OUTPUT_PATH, DEFAULT_OUTPUT_PATH
+from utils.constants import MINING_REGIMES, DEFAULT_MINING_REGIMES, OUTPUT_PATH, DEFAULT_OUTPUT_PATH, LIV_DOC_REGIME
 from utils.utils import set_action_output, get_action_input
 from utils.logging_config import setup_logging
 
@@ -42,13 +42,23 @@ def run() -> None:
     # Validate the action inputs
     mining_regimes = get_action_input(MINING_REGIMES, default=DEFAULT_MINING_REGIMES).lower()
     out_path_from_config = get_action_input(OUTPUT_PATH, default=DEFAULT_OUTPUT_PATH)
-    ActionInputs.validate_inputs(out_path_from_config)
+    ActionInputs.validate_inputs(mining_regimes, out_path_from_config)
 
-    # Create the Living Documentation Generator
-    generator = LivingDocumentationGenerator()
+    if LIV_DOC_REGIME in mining_regimes:
+        logger.info("Living Documentation generation - Starting the `LivDoc` generation regime.")
 
-    # Generate the Living Documentation
-    generator.generate()
+        # Generate the Living Documentation
+        LivingDocumentationGenerator().generate()
+
+        logger.info("Living Documentation generation - `LivDoc` generation regime completed.")
+
+    # elif CI_REGIME in mining_regimes:
+    #     logger.info("Living Documentation generation - Starting the `CI` generation regime.")
+    #
+    #     # Generate the CI Documentation
+    #     CiDocumentationGenerator().generate()
+    #
+    #     logger.info("Living Documentation generation - `CI` generation regime completed.")
 
     # Set the output for the GitHub Action
     output_path = ActionInputs.get_output_directory()
