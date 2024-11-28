@@ -15,8 +15,6 @@
 #
 import os
 
-from living_documentation_regime.action_inputs import ActionInputs
-from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
 from main import run
 
 
@@ -25,17 +23,18 @@ from main import run
 
 def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
     # Arrange
+    expected_output_path = os.path.abspath("./user/output/path")
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
     mock_living_doc_generator = mocker.patch("main.LivingDocumentationGenerator")
     mocker.patch.dict(
         os.environ,
         {
             "INPUT_GITHUB_TOKEN": "fake_token",
-            "INPUT_MINING_REGIMES": "LivDoc",
+            "INPUT_LIV_DOC_REGIME": "true",
             "INPUT_OUTPUT_PATH": "./user/output/path",
         },
     )
-    expected_output_path = os.path.abspath("./user/output/path")
+    mocker.patch("main.ActionInputs.get_output_directory", return_value=expected_output_path)
 
     # Act
     run()
@@ -57,7 +56,7 @@ def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
 def test_run_with_zero_regimes_enabled(mocker):
     # Arrange
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
-    mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token", "INPUT_MINING_REGIMES": "Wrong name of regime"})
+    mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token", "INPUT_LIV_DOC_REGIME": "false"})
     mock_living_doc_generator = mocker.patch("main.LivingDocumentationGenerator")
     expected_output_path = os.path.abspath("./output")  # Adding the default value
 
