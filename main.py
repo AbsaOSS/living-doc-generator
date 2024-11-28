@@ -23,8 +23,7 @@ import logging
 
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
-from utils.constants import MINING_REGIMES, DEFAULT_MINING_REGIMES, OUTPUT_PATH, DEFAULT_OUTPUT_PATH, LIV_DOC_REGIME
-from utils.utils import set_action_output, get_action_input
+from utils.utils import set_action_output
 from utils.logging_config import setup_logging
 
 
@@ -40,11 +39,9 @@ def run() -> None:
     logger.info("Starting Living Documentation generation.")
 
     # Validate the action inputs
-    mining_regimes = get_action_input(MINING_REGIMES, default=DEFAULT_MINING_REGIMES).lower()
-    out_path_from_config = get_action_input(OUTPUT_PATH, default=DEFAULT_OUTPUT_PATH)
-    ActionInputs.validate_inputs(mining_regimes, out_path_from_config)
+    ActionInputs().validate_inputs()
 
-    if LIV_DOC_REGIME in mining_regimes:
+    if ActionInputs.get_liv_doc_regime():
         logger.info("Living Documentation generation - Starting the `LivDoc` generation regime.")
 
         # Generate the Living documentation
@@ -52,7 +49,7 @@ def run() -> None:
 
         logger.info("Living Documentation generation - `LivDoc` generation regime completed.")
 
-    # elif CI_REGIME in mining_regimes:
+    # elif ActionInputs.get_ci_regime():
     #     logger.info("Living Documentation generation - Starting the `CI` generation regime.")
     #
     #     # Generate the CI Documentation

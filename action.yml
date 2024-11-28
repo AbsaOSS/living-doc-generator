@@ -1,19 +1,13 @@
 name: 'Living Documentation Generator'
 description: 'Generates living documentation from current state of user defined GitHub repositories.'
 inputs:
-  GITHUB_TOKEN:
+  # General action inputs
+  GITHUB-TOKEN:
     description: 'GitHub token for authentication.'
     required: true
-  mining_regimes:
-    description: 'A string of regimes separated by a space to be included in the documentation generation.'
+  liv-doc-regime:
+    description: 'Enable or disable the LivDoc regime.'
     required: true
-  repositories:
-    description: 'JSON string defining the repositories to be included in the documentation generation.'
-    required: true
-  project-state-mining:
-    description: 'Enable or disable mining of project state data.'
-    required: false
-    default: 'false'
   verbose-logging:
     description: 'Enable or disable verbose logging.'
     required: false
@@ -22,17 +16,27 @@ inputs:
     description: 'Path to the generated living documentation files.'
     required: false
     default: './output'
-  structured-output:
+
+  # LivDoc-regime specific inputs
+  liv-doc-repositories:
+    description: 'JSON string defining the repositories to be included in the documentation generation.'
+    required: false
+    default: '[]'
+  liv-doc-project-state-mining:
+    description: 'Enable or disable mining of project state data.'
+    required: false
+    default: 'false'
+  liv-doc-structured-output:
     description: 'Enable or disable structured output.'
     required: false
     default: 'false'
-  group-output-by-topics:
+  liv-doc-group-output-by-topics:
     description: 'Enable or disable grouping tickets by topics in the summary index.md file.'
     required: false
     default: 'false'
 outputs:
   output-path:
-    description: 'Path to the generated living documentation files'
+    description: 'Path to the generated living documentation files.'
     value: ${{ steps.liv-doc-generator.outputs.output-path }}
 
 branding:
@@ -56,40 +60,37 @@ runs:
 
     - name: Prepare environment based on mining regimes
       run: |
-      # Set base environment variables common for all regimes
-        echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB_TOKEN }}" >> $GITHUB_ENV
-        echo "INPUT_MINING_REGIMES=${{ inputs.mining_regimes }}" >> $GITHUB_ENV
+      # Set base env variables common for all regimes
+        echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB-TOKEN }}" >> $GITHUB_ENV
+        echo "INPUT_LIV_DOC_REGIME=${{ inputs.liv-doc-regime }}" >> $GITHUB_ENV
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
         echo "INPUT_OUTPUT_PATH=${{ inputs.output-path }}" >> $GITHUB_ENV
 
-      # Convert mining regimes var to lowercase for case-insensitive matching
-        MINING_REGIMES_LOWER=$(echo "${{ inputs.mining_regimes }}" | tr '[:upper:]' '[:lower:]')
-
-      # Add LivDoc-specific environment variables if the regime is enabled
-        if [[ "$MINING_REGIMES_LOWER" == *"livdoc"* ]]; then
-          echo "INPUT_REPOSITORIES=${{ inputs.repositories }}" >> $GITHUB_ENV
-          echo "INPUT_PROJECT_STATE_MINING=${{ inputs.project-state-mining }}" >> $GITHUB_ENV
-          echo "INPUT_STRUCTURED_OUTPUT=${{ inputs.structured-output }}" >> $GITHUB_ENV
-          echo "INPUT_GROUP_OUTPUT_BY_TOPICS=${{ inputs.group-output-by-topics }}" >> $GITHUB_ENV
+      # Add LivDoc-specific env variables if the regime is enabled
+        if [[ "${{ inputs.liv-doc-regime }}" == "true" ]]; then
+          echo "INPUT_LIV_DOC_REPOSITORIES=${{ inputs.liv-doc-repositories }}" >> $GITHUB_ENV
+          echo "INPUT_LIV_DOC_PROJECT_STATE_MINING=${{ inputs.liv-doc-project-state-mining }}" >> $GITHUB_ENV
+          echo "INPUT_LIV_DOC_STRUCTURED_OUTPUT=${{ inputs.liv-doc-structured-output }}" >> $GITHUB_ENV
+          echo "INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=${{ inputs.liv-doc-group-output-by-topics }}" >> $GITHUB_ENV
         fi
 
 #      # Add CI-specific environment variables if the regime is enabled
-#        if [[ "$MINING_REGIMES_LOWER" == *"ci"* ]]; then
+#        if [[ "${{ inputs.ci-regime }}" == "true" ]]; then
 #          echo "INPUT_CI_ENV_VAR=${{ inputs.ci_env_var }}" >> $GITHUB_ENV
 #        fi
       shell: bash
 
-    - name: Call Living Documentation Generator
+    - name: Run Living Documentation Generator
       id: liv-doc-generator
       env:
         INPUT_GITHUB_TOKEN: ${{ env.INPUT_GITHUB_TOKEN }}
-        INPUT_MINING_REGIMES: ${{ env.INPUT_MINING_REGIMES }}
+        INPUT_LIV_DOC_REGIME: ${{ env.INPUT_LIV_DOC_REGIME }}
         INPUT_VERBOSE_LOGGING: ${{ env.INPUT_VERBOSE_LOGGING }}
         INPUT_OUTPUT_PATH: ${{ env.INPUT_OUTPUT_PATH }}
-        INPUT_REPOSITORIES: ${{ env.INPUT_REPOSITORIES }}
-        INPUT_PROJECT_STATE_MINING: ${{ env.INPUT_PROJECT_STATE_MINING }}
-        INPUT_STRUCTURED_OUTPUT: ${{ env.INPUT_STRUCTURED_OUTPUT }}
-        INPUT_GROUP_OUTPUT_BY_TOPICS: ${{ env.INPUT_GROUP_OUTPUT_BY_TOPICS }}
+        INPUT_LIV_DOC_REPOSITORIES: ${{ env.INPUT_LIV_DOC_REPOSITORIES }}
+        INPUT_LIV_DOC_PROJECT_STATE_MINING: ${{ env.INPUT_LIV_DOC_PROJECT_STATE_MINING }}
+        INPUT_LIV_DOC_STRUCTURED_OUTPUT: ${{ env.INPUT_LIV_DOC_STRUCTURED_OUTPUT }}
+        INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS: ${{ env.INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS }}
       run: |
         python ${{ github.action_path }}/main.py
       shell: bash
