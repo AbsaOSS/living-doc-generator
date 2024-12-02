@@ -82,7 +82,7 @@ def test_clean_output_directory_correct_behaviour(mocker, living_documentation_g
     # Arrange
     mock_output_path = "/test/output/path"
     mock_get_output_directory = mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value=mock_output_path,
     )
     mock_exists = mocker.patch("os.path.exists", return_value=True)
@@ -462,7 +462,7 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_enabl
         return_value=True,
     )
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mock_generate_root_level_index_page = mocker.patch(
@@ -507,7 +507,7 @@ def test_generate_markdown_pages_with_structured_output_enabled_and_topic_groupi
         return_value=False,
     )
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
@@ -549,7 +549,7 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_disab
         return_value=False,
     )
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
@@ -592,7 +592,7 @@ def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_outp
         return_value=True,
     )
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
@@ -899,7 +899,7 @@ def test_generate_sub_level_index_page_for_org_level(mocker, living_documentatio
     expected_output_path = "/base/output/TestOrg/_index.md"
 
     mock_get_output_directory = mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mock_open = mocker.patch("builtins.open", mocker.mock_open())
@@ -923,7 +923,7 @@ def test_generate_sub_level_index_page_for_repo_level(mocker, living_documentati
     expected_output_path = "/base/output/TestOrg/TestRepo/_index.md"
 
     mock_get_output_directory = mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mock_open = mocker.patch("builtins.open", mocker.mock_open())
@@ -1120,7 +1120,7 @@ def test_generate_index_directory_path_with_structured_output_grouped_by_topics(
     expected_path = "/base/output/org123/repo456/documentation"
 
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mocker.patch(
@@ -1147,7 +1147,7 @@ def test_generate_index_directory_path_with_structured_output_not_grouped_by_top
     expected_path = "/base/output/org123/repo456"
 
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mocker.patch(
@@ -1174,7 +1174,7 @@ def test_generate_index_directory_path_with_only_grouping_by_topic_no_structured
     expected_path = "/base/output/documentation"
 
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mocker.patch(
@@ -1200,7 +1200,7 @@ def test_generate_index_directory_path_with_no_structured_output_and_no_grouping
     expected_path = "/base/output"
 
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_output_directory",
+        "living_documentation_regime.living_documentation_generator.make_absolute_path",
         return_value="/base/output",
     )
     mocker.patch(

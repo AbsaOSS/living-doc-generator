@@ -22,21 +22,27 @@ from living_documentation_regime.model.consolidated_issue import ConsolidatedIss
 
 
 def test_generate_page_filename_correct_behaviour():
+    # Arrange
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
+    # Act
     actual = consolidated_issue.generate_page_filename()
 
+    # Assert
     assert "1_issue_title.md" == actual
 
 
 def test_generate_page_filename_with_none_title(mocker):
+    # Arrange
     mock_log_error = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.error")
     mock_issue = Issue(None, None, {"number": 1, "title": None}, completed=True)
-    consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
-    actual = consolidated_issue.generate_page_filename()
+    # Act
+    actual = mock_consolidated_issue.generate_page_filename()
 
+    # Assert
     assert "1.md" == actual
     mock_log_error.assert_called_once_with(
         "Issue page filename generation failed for Issue %s/%s (%s). Issue does not have a title.",
@@ -51,9 +57,10 @@ def test_generate_page_filename_with_none_title(mocker):
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_disabled(mocker):
+    # Arrange
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-        return_value="/base/output/path",
+        "living_documentation_regime.model.consolidated_issue.make_absolute_path",
+        return_value="/mocked/absolute/output/path/",
     )
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
@@ -63,17 +70,20 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_d
         return_value=False,
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
-    consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
-    actual = consolidated_issue.generate_directory_path("issue table")
+    # Act
+    actual = mock_consolidated_issue.generate_directory_path("issue table")
 
-    assert ["/base/output/path"] == actual
+    # Assert
+    assert ["/mocked/absolute/output/path/"] == actual
 
 
 def test_generate_directory_path_structured_output_enabled_grouping_by_topics_disabled(mocker):
+    # Arrange
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-        return_value="/base/output/path",
+        "living_documentation_regime.model.consolidated_issue.make_absolute_path",
+        return_value="/mocked/absolute/output/path/",
     )
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True
@@ -83,18 +93,21 @@ def test_generate_directory_path_structured_output_enabled_grouping_by_topics_di
         return_value=False,
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
-    consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
-    actual = consolidated_issue.generate_directory_path("issue table")
+    # Act
+    actual = mock_consolidated_issue.generate_directory_path("issue table")
 
-    assert ["/base/output/path/organization/repository"] == actual
+    # Assert
+    assert ["/mocked/absolute/output/path/organization/repository"] == actual
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_two_issue_topics(mocker):
+    # Arrange
     mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-        return_value="/base/output/path",
+        "living_documentation_regime.model.consolidated_issue.make_absolute_path",
+        return_value="/mocked/absolute/output/path/",
     )
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
@@ -103,11 +116,13 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
         "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
-    consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
-    actual = consolidated_issue.generate_directory_path("| Labels | feature, BETopic, FETopic |")
+    # Act
+    actual = mock_consolidated_issue.generate_directory_path("| Labels | feature, BETopic, FETopic |")
 
-    assert ["/base/output/path/BETopic", "/base/output/path/FETopic"] == actual
+    # Assert
+    assert ["/mocked/absolute/output/path/BETopic", "/mocked/absolute/output/path/FETopic"] == actual
     mock_log_debug.assert_called_once_with(
         "Multiple Topic labels found for Issue #%s: %s (%s): %s",
         1,
@@ -118,11 +133,12 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_no_issue_topics(mocker):
+    # Arrange
     mock_log_error = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.error")
     mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-        return_value="/base/output/path",
+        "living_documentation_regime.model.consolidated_issue.make_absolute_path",
+        return_value="/mocked/absolute/output/path/",
     )
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False
@@ -131,11 +147,13 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
         "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
-    consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
-    actual = consolidated_issue.generate_directory_path("| Labels | feature, bug |")
+    # Act
+    actual = mock_consolidated_issue.generate_directory_path("| Labels | feature, bug |")
 
-    assert ["/base/output/path/NoTopic"] == actual
+    # Assert
+    assert ["/mocked/absolute/output/path/NoTopic"] == actual
     mock_log_error.assert_called_once_with(
         "No Topic label found for Issue #%i: %s (%s)", 1, "Issue Title", "organization/repository"
     )
@@ -143,10 +161,11 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
 
 def test_generate_directory_path_structured_output_enabled_grouping_by_topics_enabled_one_issue_topic(mocker):
+    # Arrange
     mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-        return_value="/base/output/path",
+        "living_documentation_regime.model.consolidated_issue.make_absolute_path",
+        return_value="/mocked/absolute/output/path/",
     )
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True
@@ -155,13 +174,15 @@ def test_generate_directory_path_structured_output_enabled_grouping_by_topics_en
         "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
-    consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
-    actual = consolidated_issue.generate_directory_path("| Labels | feature, BETopic, FETopic |")
+    # Act
+    actual = mock_consolidated_issue.generate_directory_path("| Labels | feature, BETopic, FETopic |")
 
+    # Assert
     assert [
-        "/base/output/path/organization/repository/BETopic",
-        "/base/output/path/organization/repository/FETopic",
+        "/mocked/absolute/output/path/organization/repository/BETopic",
+        "/mocked/absolute/output/path/organization/repository/FETopic",
     ] == actual
     mock_log_debug.assert_called_once_with(
         "Multiple Topic labels found for Issue #%s: %s (%s): %s",

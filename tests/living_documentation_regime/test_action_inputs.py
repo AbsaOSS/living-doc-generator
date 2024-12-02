@@ -16,8 +16,6 @@
 import json
 import os
 
-import pytest
-
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.model.config_repository import ConfigRepository
 
@@ -42,18 +40,6 @@ def test_verbose_logging_default():
 
     # Assert
     assert not actual
-
-
-def test_output_path_default():
-    # Arrange
-    os.environ.pop("INPUT_OUTPUT_PATH", None)
-    expected = os.path.abspath("./output")
-
-    # Act
-    actual = ActionInputs.get_output_directory()
-
-    # Assert
-    assert expected == actual
 
 
 def test_structured_output_default():
@@ -227,9 +213,6 @@ def test_validate_inputs_correct_behaviour(mocker):
         "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=repositories_json
     )
     mock_exit = mocker.patch("sys.exit")
-    returned_output_path = os.path.abspath("./output")
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-                 return_value=returned_output_path)
 
     # Act
     ActionInputs().validate_inputs()
@@ -238,56 +221,3 @@ def test_validate_inputs_correct_behaviour(mocker):
     mock_exit.assert_not_called()
     mock_log_debug.assert_called_once_with("Action inputs validation successfully completed.")
     mock_log_error.assert_not_called()
-
-
-def test_validate_inputs_error_output_path_as_empty_string(mocker):
-    # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mock_exit = mocker.patch("sys.exit")
-    returned_output_path = os.path.abspath("")
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-                 return_value=returned_output_path)
-
-    # Act
-    ActionInputs().validate_inputs()
-
-    # Assert
-    mock_exit.assert_called_once_with(1)
-    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH can not be an empty string.")
-
-
-def test_validate_inputs_error_output_path_as_project_directory(mocker):
-    # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mock_exit = mocker.patch("sys.exit")
-    returned_output_path = os.path.abspath("./templates/template_subfolder")
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-                 return_value=returned_output_path)
-
-    # Act
-    ActionInputs().validate_inputs()
-
-    # Assert
-    mock_exit.assert_called_once_with(1)
-    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH cannot be chosen as a part of any project folder.")
-
-
-def test_validate_inputs_absolute_output_path_with_relative_project_directories(mocker):
-    # Arrange
-    returned_output_path = os.path.abspath("/root/project/dir1/subfolder")
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_output_directory",
-                 return_value=returned_output_path)
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mock_exit = mocker.patch("sys.exit")
-    mocker.patch(
-        "living_documentation_regime.action_inputs.get_all_project_directories",
-        return_value=["project/dir1", "project/dir2"],
-    )
-    mocker.patch("os.path.abspath", side_effect=lambda path: f"/root/{path}" if not path.startswith("/") else path)
-
-    # Act
-    ActionInputs().validate_inputs()
-
-    # Assert
-    mock_exit.assert_called_once_with(1)
-    mock_log_error.assert_called_once_with("INPUT_OUTPUT_PATH cannot be chosen as a part of any project folder.")

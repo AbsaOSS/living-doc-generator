@@ -16,6 +16,7 @@
 import os
 
 from main import run
+from utils.constants import OUTPUT_PATH
 
 
 # run
@@ -23,7 +24,7 @@ from main import run
 
 def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
     # Arrange
-    expected_output_path = os.path.abspath("./user/output/path")
+    expected_output_path = os.path.abspath(OUTPUT_PATH)
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
     mock_living_doc_generator = mocker.patch("main.LivingDocumentationGenerator")
     mocker.patch.dict(
@@ -34,7 +35,6 @@ def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
             "INPUT_OUTPUT_PATH": "./user/output/path",
         },
     )
-    mocker.patch("main.ActionInputs.get_output_directory", return_value=expected_output_path)
 
     # Act
     run()
