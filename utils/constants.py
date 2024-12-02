@@ -17,13 +17,13 @@
 """
 This module contains all constants used across the project.
 """
+# Default output path for the generated documentation
+OUTPUT_PATH = "./output"
 
 # Action inputs environment variables
 GITHUB_TOKEN = "GITHUB_TOKEN"
 PROJECT_STATE_MINING = "LIV_DOC_PROJECT_STATE_MINING"
 REPOSITORIES = "LIV_DOC_REPOSITORIES"
-OUTPUT_PATH = "LIV_DOC_OUTPUT_PATH"
-DEFAULT_OUTPUT_PATH = "./output"
 STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
 GROUP_OUTPUT_BY_TOPICS = "LIV_DOC_GROUP_OUTPUT_BY_TOPICS"
 

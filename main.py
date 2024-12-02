@@ -23,7 +23,8 @@ import logging
 
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
-from utils.utils import set_action_output
+from utils.constants import OUTPUT_PATH
+from utils.utils import set_action_output, make_absolute_path
 from utils.logging_config import setup_logging
 
 
@@ -58,7 +59,7 @@ def run() -> None:
     #     logger.info("Living Documentation generation - `CI` generation regime completed.")
 
     # Set the output for the GitHub Action
-    output_path = ActionInputs.get_output_directory()
+    output_path: str = make_absolute_path(OUTPUT_PATH)
     set_action_output("output-path", output_path)
     logger.info("Living Documentation generation - output path set to `%s`.", output_path)
 

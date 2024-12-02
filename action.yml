@@ -12,10 +12,6 @@ inputs:
     description: 'Enable or disable verbose logging.'
     required: false
     default: 'false'
-  output-path:
-    description: 'Path to the generated living documentation files.'
-    required: false
-    default: './output'
 
   # LivDoc-regime specific inputs
   liv-doc-repositories:
@@ -64,7 +60,6 @@ runs:
         echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB-TOKEN }}" >> $GITHUB_ENV
         echo "INPUT_LIV_DOC_REGIME=${{ inputs.liv-doc-regime }}" >> $GITHUB_ENV
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
-        echo "INPUT_OUTPUT_PATH=${{ inputs.output-path }}" >> $GITHUB_ENV
 
       # Add LivDoc-specific env variables if the regime is enabled
         if [[ "${{ inputs.liv-doc-regime }}" == "true" ]]; then
@@ -86,7 +81,6 @@ runs:
         INPUT_GITHUB_TOKEN: ${{ env.INPUT_GITHUB_TOKEN }}
         INPUT_LIV_DOC_REGIME: ${{ env.INPUT_LIV_DOC_REGIME }}
         INPUT_VERBOSE_LOGGING: ${{ env.INPUT_VERBOSE_LOGGING }}
-        INPUT_OUTPUT_PATH: ${{ env.INPUT_OUTPUT_PATH }}
         INPUT_LIV_DOC_REPOSITORIES: ${{ env.INPUT_LIV_DOC_REPOSITORIES }}
         INPUT_LIV_DOC_PROJECT_STATE_MINING: ${{ env.INPUT_LIV_DOC_PROJECT_STATE_MINING }}
         INPUT_LIV_DOC_STRUCTURED_OUTPUT: ${{ env.INPUT_LIV_DOC_STRUCTURED_OUTPUT }}
