@@ -34,7 +34,7 @@ This regime is designed to data-mine GitHub repositories for [documentation tick
 ---
 ## Adding LivDoc Regime to the Workflow
 
-See the default Living Documentation regime action step definition:
+See the default minimal Living Documentation regime action step definition:
 
 ```yaml
 - name: Generate Living Documentation
@@ -43,11 +43,8 @@ See the default Living Documentation regime action step definition:
   env:
     GITHUB-TOKEN: ${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}  
   with:
-    # living documentation regime de/activation
-    liv-doc-regime: true
-    
-    # input repositories + feature to filter projects
-    liv-doc-repositories: '[
+    liv-doc-regime: true          # living documentation regime de/activation  
+    liv-doc-repositories: '[      # input repositories + feature to filter projects
       {
         "organization-name": "fin-services",
         "repository-name": "investment-app",
@@ -78,17 +75,10 @@ See the full example of LivDoc regime step definition (in example are used non-d
   env:
     GITHUB-TOKEN: ${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}  
   with:
-    # living documentation regime de/activation
-    liv-doc-regime: true
-    
-    # project verbose (debug) logging feature de/activation
-    verbose-logging: true
-    
-    # output directory path for generated documentation
-    output-path: "/output/directory/path"
-    
-    # input repositories + feature to filter projects
-    liv-doc-repositories: '[
+    liv-doc-regime: true    # living documentation regime de/activation
+    verbose-logging: true   # project verbose (debug) logging feature de/activation
+    output-path: "/output/directory/path"   # output directory path for generated documentation
+    liv-doc-repositories: '[                # input repositories + feature to filter projects
       {
         "organization-name": "fin-services",
         "repository-name": "investment-app",
@@ -108,15 +98,9 @@ See the full example of LivDoc regime step definition (in example are used non-d
         "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
       }
     ]'
-
-    # project state mining feature de/activation
-    liv-doc-project-state-mining: true
-
-    # structured output feature de/activation
-    liv-doc-structured-output: true
-    
-    # group output by topics feature de/activation
-    liv-doc-group-output-by-topics: true
+    liv-doc-project-state-mining: true        # project state mining feature de/activation
+    liv-doc-structured-output: true           # structured output feature de/activation
+    liv-doc-group-output-by-topics: true      # group output by topics feature de/activation
 ```
 
 ---
@@ -125,7 +109,7 @@ See the full example of LivDoc regime step definition (in example are used non-d
 Configure the LivDoc regime by customizing the following parameters based on your needs:
 
 ### Inputs
--**liv-doc-repositories** (optional, `default: '[]'`)
+- **liv-doc-repositories** (optional, `default: '[]'`)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
   - **Usage**: List each repository with its organization name, repository name, query labels and attached projects you want to filter if any. Only projects with these titles will be considered. For no filtering projects, leave the list empty.
   - **Example**:
@@ -153,10 +137,11 @@ Configure the LivDoc regime by customizing the following parameters based on you
     ]'
     ```
 
-### Features De/Activation
+### Features
 
 - **liv-doc-project-state-mining** (optional, `default: false`)
-  - **Description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).
+  - **Input description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).
+  - **Feature description**: [Data mining from GitHub projects](#data-mining-from-github-projects)
   - **Usage**: Set to true to activate.
   - **Example**:
     ```yaml
@@ -165,7 +150,8 @@ Configure the LivDoc regime by customizing the following parameters based on you
     ```
     
 - **liv-doc-structured-output** (optional, `default: false`)
-  - **Description**: Enables or disables structured output.
+  - **Input description**: Enables or disables structured output.
+  - **Feature description**: [Structured output](#structured-output)
   - **Usage**: Set to true to activate.
   - **Example**:
     ```yaml
@@ -174,7 +160,8 @@ Configure the LivDoc regime by customizing the following parameters based on you
     ```
 
 - **liv-doc-group-output-by-topics** (optional, `default: false`)
-  - **Description**: Enable or disable grouping tickets by topics in the summary index.md file.
+  - **Input description**: Enable or disable grouping tickets by topics in the summary index.md file.
+  - **Feature description**: [Output grouped by topics](#output-grouped-by-topics)
   - **Usage**: Set to true to activate.
   - **Example**:
     ```yaml
@@ -240,7 +227,7 @@ Users often struggle to find specific books in a large catalog. An advanced sear
 ---
 ## Documentation Ticket Introduction
 
-A **Documentation Ticket** is a small piece of documentation realised as GitHub Issue dedicated to project documentation. Unlike development-focused tickets, Documentation Ticket remain open continuously, evolving as updates are needed, and can be reopened or revised indefinitely. They are not directly tied to Pull Requests (PRs) but can be referenced for context.
+A **Documentation Ticket** is a small piece of documentation realized as a GitHub Issue dedicated to project documentation. Unlike development-focused tickets, Documentation Ticket can remain in open state continuously, evolving as updates are needed, and can be reopened or revised indefinitely. They are not directly tied to Pull Requests (PRs) but can be referenced for context.
 
 - **Content Rules**:
   - **Non-technical Focus:** 
@@ -272,8 +259,7 @@ To enhance clarity, the following label groups define and categorize each Docume
 ### Hosting Documentation Tickets in a Solo Repository
 
 Using a dedicated repository solely for documentation tickets provides multiple advantages:
-- **Streamlined Management:** This avoids cross-project conflicts and board exclusions and enables specialized templates solely for documentation purposes.
-- **Focused Access Control:** This allows a small team to manage and edit documentation without interference, maintaining high-quality content.
+- **Streamlined Management:** This avoids cross-project conflicts, board exclusions and enables specialized templates solely for documentation purposes.- **Focused Access Control:** This allows a small team to manage and edit documentation without interference, maintaining high-quality content.
 - **Optimized Data Mining:** Supports easier and more efficient data extraction for feedback and review cycles through Release Notes.
 - **Implementation Reflection:** Mirrors elements from the implementation repositories, providing a high-level knowledge source that is valuable for both business and technical teams.
 - **Release Notes Integration:** Documentation can evolve based on insights from release notes, serving as a dynamic feedback loop back to the documentation repository.
@@ -283,16 +269,18 @@ Using a dedicated repository solely for documentation tickets provides multiple 
 
 ### Data Mining from GitHub Repositories
 
-This feature allows you to define which repositories should be included in the living documentation process. By specifying repositories, you can focus on the most relevant projects for your documentation needs.
+This is a build-in feature, that allows you to define which repositories should be included in the living documentation process. This essential process can not be deactivated inside of regime scope. By specifying repositories, you can focus on the most relevant projects for your documentation needs.
 
+- **Activation**: This is a built-in feature, so it is always activated.
 - **Default Behavior**: By default, the action will include all repositories defined in the repositories input parameter. Each repository is defined with its organization name, repository name, and query labels.
 
 ### Data Mining from GitHub Projects
 
 This feature allows you to define which projects should be included in the living documentation process. By specifying projects, you can focus on the most relevant projects for your documentation needs.
 
-- **Default Behavior**: By default, the action will include all projects defined in the repositories. This information is provided by the GitHub API.
-- **Non-default Example**: Use available options to customize which projects are included in the documentation.
+- **Activation**: To activate this feature, set the `liv-doc-project-state-mining` input to true.
+- **Non-Activated Behavior**: By default, when the feature is inactive, the action will include all projects linked to the repositories. This information is provided by the GitHub API.
+- **Activated Example**: Use available options to customize which projects are included in the documentation.
   - `project-state-mining: false` deactivates the mining of project state data from GitHub Projects. If set to **false**, project state data will not be included in the generated documentation and project related configuration options will be ignored. 
   - `projects-title-filter: []` filters the repository attached projects by titles, if list is empty all projects are used.
       ```json
@@ -308,14 +296,19 @@ This feature allows you to define which projects should be included in the livin
 
 The goal is to provide a straightforward view of all issues in a single table, making it easy to see the overall status and details of issues across repositories.
 
+The current output implementation is designed to work with the organization mdoc solution.
+The presence of multiple _index.md files is necessary for the current solution to correctly generate the documentation structure.
+
+- **Activation**: This is a built-in feature, so it is always activated.
 - **Default Behavior**: By default, the action generates a single table that lists all issues from the defined repositories.
 
-### Structured Output
+#### Structured Output
 
 This feature allows you to generate structured output for the living documentation and see a summary `index.md` page for each fetched repository.
 
-- **Default Behavior**: By default, the action generates all the documentation in a single directory.
-- **Non-default Example**: Use the structured output feature to organize the generated documentation by organization and repository name.
+- **Activation**: To activate this feature, set the `liv-doc-structured-output` input to true.
+- **Non-Activated Behavior**: By default, when the feature is inactive, the action generates all the documentation in a single directory.
+- **Activated Example**: Use the structured output feature to organize the generated documentation by organization and repository name.
   - `structured-output: true` activates the structured output feature.
     ```
     output
@@ -335,14 +328,15 @@ This feature allows you to generate structured output for the living documentati
     |- _index.md
     ```
 
-### Output Grouped by Topics
+#### Output Grouped by Topics
 
-The feature allows you to generate grouped output by topics. This feature is useful when you want to group tickets by specific topics or themes.
+The feature allows you to generate output grouped by topics. This feature is useful when grouping tickets by specific topics or themes.
 
 To gain a better understanding of the term "Topic", refer to the [Labels](#labels) section.
 
-- **Default Behavior**: By default, the action generates all the documentation in a single directory.
-- **Non-default Example**: Use the grouped output feature to organize the generated documentation by topics.
+- **Activation**: To activate this feature, set the `liv-doc-group-output-by-topics` input to true.
+- **Non-Activated Behavior**: By default, when the feature is inactive, the action generates all the documentation in a single directory.
+- **Activated Example**: Use the grouped output feature to organize the generated documentation by topics.
   - `group-output-by-topics: true` activates the grouped output feature.
     ```
     output
