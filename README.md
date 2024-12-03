@@ -8,6 +8,8 @@
 - [Action Configuration](#action-configuration)
     - [Environment Variables](#environment-variables)
     - [Inputs](#inputs)
+      - [Base Inputs](#base-inputs)
+      - [Regime Inputs](#regime-inputs)
 - [Action Outputs](#action-outputs)
 - [Project Setup](#project-setup)
 - [Run Scripts Locally](#run-scripts-locally)
