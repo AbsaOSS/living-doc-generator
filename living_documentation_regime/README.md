@@ -3,8 +3,7 @@
 - [Regime De/Activation](#regime-deactivation)
 - [Adding LivDoc Regime to the Workflow](#adding-livdoc-regime-to-the-workflow)
 - [Regime Configuration](#regime-configuration)
-  - [Inputs](#inputs)
-  - [Features De/Activation](#features-deactivation)
+  - [Regime Inputs](#regime-inputs)
 - [Expected Output](#expected-output)
   - [Index Page Example](#index-page-example)
   - [Issue Page Example](#issue-page-example)
@@ -15,15 +14,15 @@
   - [Data Mining from GitHub Repositories](#data-mining-from-github-repositories)
   - [Data Mining from GitHub Projects](#data-mining-from-github-projects)
   - [Living Documentation Page Generation](#living-documentation-page-generation)
-  - [Structured Output](#structured-output)
-  - [Output Grouped by Topics](#output-grouped-by-topics)
+    - [Structured Output](#structured-output)
+    - [Output Grouped by Topics](#output-grouped-by-topics)
 
 This regime is designed to data-mine GitHub repositories for [documentation tickets](#documentation-ticket-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in Markdown format, providing detailed feature overview pages and in-depth feature descriptions.
 
 ## Regime De/Activation
 
 - **liv-doc-regime** (required)
-  - **Description**: Enables or disables Living Documentation regime.
+  - **Description**: Enables or disables the Living Documentation regime.
   - **Usage**: Set to true to activate.
   - **Example**:
     ```yaml
@@ -41,10 +40,10 @@ See the default minimal Living Documentation regime action step definition:
   id: generate_living_doc
   uses: AbsaOSS/living-doc-generator@v0.3.0
   env:
-    GITHUB-TOKEN: ${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}  
+    GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
-    liv-doc-regime: true          # living documentation regime de/activation  
-    liv-doc-repositories: '[      # input repositories + feature to filter projects
+    liv-doc-regime: true                   # living documentation regime de/activation  
+    liv-doc-repositories: '[
       {
         "organization-name": "fin-services",
         "repository-name": "investment-app",
@@ -73,12 +72,12 @@ See the full example of LivDoc regime step definition (in example are used non-d
   id: generate_living_doc
   uses: AbsaOSS/living-doc-generator@v0.3.0
   env:
-    GITHUB-TOKEN: ${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}  
+    GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
-    liv-doc-regime: true    # living documentation regime de/activation
-    verbose-logging: true   # project verbose (debug) logging feature de/activation
-    output-path: "/output/directory/path"   # output directory path for generated documentation
-    liv-doc-repositories: '[                # input repositories + feature to filter projects
+    liv-doc-regime: true                   # living documentation regime de/activation
+    verbose-logging: true                  # project verbose (debug) logging feature de/activation
+    
+    liv-doc-repositories: '[
       {
         "organization-name": "fin-services",
         "repository-name": "investment-app",
@@ -98,9 +97,9 @@ See the full example of LivDoc regime step definition (in example are used non-d
         "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
       }
     ]'
-    liv-doc-project-state-mining: true        # project state mining feature de/activation
-    liv-doc-structured-output: true           # structured output feature de/activation
-    liv-doc-group-output-by-topics: true      # group output by topics feature de/activation
+    liv-doc-project-state-mining: true     # project state mining feature de/activation
+    liv-doc-structured-output: true        # structured output feature de/activation
+    liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
 ```
 
 ---
@@ -108,7 +107,7 @@ See the full example of LivDoc regime step definition (in example are used non-d
 
 Configure the LivDoc regime by customizing the following parameters based on your needs:
 
-### Inputs
+### Regime Inputs
 - **liv-doc-repositories** (optional, `default: '[]'`)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
   - **Usage**: List each repository with its organization name, repository name, query labels and attached projects you want to filter if any. Only projects with these titles will be considered. For no filtering projects, leave the list empty.
@@ -136,8 +135,6 @@ Configure the LivDoc regime by customizing the following parameters based on you
       }
     ]'
     ```
-
-### Features
 
 - **liv-doc-project-state-mining** (optional, `default: false`)
   - **Input description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).

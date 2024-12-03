@@ -15,10 +15,13 @@
 - [Run Black Tool Locally](#run-black-tool-locally)
 - [Run Unit Test](#run-unit-test)
 - [Code Coverage](#code-coverage)
-- [Deployment](#deployment)
+- [Releasing](#releasing)
+- [Support](#support)
+    - [How to Create a Token with Required Scope](#how-to-create-a-token-with-required-scope)
+    - [How to Store Token as a Secret](#how-to-store-token-as-a-secret)
 - [Contribution Guidelines](#contribution-guidelines)
-- [License Information](#license-information)
-- [Contact or Support Information](#contact-or-support-information)
+  - [License Information](#license-information)
+  - [Contact or Support Information](#contact-or-support-information)
 
 ![vision.jpg](img/vision.jpg)
 
@@ -48,15 +51,17 @@ See the default action step definition:
   id: generate_living_doc
   uses: AbsaOSS/living-doc-generator@v0.3.0
   env:
-    GITHUB-TOKEN: ${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}  
+    GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
-    # living documentation regime de/activation
+    # regimes de/activation
     liv-doc-regime: false
 ```
 
 See the default action step definitions for each regime:
 
 - [Living documentation regime default step definition](living_documentation_regime/README.md#adding-livdoc-regime-to-the-workflow)
+
+#### Full Example of Action Step Definition
 
 See the full example of action step definition (in example are used non-default values):
 
@@ -65,19 +70,12 @@ See the full example of action step definition (in example are used non-default 
   id: generate_living_doc
   uses: AbsaOSS/living-doc-generator@v0.3.0
   env:
-    GITHUB-TOKEN: ${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}  
+    GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
-    # living documentation regime de/activation
-    liv-doc-regime: true
-    
-    # project verbose (debug) logging feature de/activation
-    verbose-logging: true
-    
-    # output directory path for generated documentation
-    output-path: "/output/directory/path"
+    liv-doc-regime: true                   # living documentation regime de/activation
+    verbose-logging: true                  # project verbose (debug) logging feature de/activation
     
     # LivDoc Regime configuration
-    # input repositories + feature to filter projects
     liv-doc-repositories: '[
       {
         "organization-name": "fin-services",
@@ -98,15 +96,9 @@ See the full example of action step definition (in example are used non-default 
         "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
       }
     ]'
-
-    # project state mining feature de/activation
-    liv-doc-project-state-mining: true
-
-    # structured output feature de/activation
-    liv-doc-structured-output: true
-    
-    # group output by topics feature de/activation
-    liv-doc-group-output-by-topics: true
+    liv-doc-project-state-mining: true     # project state mining feature de/activation
+    liv-doc-structured-output: true        # structured output feature de/activation
+    liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
 ```
 
 ---
@@ -118,55 +110,22 @@ Configure the action by customizing the following parameters based on your needs
 
 ### Environment Variables
 
-- **LIV_DOC_GENERATOR_ACCESS_TOKEN** (required):
-  - **Description**: GitHub access token for authentication, that has a permission to fetch from requested repositories.
-  - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}`.
+- **REPOSITORIES_ACCESS_TOKEN**:
+  - **Description**: GitHub access token for authentication, in a case of mining the data from a closed repository, that has a permission to fetch from requested repositories.
+  - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.REPOSITORIES_ACCESS_TOKEN }}`.
   - **Example**:
     ```yaml
     env:
-      GITHUB-TOKEN: ${{ secrets.LIV_DOC_GENERATOR_ACCESS_TOKEN }}
+      GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}
     ```
 
-#### How to Create a Token with Required Scope
-
-1. Go to your GitHub account settings.
-2. Click on the `Developer settings` tab in the left sidebar.
-3. In the left sidebar, click on `Personal access tokens` and choose `Tokens (classic)`.
-4. Click on the `Generate new token` button and choose `Generate new token (classic)`.
-5. Optional - Add a note, what is token for and choose token expiration.
-6. Select ONLY bold scope options below:
-   - **workflow**
-   - write:packages
-     - **read:packages**
-   - admin:org
-     - **read:org**
-     - **manage_runners:org**
-   - admin:public_key
-     - **read:public_key**
-   - admin:repo_hook
-     - **read:repo_hook**
-   - admin:enterprise
-     - **manage_runners:enterprise**
-     - **read:enterprise**
-   - audit_log
-     - **read:audit_log**
-   - project
-     - **read:project**
-7. Copy the token value somewhere, because you won't be able to see it again.
-8. Authorize new token to organization you want to fetch from.
-    
-#### How to Store Token as a Secret
-
-1. Go to the GitHub repository, from which you want to run the GitHub Action.
-2. Click on the `Settings` tab in the top bar.
-3. In the left sidebar, click on `Secrets and variables` > `Actions`.
-4. Click on the `New repository secret` button.
-5. Name the token `LIV_DOC_GENERATOR_ACCESS_TOKEN` and paste the token value.
+The way how to generate and store a token into the GitHub repository secrets is described in the [support chapter](#how-to-create-a-token-with-required-scope).
 
 ### Inputs
 
-Regime-specific inputs are detailed in the respective regime's documentation:
-- [Living documentation regime specific inputs](living_documentation_regime/README.md#regime-configuration)
+In this GitHub action, there are two types of user inputs:
+- **Base Inputs**: Inputs that are common to all regimes.
+- **Regime Inputs**: Inputs that are specific to a particular regime.
 
 #### Base Inputs
 - **liv-doc-regime** (required)
@@ -186,6 +145,11 @@ Regime-specific inputs are detailed in the respective regime's documentation:
     with:
       verbose-logging: true
     ```
+    
+#### Regime Inputs
+
+Regime-specific inputs are detailed in the respective regime's documentation:
+- [Living documentation regime specific inputs](living_documentation_regime/README.md#regime-configuration)
     
 ---
 ## Action Outputs
@@ -245,13 +209,11 @@ Add the shebang line at the top of the sh script file.
 Set the configuration environment variables in the shell script following the structure below.
 The generator supports mining in multiple regimes, so you can use just the environment variables you need.
 Also make sure that the INPUT_GITHUB_TOKEN is configured in your environment variables.
-INPUT_OUTPUT_PATH can not be an empty string. It can not aim to the root and other project directories as well.
 ```
 # Essential environment variables for GitHub Action functionality
 export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
 export INPUT_LIV_DOC_REGIME=true
 export INPUT_VERBOSE_LOGGING=true
-export INPUT_OUTPUT_PATH="/output/directory/path"
 
 # Environment variables for LivDoc regime functionality
 export INPUT_LIV_DOC_REPOSITORIES='[
@@ -421,7 +383,7 @@ open htmlcov/index.html
 ```
 
 ---
-## Deployment
+## Releasing
 
 This project uses GitHub Actions for deployment draft creation. The deployment process is semi-automated by a workflow defined in `.github/workflows/release_draft.yml`.
 
@@ -431,7 +393,48 @@ This project uses GitHub Actions for deployment draft creation. The deployment p
 - **Publish the release**: Once the draft is ready, publish the release to make it available to the public.
 
 ---
+## Support
 
+This section aims to help the user walk through different processes, such as:
+- [Generating and storing a token as a secret](#how-to-create-a-token-with-required-scope)
+
+### How to Create a Token with Required Scope
+
+1. Go to your GitHub account settings.
+2. Click on the `Developer settings` tab in the left sidebar.
+3. In the left sidebar, click on `Personal access tokens` and choose `Tokens (classic)`.
+4. Click on the `Generate new token` button and choose `Generate new token (classic)`.
+5. Optional - Add a note, what is token for and choose token expiration.
+6. Select ONLY bold scope options below:
+   - **workflow**
+   - write:packages
+     - **read:packages**
+   - admin:org
+     - **read:org**
+     - **manage_runners:org**
+   - admin:public_key
+     - **read:public_key**
+   - admin:repo_hook
+     - **read:repo_hook**
+   - admin:enterprise
+     - **manage_runners:enterprise**
+     - **read:enterprise**
+   - audit_log
+     - **read:audit_log**
+   - project
+     - **read:project**
+7. Copy the token value somewhere, because you won't be able to see it again.
+8. Authorize new token to organization you want to fetch from.
+
+### How to Store Token as a Secret
+
+1. Go to the GitHub repository, from which you want to run the GitHub Action.
+2. Click on the `Settings` tab in the top bar.
+3. In the left sidebar, click on `Secrets and variables` > `Actions`.
+4. Click on the `New repository secret` button.
+5. Name the token `REPOSITORIES_ACCESS_TOKEN` and paste the token value.
+
+---
 ## Contribution Guidelines
 
 We welcome contributions to the Living Documentation Generator! Whether you're fixing bugs, improving documentation, or proposing new features, your help is appreciated.
