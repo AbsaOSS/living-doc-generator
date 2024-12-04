@@ -113,7 +113,7 @@ Configure the action by customizing the following parameters based on your needs
 ### Environment Variables
 
 - **REPOSITORIES_ACCESS_TOKEN**:
-  - **Description**: GitHub access token for authentication, in a case of mining the data from a closed repository, that has a permission to fetch from requested repositories.
+  - **Description**: GitHub access token for authentication, in a case of mining the data from a private repository, that has a permission to fetch from requested repositories.
   - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.REPOSITORIES_ACCESS_TOKEN }}`.
   - **Example**:
     ```yaml

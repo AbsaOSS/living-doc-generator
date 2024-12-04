@@ -1,7 +1,7 @@
 name: 'Living Documentation Generator'
 description: 'Generates living documentation from current state of user defined GitHub repositories.'
 inputs:
-  # General action inputs
+  # Base action inputs
   GITHUB-TOKEN:
     description: 'GitHub token for authentication.'
     required: true
@@ -13,7 +13,7 @@ inputs:
     required: false
     default: 'false'
 
-  # LivDoc-regime specific inputs
+  # LivDoc-regime action inputs
   liv-doc-repositories:
     description: 'JSON string defining the repositories to be included in the documentation generation.'
     required: false

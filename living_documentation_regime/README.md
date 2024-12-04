@@ -1,7 +1,7 @@
 # Living Documentation Regime
 
 - [Regime De/Activation](#regime-deactivation)
-- [Adding LivDoc Regime to the Workflow](#adding-livdoc-regime-to-the-workflow)
+- [Adding Living Documentation Regime to the Workflow](#adding-living-documentation-regime-to-the-workflow)
 - [Regime Configuration](#regime-configuration)
   - [Regime Inputs](#regime-inputs)
 - [Expected Output](#expected-output)
@@ -31,7 +31,7 @@ This regime is designed to data-mine GitHub repositories for [documentation tick
     ```
     
 ---
-## Adding LivDoc Regime to the Workflow
+## Adding Living Documentation Regime to the Workflow
 
 See the default minimal Living Documentation regime action step definition:
 
@@ -65,7 +65,7 @@ See the default minimal Living Documentation regime action step definition:
     ]'
 ```
 
-See the full example of LivDoc regime step definition (in example are used non-default values):
+See the full example of Living Documentation regime step definition (in example are used non-default values):
 
 ```yaml
 - name: Generate Living Documentation
@@ -105,7 +105,7 @@ See the full example of LivDoc regime step definition (in example are used non-d
 ---
 ## Regime Configuration
 
-Configure the LivDoc regime by customizing the following parameters based on your needs:
+Configure the Living Documentation regime by customizing the following parameters based on your needs:
 
 ### Regime Inputs
 - **liv-doc-repositories** (optional, `default: '[]'`)
@@ -169,7 +169,7 @@ Configure the LivDoc regime by customizing the following parameters based on you
 ---
 ## Expected Output
 
-The Living Documentation Generator in LivDoc regime is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
+The Living Documentation Generator in Living Documentation regime is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
 
 ### Index Page Example
 
@@ -293,7 +293,7 @@ This feature allows you to define which projects should be included in the livin
 
 The goal is to provide a straightforward view of all issues in a single table, making it easy to see the overall status and details of issues across repositories.
 
-The current output implementation is designed to work with the organization mdoc solution.
+The current output implementation is designed to work with the AbsaOSS [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer) solution.
 The presence of multiple _index.md files is necessary for the current solution to correctly generate the documentation structure.
 
 - **Activation**: This is a built-in feature, so it is always activated.
