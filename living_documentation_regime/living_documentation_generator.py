@@ -43,7 +43,7 @@ from utils.constants import (
     LINKED_TO_PROJECT_FALSE,
     TABLE_HEADER_WITH_PROJECT_DATA,
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
-    OUTPUT_PATH,
+    LIV_DOC_OUTPUT_PATH,
 )
 
 logger = logging.getLogger(__name__)
@@ -114,7 +114,7 @@ class LivingDocumentationGenerator:
 
         @return: None
         """
-        output_path = make_absolute_path(OUTPUT_PATH)
+        output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
 
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
@@ -288,7 +288,7 @@ class LivingDocumentationGenerator:
         topics = set()
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
-        output_path = make_absolute_path(OUTPUT_PATH)
+        output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
 
         # Load the template files for generating the Markdown pages
         (
@@ -512,7 +512,7 @@ class LivingDocumentationGenerator:
         sub_level_index_page = index_template.format(**replacement)
 
         # Create a sub index page file
-        output_path = os.path.join(make_absolute_path(OUTPUT_PATH), index_level_dir)
+        output_path = os.path.join(make_absolute_path(LIV_DOC_OUTPUT_PATH), index_level_dir)
         with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(sub_level_index_page)
 
@@ -648,7 +648,7 @@ class LivingDocumentationGenerator:
         @param topic: The topic used for grouping issues.
         @return: The generated directory path.
         """
-        output_path: str = make_absolute_path(OUTPUT_PATH)
+        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
 
         if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")

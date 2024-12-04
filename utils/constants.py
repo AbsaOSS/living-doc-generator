@@ -17,19 +17,21 @@
 """
 This module contains all constants used across the project.
 """
-# Default output path for the generated documentation
-OUTPUT_PATH = "./output"
-
-# Action inputs environment variables
+# Action inputs
 GITHUB_TOKEN = "GITHUB_TOKEN"
 PROJECT_STATE_MINING = "LIV_DOC_PROJECT_STATE_MINING"
 REPOSITORIES = "LIV_DOC_REPOSITORIES"
 STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
 GROUP_OUTPUT_BY_TOPICS = "LIV_DOC_GROUP_OUTPUT_BY_TOPICS"
 
-# Mining Regimes
+# Mining regimes
 LIV_DOC_REGIME = "LIV_DOC_REGIME"
 # CI_REGIME = "CI_REGIME"
+
+# Regime output paths
+OUTPUT_PATH = "./output"
+LIV_DOC_OUTPUT_PATH = "./output/liv-doc-regime"
+# CI_OUTPUT_PATH = "./output/ci-regime"
 
 # GitHub API constants
 ISSUES_PER_PAGE_LIMIT = 100
@@ -113,7 +115,6 @@ TABLE_HEADER_WITHOUT_PROJECT_DATA = """
 | Organization name | Repository name | Issue 'Number - Title' | Issue state | Issue URL |
 |-------------------|-----------------|------------------------|-------------|-----------|
 """
-
 
 # Symbol, when no project is attached to an issue
 NO_PROJECT_DATA = "---"
