@@ -91,16 +91,6 @@ def validate_query_format(query_string, expected_placeholders) -> None:
         sys.exit(1)
 
 
-def get_all_project_directories(path: str = ".") -> list[str]:
-    """
-    Get all directories in the project starting from the specified path.
-
-    @param path: The path to start searching for directories.
-    @return: A list of all directories in the project.
-    """
-    return [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
-
 def generate_root_level_index_page(index_root_level_page: str, output_path: str) -> None:
     """
     Generate the root level index page for the output living documentation.
