@@ -24,9 +24,10 @@ from typing import Optional
 
 from github.Issue import Issue
 
-from living_documentation_generator.action_inputs import ActionInputs
-from living_documentation_generator.utils.utils import sanitize_filename
-from living_documentation_generator.model.project_status import ProjectStatus
+from living_documentation_regime.action_inputs import ActionInputs
+from living_documentation_regime.model.project_status import ProjectStatus
+from utils.constants import LIV_DOC_OUTPUT_PATH
+from utils.utils import sanitize_filename, make_absolute_path
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +178,7 @@ class ConsolidatedIssue:
         @param issue_table: The consolidated issue summary table.
         @return: The list of generated directory paths.
         """
-        output_path = ActionInputs.get_output_directory()
+        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
 
         # If structured output is enabled, create a directory path based on the repository
         if ActionInputs.get_is_structured_output_enabled() and self.repository_id:

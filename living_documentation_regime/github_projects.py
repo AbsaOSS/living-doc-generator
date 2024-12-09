@@ -23,9 +23,9 @@ import requests
 
 from github.Repository import Repository
 
-from living_documentation_generator.model.github_project import GithubProject
-from living_documentation_generator.model.project_issue import ProjectIssue
-from living_documentation_generator.utils.github_project_queries import (
+from living_documentation_regime.model.github_project import GithubProject
+from living_documentation_regime.model.project_issue import ProjectIssue
+from utils.github_project_queries import (
     get_projects_from_repo_query,
     get_project_field_options_query,
     get_issues_from_project_query,

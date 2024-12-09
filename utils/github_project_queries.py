@@ -18,8 +18,8 @@
 This module contains methods for formating the GitHub GraphQL queries.
 """
 
-from living_documentation_generator.utils.utils import validate_query_format
-from living_documentation_generator.utils.constants import (
+from utils.utils import validate_query_format
+from utils.constants import (
     PROJECTS_FROM_REPO_QUERY,
     ISSUES_FROM_PROJECT_QUERY,
     PROJECT_FIELD_OPTIONS_QUERY,

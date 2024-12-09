@@ -18,7 +18,7 @@
 This module contains a data container for issue Project Status.
 """
 
-from living_documentation_generator.utils.constants import NO_PROJECT_DATA
+from utils.constants import NO_PROJECT_DATA
 
 
 class ProjectStatus:

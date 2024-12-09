@@ -15,7 +15,7 @@
 #
 import requests
 
-from living_documentation_generator.github_projects import GithubProjects
+from living_documentation_regime.github_projects import GithubProjects
 
 
 # _send_graphql_query
@@ -47,7 +47,7 @@ def test_send_graphql_query_http_error(mocker):
         "_GithubProjects__initialize_request_session",
         lambda self: setattr(self, "_GithubProjects__session", mock_session),
     )
-    mock_log_error = mocker.patch("living_documentation_generator.github_projects.logger.error")
+    mock_log_error = mocker.patch("living_documentation_regime.github_projects.logger.error")
     mock_session.post.side_effect = requests.HTTPError("HTTP error occurred")
 
     actual = GithubProjects("token123")._send_graphql_query("query")
@@ -63,7 +63,7 @@ def test_send_graphql_query_request_exception(mocker):
         "_GithubProjects__initialize_request_session",
         lambda self: setattr(self, "_GithubProjects__session", mock_session),
     )
-    mock_log_error = mocker.patch("living_documentation_generator.github_projects.logger.error")
+    mock_log_error = mocker.patch("living_documentation_regime.github_projects.logger.error")
     mock_session.post.side_effect = requests.RequestException("An error occurred.")
 
     actual = GithubProjects("token123")._send_graphql_query("query")
@@ -79,14 +79,14 @@ def test_get_repository_projects_correct_behaviour(mocker, repository_setup):
     # Arrange
     mock_repository = repository_setup()
     projects_title_filter = ["Project A"]
-    mock_logger_debug = mocker.patch("living_documentation_generator.github_projects.logger.debug")
+    mock_logger_debug = mocker.patch("living_documentation_regime.github_projects.logger.debug")
 
     mocker.patch(
-        "living_documentation_generator.github_projects.get_projects_from_repo_query",
+        "living_documentation_regime.github_projects.get_projects_from_repo_query",
         return_value="mocked_projects_query",
     )
     mocker.patch(
-        "living_documentation_generator.github_projects.get_project_field_options_query",
+        "living_documentation_regime.github_projects.get_project_field_options_query",
         return_value="mocked_project_field_options_query",
     )
     mock_send_query = mocker.patch.object(GithubProjects, "_send_graphql_query")
@@ -99,7 +99,7 @@ def test_get_repository_projects_correct_behaviour(mocker, repository_setup):
         {"data": {}},
     ]
 
-    mock_github_project = mocker.patch("living_documentation_generator.github_projects.GithubProject")
+    mock_github_project = mocker.patch("living_documentation_regime.github_projects.GithubProject")
     mock_github_project_instance = mock_github_project.return_value
     mock_github_project_instance.loads.return_value = mock_github_project_instance
 
@@ -120,14 +120,14 @@ def test_get_repository_projects_correct_behaviour(mocker, repository_setup):
 def test_get_repository_projects_response_none(mocker, repository_setup):
     # Arrange
     mock_repository = repository_setup()
-    mock_logger_warning = mocker.patch("living_documentation_generator.github_projects.logger.warning")
+    mock_logger_warning = mocker.patch("living_documentation_regime.github_projects.logger.warning")
 
     mocker.patch(
-        "living_documentation_generator.github_projects.get_projects_from_repo_query",
+        "living_documentation_regime.github_projects.get_projects_from_repo_query",
         return_value="mocked_projects_query",
     )
     mocker.patch(
-        "living_documentation_generator.github_projects.get_project_field_options_query",
+        "living_documentation_regime.github_projects.get_project_field_options_query",
         return_value="mocked_project_field_options_query",
     )
     mock_send_query = mocker.patch.object(GithubProjects, "_send_graphql_query", return_value=None)
@@ -147,14 +147,14 @@ def test_get_repository_projects_response_none(mocker, repository_setup):
 def test_get_repository_projects_response_nodes_none(mocker, repository_setup):
     # Arrange
     mock_repository = repository_setup()
-    mock_logger_warning = mocker.patch("living_documentation_generator.github_projects.logger.warning")
+    mock_logger_warning = mocker.patch("living_documentation_regime.github_projects.logger.warning")
 
     mocker.patch(
-        "living_documentation_generator.github_projects.get_projects_from_repo_query",
+        "living_documentation_regime.github_projects.get_projects_from_repo_query",
         return_value="mocked_projects_query",
     )
     mocker.patch(
-        "living_documentation_generator.github_projects.get_project_field_options_query",
+        "living_documentation_regime.github_projects.get_project_field_options_query",
         return_value="mocked_project_field_options_query",
     )
     mock_send_query = mocker.patch.object(
@@ -176,10 +176,10 @@ def test_get_repository_projects_response_nodes_none(mocker, repository_setup):
 
 def test_get_project_issues_correct_behaviour(mocker, github_project_setup):
     mock_project = github_project_setup()
-    mock_logger_debug = mocker.patch("living_documentation_generator.github_projects.logger.debug")
+    mock_logger_debug = mocker.patch("living_documentation_regime.github_projects.logger.debug")
 
     mocker.patch(
-        "living_documentation_generator.github_projects.get_issues_from_project_query",
+        "living_documentation_regime.github_projects.get_issues_from_project_query",
         return_value="mocked_issues_query",
     )
 
@@ -203,7 +203,7 @@ def test_get_project_issues_correct_behaviour(mocker, github_project_setup):
         },
     ]
 
-    mock_project_issue = mocker.patch("living_documentation_generator.github_projects.ProjectIssue")
+    mock_project_issue = mocker.patch("living_documentation_regime.github_projects.ProjectIssue")
     mock_project_issue_instance = mock_project_issue.return_value
     mock_project_issue_instance.loads.side_effect = lambda issue_data, proj: issue_data if issue_data else None
 
@@ -231,7 +231,7 @@ def test_get_project_issues_no_response(mocker, github_project_setup):
     mock_project = github_project_setup()
 
     mocker.patch(
-        "living_documentation_generator.github_projects.get_issues_from_project_query",
+        "living_documentation_regime.github_projects.get_issues_from_project_query",
         return_value="mocked_issues_query",
     )
     mock_send_query = mocker.patch.object(GithubProjects, "_send_graphql_query", return_value=None)

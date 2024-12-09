@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from living_documentation_generator.model.config_repository import ConfigRepository
+from living_documentation_regime.model.config_repository import ConfigRepository
 
 
 def test_load_from_json_with_valid_input_loads_correctly():
@@ -43,7 +43,7 @@ def test_load_from_json_with_valid_input_loads_correctly():
 
 def test_load_from_json_with_missing_key_logs_error(mocker):
     config_repository = ConfigRepository()
-    mock_log_error = mocker.patch("living_documentation_generator.model.config_repository.logger.error")
+    mock_log_error = mocker.patch("living_documentation_regime.model.config_repository.logger.error")
     repository_json = {"non-existent-key": "value"}
 
     actual = config_repository.load_from_json(repository_json)
@@ -56,7 +56,7 @@ def test_load_from_json_with_missing_key_logs_error(mocker):
 
 def test_load_from_json_with_wrong_structure_input_logs_error(mocker):
     config_repository = ConfigRepository()
-    mock_log_error = mocker.patch("living_documentation_generator.model.config_repository.logger.error")
+    mock_log_error = mocker.patch("living_documentation_regime.model.config_repository.logger.error")
     repository_json = "not a dictionary"
 
     actual = config_repository.load_from_json(repository_json)
