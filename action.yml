@@ -63,7 +63,7 @@ runs:
 
         # Add LivDoc-specific env variables if the regime is enabled
         if [[ "${{ inputs.liv-doc-regime }}" == "true" ]]; then
-          echo "INPUT_LIV_DOC_REPOSITORIES=${{ inputs.liv-doc-repositories }}" >> $GITHUB_ENV
+          echo "INPUT_LIV_DOC_REPOSITORIES=$(echo '${{ inputs.liv-doc-repositories }}' | jq -c .)" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_PROJECT_STATE_MINING=${{ inputs.liv-doc-project-state-mining }}" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_STRUCTURED_OUTPUT=${{ inputs.liv-doc-structured-output }}" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=${{ inputs.liv-doc-group-output-by-topics }}" >> $GITHUB_ENV
