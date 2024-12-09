@@ -70,11 +70,6 @@ runs:
         fi
       shell: bash
 
-    - name: Print INPUT_GITHUB_TOKEN
-      run: |
-        echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB-TOKEN }}"
-      shell: bash
-
     - name: Run Living Documentation Generator
       id: liv-doc-generator
       env:
