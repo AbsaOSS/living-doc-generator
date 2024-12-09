@@ -77,28 +77,27 @@ See the full example of action step definition (in example are used non-default 
     liv-doc-regime: true                   # living documentation regime de/activation
     verbose-logging: true                  # project verbose (debug) logging feature de/activation
     
-    # Living Documentation Regime configuration
-    liv-doc-repositories: |
-            [
-              {
-                "organization-name": "fin-services",
-                "repository-name": "investment-app",
-                "query-labels": ["feature", "enhancement"],
-                "projects-title-filter": []
-              },
-              {
-                "organization-name": "health-analytics",
-                "repository-name": "patient-data-analysis",
-                "query-labels": ["functionality"],
-                "projects-title-filter": ["Health Data Analysis Project"]
-              },
-              {
-                "organization-name": "open-source-initiative",
-                "repository-name": "community-driven-project",
-                "query-labels": ["improvement"],
-                "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
-              }
-            ]
+    # LivDoc Regime configuration
+    liv-doc-repositories: '[
+      {
+        "organization-name": "fin-services",
+        "repository-name": "investment-app",
+        "query-labels": ["feature", "enhancement"],
+        "projects-title-filter": []
+      },
+      {
+        "organization-name": "health-analytics",
+        "repository-name": "patient-data-analysis",
+        "query-labels": ["functionality"],
+        "projects-title-filter": ["Health Data Analysis Project"]
+      },
+      {
+        "organization-name": "open-source-initiative",
+        "repository-name": "community-driven-project",
+        "query-labels": ["improvement"],
+        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
+      }
+    ]'
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
@@ -114,7 +113,7 @@ Configure the action by customizing the following parameters based on your needs
 ### Environment Variables
 
 - **REPOSITORIES_ACCESS_TOKEN**:
-  - **Description**: GitHub access token for authentication, that has a permission to access all defined repositories / projects.
+  - **Description**: GitHub access token for authentication, in a case of mining the data from a private repository, that has a permission to fetch from requested repositories.
   - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.REPOSITORIES_ACCESS_TOKEN }}`.
   - **Example**:
     ```yaml
@@ -218,7 +217,7 @@ export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
 export INPUT_LIV_DOC_REGIME=true
 export INPUT_VERBOSE_LOGGING=true
 
-# Environment variables for Living Documentation regime functionality
+# Environment variables for LivDoc regime functionality
 export INPUT_LIV_DOC_REPOSITORIES='[
             {
               "organization-name": "Organization Name",
@@ -234,9 +233,13 @@ export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
 
 ### Running the script locally
 
-For running the GitHub action incorporate this command into the shell script and save it.
+For running the GitHub action incorporate these commands into the shell script and save it.
 ```
+cd src || exit 1
+
 python3 main.py
+
+cd .. || exit 1
 ```
 
 ### Make the Script Executable
