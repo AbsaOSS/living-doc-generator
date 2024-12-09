@@ -56,23 +56,18 @@ runs:
 
     - name: Prepare environment based on mining regimes
       run: |
-      # Set base env variables common for all regimes
+        # Set base env variables common for all regimes
         echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB-TOKEN }}" >> $GITHUB_ENV
         echo "INPUT_LIV_DOC_REGIME=${{ inputs.liv-doc-regime }}" >> $GITHUB_ENV
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
 
-      # Add LivDoc-specific env variables if the regime is enabled
+        # Add LivDoc-specific env variables if the regime is enabled
         if [[ "${{ inputs.liv-doc-regime }}" == "true" ]]; then
           echo "INPUT_LIV_DOC_REPOSITORIES=${{ inputs.liv-doc-repositories }}" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_PROJECT_STATE_MINING=${{ inputs.liv-doc-project-state-mining }}" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_STRUCTURED_OUTPUT=${{ inputs.liv-doc-structured-output }}" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=${{ inputs.liv-doc-group-output-by-topics }}" >> $GITHUB_ENV
         fi
-
-#      # Add CI-specific environment variables if the regime is enabled
-#        if [[ "${{ inputs.ci-regime }}" == "true" ]]; then
-#          echo "INPUT_CI_ENV_VAR=${{ inputs.ci_env_var }}" >> $GITHUB_ENV
-#        fi
       shell: bash
 
     - name: Run Living Documentation Generator
