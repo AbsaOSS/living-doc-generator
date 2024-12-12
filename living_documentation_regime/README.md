@@ -71,7 +71,7 @@ See the full example of Living Documentation regime step definition (in example 
   with:
     liv-doc-regime: true                   # living documentation regime de/activation
     verbose-logging: true                  # project verbose (debug) logging feature de/activation
-    
+
     liv-doc-repositories: |
         [
           {
