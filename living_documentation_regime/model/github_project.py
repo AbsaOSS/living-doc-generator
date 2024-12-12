@@ -38,6 +38,12 @@ class GithubProject:
         self.__organization_name: str = ""
         self.__field_options: dict[str, str] = {}
 
+    def __repr__(self) -> str:
+        """String representation of the GitHub project."""
+        return "\nGithubProject(id={}, number={}, title={}, organization_name={})".format(
+            self.id, self.number, self.title, self.organization_name
+        )
+
     @property
     def id(self) -> str:
         """Getter of the project ID."""

@@ -21,8 +21,8 @@ import logging
 
 from typing import Optional
 
-from living_documentation_generator.model.github_project import GithubProject
-from living_documentation_generator.model.project_status import ProjectStatus
+from living_documentation_regime.model.github_project import GithubProject
+from living_documentation_regime.model.project_status import ProjectStatus
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,12 @@ class ProjectIssue:
         self.__organization_name: str = ""
         self.__repository_name: str = ""
         self.__project_status: ProjectStatus = ProjectStatus()
+
+    def __repr__(self) -> str:
+        """String representation of the ProjectIssue object."""
+        return "\nProjectIssue(number={}, organization_name={}, repository_name={})".format(
+            self.number, self.organization_name, self.repository_name
+        )
 
     @property
     def number(self) -> int:
@@ -76,7 +82,7 @@ class ProjectIssue:
             self.__repository_name = issue_json["content"]["repository"]["name"]
             self.__organization_name = issue_json["content"]["repository"]["owner"]["login"]
         except KeyError as e:
-            logger.debug("KeyError(%s) occurred while parsing issue json: %s.", str(e), issue_json)
+            logger.debug("An issue for key %s occurred while parsing issue json: %s.", str(e), issue_json)
 
         self.__project_status.project_title = project.title
 

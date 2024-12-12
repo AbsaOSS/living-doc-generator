@@ -99,8 +99,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-      - name: Set PYTHONPATH environment variable
-        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}/living_documentation_generator/living_documentation_generator" >> $GITHUB_ENV
 
       - name: Check code coverage with Pytest
         run: pytest --cov=. -v tests/ --cov-fail-under=80

@@ -21,19 +21,17 @@ which are essential for running the GH action.
 
 import json
 import logging
-import os
 import sys
 
-from living_documentation_generator.model.config_repository import ConfigRepository
-from living_documentation_generator.utils.utils import get_action_input, make_absolute_path, get_all_project_directories
-from living_documentation_generator.utils.constants import (
+from living_documentation_regime.model.config_repository import ConfigRepository
+from utils.utils import get_action_input
+from utils.constants import (
     GITHUB_TOKEN,
+    LIV_DOC_REGIME,
     PROJECT_STATE_MINING,
     REPOSITORIES,
     GROUP_OUTPUT_BY_TOPICS,
     STRUCTURED_OUTPUT,
-    OUTPUT_PATH,
-    DEFAULT_OUTPUT_PATH,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,6 +50,14 @@ class ActionInputs:
         @return: The GitHub authorization token.
         """
         return get_action_input(GITHUB_TOKEN)
+
+    @staticmethod
+    def get_liv_doc_regime() -> bool:
+        """
+        Getter of the LivDoc regime switch.
+        @return: True if LivDoc regime is enabled, False otherwise.
+        """
+        return get_action_input(LIV_DOC_REGIME, "false").lower() == "true"
 
     @staticmethod
     def get_is_project_state_mining_enabled() -> bool:
@@ -107,48 +113,15 @@ class ActionInputs:
 
         return repositories
 
-    @staticmethod
-    def get_output_directory() -> str:
-        """Getter of the output directory."""
-        out_path = get_action_input(OUTPUT_PATH, default=DEFAULT_OUTPUT_PATH)
-        return make_absolute_path(out_path)
-
-    @staticmethod
-    def validate_inputs(out_path: str) -> None:
+    def validate_inputs(self) -> None:
         """
         Loads the inputs provided for the Living documentation generator.
         Logs any validation errors and exits if any are found.
 
-        @param out_path: The output path for the generated documentation.
         @return: None
         """
 
         # Validate INPUT_REPOSITORIES
-        ActionInputs.get_repositories()
-
-        # Validate INPUT_OUTPUT_PATH
-        if out_path == "":
-            logger.error("INPUT_OUTPUT_PATH can not be an empty string.")
-            sys.exit(1)
-
-        # Check that the INPUT_OUTPUT_PATH is not a project directory
-        # Note: That would cause a rewriting project files
-        project_directories = get_all_project_directories()
-        abspath_user_output_path = os.path.abspath(ActionInputs.get_output_directory())
-
-        # Ensure project directories are absolute paths
-        project_abspath_directories = [os.path.abspath(d) for d in project_directories]
-
-        if abspath_user_output_path in project_abspath_directories:
-            project_abspath_directories.remove(abspath_user_output_path)
-
-        for project_directory in project_abspath_directories:
-            # Finds the common path between the absolute paths of out_path and project_directory
-            common_path = os.path.commonpath([os.path.abspath(out_path), os.path.abspath(project_directory)])
-
-            # Check if common path is equal to the absolute path of project_directory
-            if common_path == os.path.abspath(project_directory):
-                logger.error("INPUT_OUTPUT_PATH cannot be chosen as a part of any project folder.")
-                sys.exit(1)
+        self.get_repositories()
 
         logger.debug("Action inputs validation successfully completed.")

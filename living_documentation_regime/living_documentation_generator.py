@@ -28,21 +28,22 @@ from typing import Callable, Optional
 from github import Github, Auth
 from github.Issue import Issue
 
-from living_documentation_generator.action_inputs import ActionInputs
-from living_documentation_generator.github_projects import GithubProjects
-from living_documentation_generator.model.github_project import GithubProject
-from living_documentation_generator.model.consolidated_issue import ConsolidatedIssue
-from living_documentation_generator.model.project_issue import ProjectIssue
-from living_documentation_generator.utils.decorators import safe_call_decorator
-from living_documentation_generator.utils.github_rate_limiter import GithubRateLimiter
-from living_documentation_generator.utils.utils import make_issue_key, generate_root_level_index_page, load_template
-from living_documentation_generator.utils.constants import (
+from living_documentation_regime.action_inputs import ActionInputs
+from living_documentation_regime.github_projects import GithubProjects
+from living_documentation_regime.model.github_project import GithubProject
+from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
+from living_documentation_regime.model.project_issue import ProjectIssue
+from utils.decorators import safe_call_decorator
+from utils.github_rate_limiter import GithubRateLimiter
+from utils.utils import make_issue_key, generate_root_level_index_page, load_template, make_absolute_path
+from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
     ISSUE_STATE_ALL,
     LINKED_TO_PROJECT_TRUE,
     LINKED_TO_PROJECT_FALSE,
     TABLE_HEADER_WITH_PROJECT_DATA,
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
+    LIV_DOC_OUTPUT_PATH,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,21 +57,14 @@ class LivingDocumentationGenerator:
     """
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+    TEMPLATES_BASE_PATH = os.path.join(PROJECT_ROOT, os.pardir, "templates", "living_documentation_regime")
 
-    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "issue_detail_page_template.md")
-    INDEX_NO_STRUCT_TEMPLATE_FILE = os.path.join(
-        PROJECT_ROOT, os.pardir, "templates", "_index_no_struct_page_template.md"
-    )
-    INDEX_ROOT_LEVEL_TEMPLATE_FILE = os.path.join(
-        PROJECT_ROOT, os.pardir, "templates", "_index_root_level_page_template.md"
-    )
-    INDEX_ORG_LEVEL_TEMPLATE_FILE = os.path.join(
-        PROJECT_ROOT, os.pardir, "templates", "_index_org_level_page_template.md"
-    )
-    INDEX_DATA_LEVEL_TEMPLATE_FILE = os.path.join(
-        PROJECT_ROOT, os.pardir, "templates", "_index_data_level_page_template.md"
-    )
-    INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(PROJECT_ROOT, os.pardir, "templates", "_index_repo_page_template.md")
+    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "issue_detail_page_template.md")
+    INDEX_NO_STRUCT_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_no_struct_page_template.md")
+    INDEX_ROOT_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_root_level_page_template.md")
+    INDEX_ORG_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_org_level_page_template.md")
+    INDEX_DATA_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_data_level_page_template.md")
+    INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_repo_page_template.md")
 
     def __init__(self):
         github_token = ActionInputs.get_github_token()
@@ -120,7 +114,7 @@ class LivingDocumentationGenerator:
 
         @return: None
         """
-        output_path = ActionInputs.get_output_directory()
+        output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
 
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
@@ -294,7 +288,7 @@ class LivingDocumentationGenerator:
         topics = set()
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
-        output_path = ActionInputs.get_output_directory()
+        output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
 
         # Load the template files for generating the Markdown pages
         (
@@ -518,7 +512,7 @@ class LivingDocumentationGenerator:
         sub_level_index_page = index_template.format(**replacement)
 
         # Create a sub index page file
-        output_path = os.path.join(ActionInputs.get_output_directory(), index_level_dir)
+        output_path = os.path.join(make_absolute_path(LIV_DOC_OUTPUT_PATH), index_level_dir)
         with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(sub_level_index_page)
 
@@ -654,7 +648,7 @@ class LivingDocumentationGenerator:
         @param topic: The topic used for grouping issues.
         @return: The generated directory path.
         """
-        output_path: str = ActionInputs.get_output_directory()
+        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
 
         if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
