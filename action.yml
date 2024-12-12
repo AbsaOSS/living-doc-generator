@@ -2,7 +2,7 @@ name: 'Living Documentation Generator'
 description: 'Generates living documentation from current state of user defined GitHub repositories.'
 inputs:
   # Base action inputs
-  GITHUB-TOKEN:
+  GITHUB_TOKEN:
     description: 'GitHub token for authentication.'
     required: true
   liv-doc-regime:
@@ -57,7 +57,7 @@ runs:
     - name: Prepare environment based on mining regimes
       run: |
         # Set base env variables common for all regimes
-        echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB-TOKEN }}" >> $GITHUB_ENV
+        echo "INPUT_GITHUB_TOKEN=${{ inputs.GITHUB_TOKEN }}" >> $GITHUB_ENV
         echo "INPUT_LIV_DOC_REGIME=${{ inputs.liv-doc-regime }}" >> $GITHUB_ENV
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
 
