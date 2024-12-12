@@ -29,7 +29,7 @@
 
 ## Motivation
 
-Addresses the need for continuously updated documentation accessible to all team members and stakeholders. Achieves this by extracting information directly from GitHub issues and integrating this functionality to deliver real-time, markdown-formatted output. Ensures everyone has the most current project details, fostering better communication and efficiency throughout development.
+Addresses the need for continuously updated documentation accessible to all team members and stakeholders. Achieves this by extracting information directly from GitHub issues and integrating this functionality to deliver real-time, mdoc viewer capable formatted output. Ensures everyone has the most current project details, fostering better communication and efficiency throughout development.
 
 ---
 ## Mining Regimes
@@ -78,26 +78,27 @@ See the full example of action step definition (in example are used non-default 
     verbose-logging: true                  # project verbose (debug) logging feature de/activation
     
     # LivDoc Regime configuration
-    liv-doc-repositories: '[
-      {
-        "organization-name": "fin-services",
-        "repository-name": "investment-app",
-        "query-labels": ["feature", "enhancement"],
-        "projects-title-filter": []
-      },
-      {
-        "organization-name": "health-analytics",
-        "repository-name": "patient-data-analysis",
-        "query-labels": ["functionality"],
-        "projects-title-filter": ["Health Data Analysis Project"]
-      },
-      {
-        "organization-name": "open-source-initiative",
-        "repository-name": "community-driven-project",
-        "query-labels": ["improvement"],
-        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
-      }
-    ]'
+    liv-doc-repositories: |
+        [
+          {
+            "organization-name": "fin-services",
+            "repository-name": "investment-app",
+            "query-labels": ["feature", "enhancement"],
+            "projects-title-filter": []
+          },
+          {
+            "organization-name": "health-analytics",
+            "repository-name": "patient-data-analysis",
+            "query-labels": ["functionality"],
+            "projects-title-filter": ["Health Data Analysis Project"]
+          },
+          {
+            "organization-name": "open-source-initiative",
+            "repository-name": "community-driven-project",
+            "query-labels": ["improvement"],
+            "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
+          }
+        ]
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
@@ -235,11 +236,7 @@ export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
 
 For running the GitHub action incorporate these commands into the shell script and save it.
 ```
-cd src || exit 1
-
 python3 main.py
-
-cd .. || exit 1
 ```
 
 ### Make the Script Executable
