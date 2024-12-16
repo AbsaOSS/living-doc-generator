@@ -18,6 +18,7 @@ from living_documentation_regime.model.config_repository import ConfigRepository
 
 
 def test_load_from_json_with_valid_input_loads_correctly():
+    # Arrange
     config_repository = ConfigRepository()
     organization_name = "organizationABC"
     repository_name = "repositoryABC"
@@ -32,8 +33,10 @@ def test_load_from_json_with_valid_input_loads_correctly():
         "other-field": other_value,
     }
 
+    # Act
     actual = config_repository.load_from_json(repository_json)
 
+    # Assert
     assert actual
     assert organization_name == config_repository.organization_name
     assert repository_name == config_repository.repository_name
@@ -41,13 +44,37 @@ def test_load_from_json_with_valid_input_loads_correctly():
     assert projects_title_filter == config_repository.projects_title_filter
 
 
-def test_load_from_json_with_missing_key_logs_error(mocker):
+def test_load_from_json_with_valid_input_check_default_values():
+    # Arrange
     config_repository = ConfigRepository()
-    mock_log_error = mocker.patch("living_documentation_regime.model.config_repository.logger.error")
-    repository_json = {"non-existent-key": "value"}
+    organization_name = "organizationABC"
+    repository_name = "repositoryABC"
+    repository_json = {
+        "organization-name": organization_name,
+        "repository-name": repository_name
+    }
 
+    # Act
     actual = config_repository.load_from_json(repository_json)
 
+    # Assert
+    assert actual
+    assert organization_name == config_repository.organization_name
+    assert repository_name == config_repository.repository_name
+    assert [] == config_repository.query_labels
+    assert [] == config_repository.projects_title_filter
+
+
+def test_load_from_json_with_missing_key_logs_error(mocker):
+    # Arrange
+    config_repository = ConfigRepository()
+    repository_json = {"non-existent-key": "value"}
+    mock_log_error = mocker.patch("living_documentation_regime.model.config_repository.logger.error")
+
+    # Act
+    actual = config_repository.load_from_json(repository_json)
+
+    # Assert
     assert actual is False
     mock_log_error.assert_called_once_with(
         "The key is not found in the repository JSON input: %s.", mocker.ANY, exc_info=True
@@ -55,12 +82,15 @@ def test_load_from_json_with_missing_key_logs_error(mocker):
 
 
 def test_load_from_json_with_wrong_structure_input_logs_error(mocker):
+    # Arrange
     config_repository = ConfigRepository()
-    mock_log_error = mocker.patch("living_documentation_regime.model.config_repository.logger.error")
     repository_json = "not a dictionary"
+    mock_log_error = mocker.patch("living_documentation_regime.model.config_repository.logger.error")
 
+    # Act
     actual = config_repository.load_from_json(repository_json)
 
+    # Assert
     assert actual is False
     mock_log_error.assert_called_once_with(
         "The repository JSON input does not have a dictionary structure: %s.", mocker.ANY, exc_info=True
