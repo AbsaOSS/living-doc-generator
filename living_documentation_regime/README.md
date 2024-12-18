@@ -38,7 +38,7 @@ See the default minimal Living Documentation regime action step definition:
 ```yaml
 - name: Generate Living Documentation
   id: generate_living_doc
-  uses: AbsaOSS/living-doc-generator@v0.3.0
+  uses: AbsaOSS/living-doc-generator@v0.4.0
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
@@ -47,15 +47,7 @@ See the default minimal Living Documentation regime action step definition:
         [
           {
             "organization-name": "fin-services",
-            "repository-name": "investment-app",
-            "query-labels": ["feature", "enhancement"],
-            "projects-title-filter": []
-          },
-          {
-            "organization-name": "health-analytics",
-            "repository-name": "patient-data-analysis",
-            "query-labels": ["functionality"],
-            "projects-title-filter": ["Health Data Analysis Project"]
+            "repository-name": "investment-app"
           }
         ]
 ```
@@ -65,7 +57,7 @@ See the full example of Living Documentation regime step definition (in example 
 ```yaml
 - name: Generate Living Documentation
   id: generate_living_doc
-  uses: AbsaOSS/living-doc-generator@v0.3.0
+  uses: AbsaOSS/living-doc-generator@v0.4.0
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
@@ -100,7 +92,7 @@ Configure the Living Documentation regime by customizing the following parameter
 ### Regime Inputs
 - **liv-doc-repositories** (optional, `default: '[]'`)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
-  - **Usage**: List each repository with its organization name, repository name, query labels and attached projects you want to filter if any. Only projects with these titles will be considered. For no filtering projects, leave the list empty.
+  - **Usage**: Provide a list of repositories including the organization name, repository name, query labels, and any attached projects you wish to filter. The query-labels and projects-title-filter parameters are optional. Only issues with the specified labels and projects will be fetched. To fetch all issues (all labels), either omit these parameters or leave the lists empty.
   - **Example**:
     ```yaml
     with:
@@ -109,13 +101,11 @@ Configure the Living Documentation regime by customizing the following parameter
           {
             "organization-name": "fin-services",
             "repository-name": "investment-app",
-            "query-labels": ["feature", "enhancement"],
-            "projects-title-filter": []
+            "query-labels": ["feature", "enhancement"]
           },
           {
             "organization-name": "open-source-initiative",
             "repository-name": "community-driven-project",
-            "query-labels": ["improvement"],
             "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
           }
         ]
