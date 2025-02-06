@@ -200,18 +200,12 @@ class ConsolidatedIssue:
             # If no label ends with "Topic", create a "NoTopic" issue directory path
             if not topic_labels:
                 self.__topics = ["NoTopic"]
-                logger.error("No Topic label found for Issue #%i: %s (%s)", self.number, self.title, self.repository_id)
+                self.__error = "No Topic label found."
                 no_topic_path = os.path.join(output_path, "NoTopic")
                 return [no_topic_path]
 
             if len(topic_labels) > 1:
-                logger.debug(
-                    "Multiple Topic labels found for Issue #%s: %s (%s): %s",
-                    self.number,
-                    self.title,
-                    self.repository_id,
-                    ", ".join(topic_labels),
-                )
+                self.__error = "More than one Topic label found."
 
             # Generate a directory path based on a Topic label
             for topic_label in topic_labels:
