@@ -41,8 +41,10 @@ class ProjectIssue:
 
     def __repr__(self) -> str:
         """String representation of the ProjectIssue object."""
-        return "\nProjectIssue(number={}, organization_name={}, repository_name={})".format(
-            self.number, self.organization_name, self.repository_name
+        return (
+            f"\nProjectIssue(number={self.number}, "
+            f"organization_name={self.organization_name}, "
+            f"repository_name={self.repository_name})"
         )
 
     @property
