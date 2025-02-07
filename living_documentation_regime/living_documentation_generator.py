@@ -339,18 +339,20 @@ class LivingDocumentationGenerator:
             self._generate_index_page(index_page_template, issues)
             logger.info("Markdown page generation - generated `_index.md`.")
 
-        # Generate a report page with a report summary for the Living Documentation Regime
-        header, *rows = report_page_content.strip().split("\n")
-        if rows[1:]:           # Note: First row is always the header divider line
-            # Sort the error lines alphabetically by the first column (Error Type)
-            sorted_rows = sorted(rows, key=lambda x: x.split("|")[1].strip())
-            sorted_report_page_content = "\n".join([header] + sorted_rows)
+        # Sort the error lines alphabetically by the first column (Error Type) if any
+        # Note: Second part of the table is a divider
+        header, divider, *error_rows = report_page_content.strip().split("\n")
+        if error_rows:
+            sorted_rows = sorted(error_rows, key=lambda x: x.split("|")[1].strip())
+            sorted_report_page_content = "\n".join([header, divider] + sorted_rows)
 
+            # Generate a report page with a report summary for the Living Documentation Regime
             report_page = report_page_template.format(
                 date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=sorted_report_page_content
             )
             with open(os.path.join(report_page_path, "report_page.md"), "w", encoding="utf-8") as f:
                 f.write(report_page)
+
             logger.warning("Markdown page generation - Report page generated.")
 
     def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:

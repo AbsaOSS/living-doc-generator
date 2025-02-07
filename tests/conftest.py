@@ -94,6 +94,7 @@ def load_all_templates_setup(mocker):
             "Org Level Template",
             "Repo Page Template",
             "Data Level Template",
+            "Report Page Template",
         ),
     )
 
@@ -147,6 +148,7 @@ def consolidated_issue(mocker):
     consolidated_issue.body = "This is the issue content."
     consolidated_issue.linked_to_project = False
     consolidated_issue.topics = ["documentationTopic"]
+    consolidated_issue.errors = {}
 
     return consolidated_issue
 
