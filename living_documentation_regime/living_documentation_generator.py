@@ -118,6 +118,7 @@ class LivingDocumentationGenerator:
         """
         output_path = make_absolute_path(OUTPUT_PATH)
 
+
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
@@ -303,6 +304,7 @@ class LivingDocumentationGenerator:
             index_repo_page_template,
             index_data_level_template,
             report_page_template,
+
         ) = self._load_all_templates()
 
         # Generate a markdown page for every issue
@@ -606,6 +608,7 @@ class LivingDocumentationGenerator:
             "Organization name",
             "Repository name",
             "Issue number",
+            "Title",
             "State",
             "Issue URL",
             "Created at",
@@ -619,6 +622,7 @@ class LivingDocumentationGenerator:
             consolidated_issue.organization_name,
             consolidated_issue.repository_name,
             consolidated_issue.number,
+            consolidated_issue.title,
             consolidated_issue.state.lower(),
             issue_url,
             consolidated_issue.created_at,

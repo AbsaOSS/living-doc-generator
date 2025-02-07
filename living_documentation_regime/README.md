@@ -17,7 +17,7 @@
     - [Structured Output](#structured-output)
     - [Output Grouped by Topics](#output-grouped-by-topics)
 
-This regime is designed to data-mine GitHub repositories for [documentation tickets](#documentation-ticket-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in Markdown format, providing detailed feature overview pages and in-depth feature descriptions.
+This regime is designed to data-mine GitHub repositories for [documentation tickets](#documentation-ticket-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in a format compatible with an [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer), providing detailed feature overview pages and in-depth feature descriptions.
 
 ## Regime De/Activation
 
@@ -38,31 +38,18 @@ See the default minimal Living Documentation regime action step definition:
 ```yaml
 - name: Generate Living Documentation
   id: generate_living_doc
-  uses: AbsaOSS/living-doc-generator@v0.3.0
+  uses: AbsaOSS/living-doc-generator@v0.4.0
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
     liv-doc-regime: true                   # living documentation regime de/activation  
-    liv-doc-repositories: '[
-      {
-        "organization-name": "fin-services",
-        "repository-name": "investment-app",
-        "query-labels": ["feature", "enhancement"],
-        "projects-title-filter": []
-      },
-      {
-        "organization-name": "health-analytics",
-        "repository-name": "patient-data-analysis",
-        "query-labels": ["functionality"],
-        "projects-title-filter": ["Health Data Analysis Project"]
-      },
-      {
-        "organization-name": "open-source-initiative",
-        "repository-name": "community-driven-project",
-        "query-labels": ["improvement"],
-        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"]
-      }
-    ]'
+    liv-doc-repositories: |
+        [
+          {
+            "organization-name": "fin-services",
+            "repository-name": "investment-app"
+          }
+        ]
 ```
 
 See the full example of Living Documentation regime step definition (in example are used non-default values):
@@ -70,34 +57,30 @@ See the full example of Living Documentation regime step definition (in example 
 ```yaml
 - name: Generate Living Documentation
   id: generate_living_doc
-  uses: AbsaOSS/living-doc-generator@v0.3.0
+  uses: AbsaOSS/living-doc-generator@v0.4.0
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
     liv-doc-regime: true                   # living documentation regime de/activation
     verbose-logging: true                  # project verbose (debug) logging feature de/activation
     report-page: true                      # report page generation feature de/activation
-    
-    liv-doc-repositories: '[
-      {
-        "organization-name": "fin-services",
-        "repository-name": "investment-app",
-        "query-labels": ["feature", "enhancement"],
-        "projects-title-filter": []
-      },
-      {
-        "organization-name": "health-analytics",
-        "repository-name": "patient-data-analysis",
-        "query-labels": ["functionality"],
-        "projects-title-filter": ["Health Data Analysis Project"]
-      },
-      {
-        "organization-name": "open-source-initiative",
-        "repository-name": "community-driven-project",
-        "query-labels": ["improvement"],
-        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
-      }
-    ]'
+
+
+    liv-doc-repositories: |
+        [
+          {
+            "organization-name": "fin-services",
+            "repository-name": "investment-app",
+            "query-labels": ["feature", "enhancement"],
+            "projects-title-filter": []
+          },
+          {
+            "organization-name": "health-analytics",
+            "repository-name": "patient-data-analysis",
+            "query-labels": ["functionality"],
+            "projects-title-filter": ["Health Data Analysis Project"]
+          }
+        ]
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
@@ -111,30 +94,23 @@ Configure the Living Documentation regime by customizing the following parameter
 ### Regime Inputs
 - **liv-doc-repositories** (optional, `default: '[]'`)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
-  - **Usage**: List each repository with its organization name, repository name, query labels and attached projects you want to filter if any. Only projects with these titles will be considered. For no filtering projects, leave the list empty.
+  - **Usage**: Provide a list of repositories including the organization name, repository name, query labels, and any attached projects you wish to filter. The query-labels and projects-title-filter parameters are optional. Only issues with the specified labels and projects will be fetched. To fetch all issues (all labels), either omit these parameters or leave the lists empty.
   - **Example**:
     ```yaml
     with:
-      liv-doc-repositories: '[
-      {
-        "organization-name": "fin-services",
-        "repository-name": "investment-app",
-        "query-labels": ["feature", "enhancement"],
-        "projects-title-filter": []
-      },
-      {
-        "organization-name": "health-analytics",
-        "repository-name": "patient-data-analysis",
-        "query-labels": ["functionality"],
-        "projects-title-filter": ["Health Data Analysis Project"]
-      },
-      {
-        "organization-name": "open-source-initiative",
-        "repository-name": "community-driven-project",
-        "query-labels": ["improvement"],
-        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
-      }
-    ]'
+      liv-doc-repositories: |
+        [
+          {
+            "organization-name": "fin-services",
+            "repository-name": "investment-app",
+            "query-labels": ["feature", "enhancement"]
+          },
+          {
+            "organization-name": "open-source-initiative",
+            "repository-name": "community-driven-project",
+            "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
+          }
+        ]
     ```
 
 - **liv-doc-project-state-mining** (optional, `default: false`)
@@ -171,23 +147,37 @@ Configure the Living Documentation regime by customizing the following parameter
 ## Expected Output
 
 The Living Documentation Generator in Living Documentation regime is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
+The structure of pages is designed to work with the AbsaOSS [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer) solution.
 
 ### Index Page Example
 
 ```markdown
-# Issue Summary page
+---
+title: Features
+toolbar_title: Features
+description_title: Living Documentation
+description: >
+  This is a comprehensive list and brief overview of all mined features.
+date: 2024-12-12
+weight: 0
+---
 
-Our project is designed with a myriad of issues to ensure seamless user experience, top-tier functionality, and efficient operations.
-Here, you'll find a summarized list of all these issues, their brief descriptions, and links to their detailed documentation.
+<h1>Feature Summary page</h1>
 
-## Issue Overview
+Our project is designed with a myriad of features to ensure seamless user experience, top-tier functionality, and efficient operations. Here, you'll find a summarized list of all these features, their brief descriptions, and links to their detailed documentation.
 
-| Organization name| Repository name            | Issue 'Number - Title'         | Linked to project | Project Status | Issue URL  |
-|------------------|----------------------------|--------------------------------|-------------------|----------------|------------|
-| AbsaOSS          | living-doc-example-project | [#89 - Test issue 2](89_test_issue_2.md)      | 🔴 | ---            |[GitHub](#) |
-| AbsaOSS          | living-doc-example-project | [#88 - Test issue](88_test_issue.md)          | 🟢 | Todo           |[GitHub](#) |
-| AbsaOSS          | living-doc-example-project | [#41 - Initial commit.](41_initial_commit.md) | 🟢 | Done           |[GitHub](#) |
-| AbsaOSS          | living-doc-example-project | [#33 - Example bugfix](33_example_bugfix.md)  | 🔴 | ---            |[GitHub](#) |
+<h2>Feature Overview</h2>
+
+<div class="cps-table sortable searchable filterableByColumns paginator">
+
+| Organization name | Repository name            | Issue 'Number - Title'              | Linked to project  | Project Status | Issue URL                                   |
+|-------------------|----------------------------|-------------------------------------|--------------------|----------------|---------------------------------------------|
+| AbsaOSS           | living-doc-example-project | [#89 - Test issue 2](features#test-issue-2)         | 🔴 | ---            | <a href='#' target='_blank'>GitHub link</a> |
+| AbsaOSS           | living-doc-example-project | [#88 - Test issue](features#test-issue.md)          | 🟢 | Todo           | <a href='#' target='_blank'>GitHub link</a> |
+| AbsaOSS           | living-doc-example-project | [#41 - Initial commit.](features#initial-commit.md) | 🟢 | Done           | <a href='#' target='_blank'>GitHub link</a> |
+| AbsaOSS           | living-doc-example-project | [#33 - Example bugfix](features#example-bugfix.md)  | 🔴 | ---            | <a href='#' target='_blank'>GitHub link</a> |
+
+</div>
 ```
 
 - **Project Status** can have various values depending on the project, such as: Todo, Done, Closed, In Progress, In Review, Blocked, etc. 
@@ -197,28 +187,35 @@ These values can vary from project to project.
 ### Issue Page Example
 
 ```markdown
-# FEAT: Advanced Book Search
-| Attribute         | Content                               |
-|-------------------|---------------------------------------|
-| Organization name | AbsaOSS                               |
-| Repository name   | living-doc-example-project            |
-| Issue number      | 17                                    |
-| State             | open                                  |
-| Issue URL         | [GitHub link](#)                      |
-| Created at        | 2023-12-12 11:34:52                   |
-| Updated at        | 2023-12-13 10:24:58                   |
-| Closed at         | None                                  |
-| Labels            | feature                               |
-| Project title     | Book Store Living Doc Example project |
-| Status            | Todo                                  |
-| Priority          | P1                                    |
-| Size              | S                                     |
-| MoSCoW            | N/A                                   |
+---
+title: "Advanced Book Search"
+date: 2024-12-12
+weight: 1
+---
 
-## Issue Content
+| Attribute         | Content                                     |
+|-------------------|---------------------------------------------|
+| Organization name | AbsaOSS                                     |
+| Repository name   | living-doc-example-project                  |
+| Issue number      | 17                                          |
+| Title             | Advanced Book Search                        |
+| State             | open                                        |
+| Issue URL         | <a href='#' target='_blank'>GitHub link</a> |
+| Created at        | 2023-12-12 11:34:52                         |
+| Updated at        | 2023-12-13 10:24:58                         |
+| Closed at         | None                                        |
+| Labels            | feature                                     |
+| Project title     | Book Store Living Doc Example project       |
+| Status            | Todo                                        |
+| Priority          | P1                                          |
+| Size              | S                                           |
+| MoSCoW            | ---                                         |
+
+<h3>Issue Content</h3>
+
 Users often struggle to find specific books in a large catalog. An advanced search feature would streamline this process, enhancing user experience.
 
-### Background
+#### Background
 ...
 ```
 

@@ -31,7 +31,7 @@
 
 ## Motivation
 
-Addresses the need for continuously updated documentation accessible to all team members and stakeholders. Achieves this by extracting information directly from GitHub issues and integrating this functionality to deliver real-time, markdown-formatted output. Ensures everyone has the most current project details, fostering better communication and efficiency throughout development.
+Addresses the need for continuously updated documentation accessible to all team members and stakeholders. Achieves this by extracting information directly from GitHub issues and integrating this functionality to deliver real-time, mdoc viewer capable formatted output. Ensures everyone has the most current project details, fostering better communication and efficiency throughout development.
 
 ---
 ## Mining Regimes
@@ -53,7 +53,7 @@ See the default action step definition:
 ```yaml
 - name: Generate Living Documentation
   id: generate_living_doc
-  uses: AbsaOSS/living-doc-generator@v0.3.0
+  uses: AbsaOSS/living-doc-generator@v0.4.0
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
@@ -72,7 +72,7 @@ See the full example of action step definition (in example are used non-default 
 ```yaml
 - name: Generate Living Documentation
   id: generate_living_doc
-  uses: AbsaOSS/living-doc-generator@v0.3.0
+  uses: AbsaOSS/living-doc-generator@v0.4.0
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
@@ -272,11 +272,7 @@ export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
 
 For running the GitHub action incorporate these commands into the shell script and save it.
 ```
-cd src || exit 1
-
 python3 main.py
-
-cd .. || exit 1
 ```
 
 ### Make the Script Executable

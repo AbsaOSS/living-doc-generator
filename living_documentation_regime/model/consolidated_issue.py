@@ -196,11 +196,13 @@ class ConsolidatedIssue:
             if not topic_labels:
                 self.__topics = ["NoTopic"]
                 self.__errors.update({"TopicError": "No Topic label found."})
+
                 no_topic_path = os.path.join(output_path, "NoTopic")
                 return [no_topic_path]
 
             if len(topic_labels) > 1:
                 self.__errors.update({"TopicError": "More than one Topic label found."})
+
 
             # Generate a directory path based on a Topic label
             for topic_label in topic_labels:

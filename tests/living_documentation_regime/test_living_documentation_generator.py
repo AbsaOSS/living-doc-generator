@@ -1071,6 +1071,7 @@ def test_generate_issue_summary_table_without_project_state_mining(
         "| Organization name | TestOrg |\n"
         "| Repository name | TestRepo |\n"
         "| Issue number | 42 |\n"
+        "| Title | Sample Issue |\n"
         "| State | open |\n"
         "| Issue URL | <a href='https://github.com/TestOrg/TestRepo/issues/42' target='_blank'>GitHub link</a>  |\n"
         "| Created at | 2024-01-01T00:00:00Z |\n"
@@ -1101,6 +1102,7 @@ def test_generate_issue_summary_table_with_project_state_mining_and_multiple_pro
         "| Organization name | TestOrg |\n"
         "| Repository name | TestRepo |\n"
         "| Issue number | 42 |\n"
+        "| Title | Sample Issue |\n"
         "| State | open |\n"
         "| Issue URL | <a href='https://github.com/TestOrg/TestRepo/issues/42' target='_blank'>GitHub link</a>  |\n"
         "| Created at | 2024-01-01T00:00:00Z |\n"
@@ -1142,6 +1144,7 @@ def test_generate_issue_summary_table_with_project_state_mining_but_no_linked_pr
         "| Organization name | TestOrg |\n"
         "| Repository name | TestRepo |\n"
         "| Issue number | 42 |\n"
+        "| Title | Sample Issue |\n"
         "| State | open |\n"
         "| Issue URL | <a href='https://github.com/TestOrg/TestRepo/issues/42' target='_blank'>GitHub link</a>  |\n"
         "| Created at | 2024-01-01T00:00:00Z |\n"
@@ -1303,7 +1306,6 @@ def test_load_all_templates_loads_correctly(mocker):
 
     assert actual == expected_templates
     assert load_template_mock.call_count == 7
-
 
 def test_load_all_templates_loads_just_some_templates(mocker):
     # Arrange

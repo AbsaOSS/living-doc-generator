@@ -66,8 +66,8 @@ class ConfigRepository:
         try:
             self.__organization_name = repository_json["organization-name"]
             self.__repository_name = repository_json["repository-name"]
-            self.__query_labels = repository_json["query-labels"]
-            self.__projects_title_filter = repository_json["projects-title-filter"]
+            self.__query_labels = repository_json.get("query-labels", [])
+            self.__projects_title_filter = repository_json.get("projects-title-filter", [])
             return True
         except KeyError as e:
             logger.error("The key is not found in the repository JSON input: %s.", e, exc_info=True)
