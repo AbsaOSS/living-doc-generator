@@ -203,7 +203,6 @@ class ConsolidatedIssue:
             if len(topic_labels) > 1:
                 self.__errors.update({"TopicError": "More than one Topic label found."})
 
-
             # Generate a directory path based on a Topic label
             for topic_label in topic_labels:
                 self.__topics.append(topic_label)

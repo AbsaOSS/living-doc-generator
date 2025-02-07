@@ -118,7 +118,6 @@ class LivingDocumentationGenerator:
         """
         output_path = make_absolute_path(OUTPUT_PATH)
 
-
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
@@ -304,7 +303,6 @@ class LivingDocumentationGenerator:
             index_repo_page_template,
             index_data_level_template,
             report_page_template,
-
         ) = self._load_all_templates()
 
         # Generate a markdown page for every issue
