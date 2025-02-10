@@ -81,26 +81,25 @@ See the full example of action step definition (in example are used non-default 
     report-page: true                      # report page generation feature de/activation
     
     # LivDoc Regime configuration
-    liv-doc-repositories: '[
-      {
-        "organization-name": "fin-services",
-        "repository-name": "investment-app",
-        "query-labels": ["feature", "enhancement"],
-        "projects-title-filter": []
-      },
-      {
-        "organization-name": "health-analytics",
-        "repository-name": "patient-data-analysis",
-        "query-labels": ["functionality"],
-        "projects-title-filter": ["Health Data Analysis Project"]
-      },
-      {
-        "organization-name": "open-source-initiative",
-        "repository-name": "community-driven-project",
-        "query-labels": ["improvement"],
-        "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
-      }
-    ]'
+    liv-doc-repositories: |
+        [
+          {
+            "organization-name": "fin-services",
+            "repository-name": "investment-app",
+            "query-labels": ["feature", "enhancement"],
+            "projects-title-filter": []
+          },
+          {
+            "organization-name": "health-analytics",
+            "repository-name": "patient-data-analysis",
+            "projects-title-filter": ["Health Data Analysis Project"]
+          },
+          {
+            "organization-name": "open-source-initiative",
+            "repository-name": "community-driven-project",
+            "query-labels": ["improvement"]
+          }
+        ]
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
@@ -151,7 +150,7 @@ In this GitHub action, there are two types of user inputs:
       verbose-logging: true
     ```
     
-- **report-page** (optional, `default: false`)
+- **report-page** (optional, `default: true`)
   - **Description**: Enables or disables the report page generation.
   - **Usage**: Set to true to activate.
   - **Example**:
