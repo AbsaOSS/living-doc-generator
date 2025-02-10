@@ -309,9 +309,9 @@ class LivingDocumentationGenerator:
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
             if consolidated_issue.errors:
+                repository_id: str = consolidated_issue.repository_id
+                number: int = consolidated_issue.number
                 for error_type, error_message in consolidated_issue.errors.items():
-                    repository_id: str = consolidated_issue.repository_id
-                    number: int = consolidated_issue.number
                     report_page_content += f"| {error_type} | {repository_id}#{number} | {error_message} |\n"
 
             for topic in consolidated_issue.topics:
@@ -339,16 +339,12 @@ class LivingDocumentationGenerator:
             self._generate_index_page(index_page_template, issues)
             logger.info("Markdown page generation - generated `_index.md`.")
 
-        # Sort the error lines alphabetically by the first column (Error Type) if any
-        # Note: Second part of the table is a divider
+        # Generate a report page with a report error summary for the Living Documentation Regime if any
         header, divider, *error_rows = report_page_content.strip().split("\n")
         if error_rows:
-            sorted_rows = sorted(error_rows, key=lambda x: x.split("|")[1].strip())
-            sorted_report_page_content = "\n".join([header, divider] + sorted_rows)
-
-            # Generate a report page with a report summary for the Living Documentation Regime
+            report_page_content = "\n".join([header, divider] + error_rows)
             report_page = report_page_template.format(
-                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=sorted_report_page_content
+                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
             )
             with open(os.path.join(report_page_path, "report_page.md"), "w", encoding="utf-8") as f:
                 f.write(report_page)

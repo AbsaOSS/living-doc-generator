@@ -135,7 +135,7 @@ class ConsolidatedIssue:
     # Error property
     @property
     def errors(self) -> dict[str, str]:
-        """Getter of the error message."""
+        """Getter of the errors that occurred during the issue processing."""
         return self.__errors
 
     def update_with_project_data(self, project_issue_status: ProjectStatus) -> None:

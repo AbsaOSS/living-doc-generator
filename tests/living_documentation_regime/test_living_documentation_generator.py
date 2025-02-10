@@ -659,15 +659,12 @@ def test_generate_markdown_pages_generates_report_page_with_errors(
 
     # Assert
     report_file = output_dir / "report_page.md"
-    report_page_content = report_file.read_text(encoding="utf-8")
-
     assert report_file.exists()
+    report_page_content = report_file.read_text(encoding="utf-8")
     assert "| Error Type | Issue | Message |" in report_page_content
-    expected_issue_str = "TestOrg/TestRepo#42"
-    assert expected_issue_str in report_page_content
+    assert "TestOrg/TestRepo#42" in report_page_content
     assert "error a" in report_page_content
     assert "error z" in report_page_content
-    assert report_page_content.index("AError") < report_page_content.index("ZError")
     mock_logger_warning.assert_called_once_with("Markdown page generation - Report page generated.")
 
 
