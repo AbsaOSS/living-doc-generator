@@ -49,10 +49,7 @@ def test_load_from_json_with_valid_input_check_default_values():
     config_repository = ConfigRepository()
     organization_name = "organizationABC"
     repository_name = "repositoryABC"
-    repository_json = {
-        "organization-name": organization_name,
-        "repository-name": repository_name
-    }
+    repository_json = {"organization-name": organization_name, "repository-name": repository_name}
 
     # Act
     actual = config_repository.load_from_json(repository_json)

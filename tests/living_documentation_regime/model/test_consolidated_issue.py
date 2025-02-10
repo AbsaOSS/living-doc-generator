@@ -109,6 +109,9 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
+    mocker.patch(
+        "living_documentation_regime.model.consolidated_issue.ConsolidatedIssue.validate_labels", return_value=None
+    )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
@@ -117,12 +120,10 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
     # Assert
     assert ["/mocked/absolute/output/path/BETopic", "/mocked/absolute/output/path/FETopic"] == actual
-    assert mock_consolidated_issue.errors == {"TopicError": "More than one Topic label found."}
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_no_issue_topics(mocker):
     # Arrange
-    mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
         "living_documentation_regime.model.consolidated_issue.make_absolute_path",
         return_value="/mocked/absolute/output/path/",
@@ -133,6 +134,10 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
+    mocker.patch(
+        "living_documentation_regime.model.consolidated_issue.ConsolidatedIssue.validate_labels",
+        return_value=["/mocked/absolute/output/path/NoTopic"],
+    )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
@@ -141,8 +146,6 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
     # Assert
     assert ["/mocked/absolute/output/path/NoTopic"] == actual
-    assert mock_consolidated_issue.errors == {"TopicError": "No Topic label found."}
-    mock_log_debug.assert_not_called()
 
 
 def test_generate_directory_path_structured_output_enabled_grouping_by_topics_enabled_one_issue_topic(mocker):
@@ -158,15 +161,67 @@ def test_generate_directory_path_structured_output_enabled_grouping_by_topics_en
     mocker.patch(
         "living_documentation_regime.action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True
     )
+    mocker.patch(
+        "living_documentation_regime.model.consolidated_issue.ConsolidatedIssue.validate_labels", return_value=None
+    )
     mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
     mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
     # Act
-    actual = mock_consolidated_issue.generate_directory_path("| Labels | feature, BETopic, FETopic |")
+    actual = mock_consolidated_issue.generate_directory_path(
+        "| Labels | DocumentedFeature, DocumentedUS, BETopic, FETopic |"
+    )
 
     # Assert
     assert [
         "/mocked/absolute/output/path/organization/repository/BETopic",
         "/mocked/absolute/output/path/organization/repository/FETopic",
     ] == actual
-    assert mock_consolidated_issue.errors == {"TopicError": "More than one Topic label found."}
+
+
+# validate_labels
+
+
+def test_validate_labels_no_topic_labels(mocker):
+    # Arrange
+    mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+
+    # Act
+    actual = mock_consolidated_issue.validate_labels(["DocumentedFeature"], [], "/mocked/absolute/output/path/")
+
+    # Assert
+    assert ["/mocked/absolute/output/path/NoTopic"] == actual
+    assert mock_consolidated_issue.topics == ["NoTopic"]
+    assert mock_consolidated_issue.errors == {"TopicError": "No Topic label found."}
+
+
+def test_validate_labels_multiple_topics_and_multiple_documented_labels(mocker):
+    # Arrange
+    mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+
+    # Act
+    actual = mock_consolidated_issue.validate_labels(
+        ["DocumentedFeature", "DocumentedUS"], ["BETopic", "FETopic"], "/mocked/absolute/output/path/"
+    )
+
+    # Assert
+    assert not actual
+    assert mock_consolidated_issue.errors == {
+        "DocumentationError": "More than one Documentation label found.",
+        "TopicError": "More than one Topic label found.",
+    }
+
+
+def test_validate_labels_topic_label_without_documented_label(mocker):
+    # Arrange
+    mock_issue = Issue(None, None, {"number": 1, "title": "Issue Title"}, completed=True)
+    mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
+
+    # Act
+    actual = mock_consolidated_issue.validate_labels([], ["BETopic"], "/mocked/absolute/output/path/")
+
+    # Assert
+    assert not actual
+    assert mock_consolidated_issue.errors == {"DocumentationError": "Topic label found without Documentation one."}

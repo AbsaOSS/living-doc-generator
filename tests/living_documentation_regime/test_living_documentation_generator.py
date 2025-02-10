@@ -1307,6 +1307,7 @@ def test_load_all_templates_loads_correctly(mocker):
     assert actual == expected_templates
     assert load_template_mock.call_count == 7
 
+
 def test_load_all_templates_loads_just_some_templates(mocker):
     # Arrange
     expected_templates = (

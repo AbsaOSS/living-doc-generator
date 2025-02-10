@@ -207,7 +207,9 @@ class ConsolidatedIssue:
 
         return [output_path]
 
-    def validate_labels(self, documentation_labels: list[str], topic_labels: list[str], output_path: str) -> Optional[list[str]]:
+    def validate_labels(
+        self, documentation_labels: list[str], topic_labels: list[str], output_path: str
+    ) -> Optional[list[str]]:
         """
         Validate the topic and documentation labels, update errors accordingly,
         and return a fallback directory path if no topic label is found.
