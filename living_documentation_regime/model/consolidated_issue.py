@@ -20,6 +20,7 @@ This module contains a data container for Consolidated Issue, which holds all th
 import logging
 import os
 import re
+from typing import Optional
 
 from github.Issue import Issue
 
@@ -189,21 +190,15 @@ class ConsolidatedIssue:
             if labels:
                 labels = labels[0].split(", ")
 
-            # Check for all labels ending with "Topic"
+            documentation_labels = [label for label in labels if label.startswith("Documented")]
             topic_labels = [label for label in labels if label.endswith("Topic")]
 
-            # If no label ends with "Topic", create a "NoTopic" issue directory path
-            if not topic_labels:
-                self.__topics = ["NoTopic"]
-                self.__errors.update({"TopicError": "No Topic label found."})
+            # Validate labels and get a fallback if there are no topic labels.
+            fallback_path: Optional[list[str]] = self.validate_labels(documentation_labels, topic_labels, output_path)
+            if fallback_path:
+                return fallback_path
 
-                no_topic_path = os.path.join(output_path, "NoTopic")
-                return [no_topic_path]
-
-            if len(topic_labels) > 1:
-                self.__errors.update({"TopicError": "More than one Topic label found."})
-
-            # Generate a directory path based on a Topic label
+            # Generate a directory path for each topic label.
             for topic_label in topic_labels:
                 self.__topics.append(topic_label)
                 topic_path = os.path.join(output_path, topic_label)
@@ -211,3 +206,33 @@ class ConsolidatedIssue:
             return topic_paths
 
         return [output_path]
+
+    def validate_labels(self, documentation_labels: list[str], topic_labels: list[str], output_path: str) -> Optional[list[str]]:
+        """
+        Validate the topic and documentation labels, update errors accordingly,
+        and return a fallback directory path if no topic label is found.
+
+        @param documentation_labels: List of documentation labels.
+        @param topic_labels: List of topic labels.
+        @param output_path: Base output path to construct a fallback directory.
+        @return: A list containing the fallback directory path if no topic label is found,
+                 otherwise None.
+        """
+        # Fallback if there are no topic labels
+        if not topic_labels:
+            self.__topics = ["NoTopic"]
+            self.__errors.update({"TopicError": "No Topic label found."})
+            no_topic_path = os.path.join(output_path, "NoTopic")
+            return [no_topic_path]
+
+        if len(documentation_labels) > 1:
+            self.__errors.update({"DocumentationError": "More than one Documentation label found."})
+
+        if len(topic_labels) > 1:
+            self.__errors.update({"TopicError": "More than one Topic label found."})
+
+        # If a topic label exists without any documentation label, update the error
+        if not documentation_labels:
+            self.__errors.update({"DocumentationError": "Topic label found without Documentation one."})
+
+        return None
