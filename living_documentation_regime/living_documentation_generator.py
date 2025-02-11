@@ -289,6 +289,7 @@ class LivingDocumentationGenerator:
         @param issues: A dictionary containing all consolidated issues.
         """
         topics = set()
+        report_page_content = "| Error Type | Issue | Message |\n| --- | --- | --- |\n"
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
         is_report_page = ActionInputs.get_is_report_page_generation_enabled()

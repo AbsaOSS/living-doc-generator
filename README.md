@@ -92,12 +92,14 @@ See the full example of action step definition (in example are used non-default 
           {
             "organization-name": "health-analytics",
             "repository-name": "patient-data-analysis",
+            "query-labels": ["functionality"],
             "projects-title-filter": ["Health Data Analysis Project"]
           },
           {
             "organization-name": "open-source-initiative",
             "repository-name": "community-driven-project",
-            "query-labels": ["improvement"]
+            "query-labels": ["improvement"],
+            "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
           }
         ]
     liv-doc-project-state-mining: true     # project state mining feature de/activation
