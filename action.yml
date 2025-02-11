@@ -11,7 +11,7 @@ inputs:
   report-page:
     description: 'Enable or disable the generation of report page.'
     required: false
-    default: 'false'
+    default: 'true'
   verbose-logging:
     description: 'Enable or disable verbose logging.'
     required: false

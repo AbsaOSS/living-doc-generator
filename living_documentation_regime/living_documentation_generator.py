@@ -45,6 +45,7 @@ from utils.constants import (
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LIV_DOC_OUTPUT_PATH,
     OUTPUT_PATH,
+    REPORT_PAGE_HEADER,
 )
 
 logger = logging.getLogger(__name__)
@@ -291,7 +292,9 @@ class LivingDocumentationGenerator:
         report_page_content = "| Error Type | Issue | Message |\n| --- | --- | --- |\n"
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
+        is_report_page = ActionInputs.get_is_report_page_generation_enabled()
         regime_output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        report_page_content = REPORT_PAGE_HEADER
         report_page_path = make_absolute_path(OUTPUT_PATH)
 
         # Load the template files for generating the Markdown pages
@@ -308,11 +311,15 @@ class LivingDocumentationGenerator:
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
-            if consolidated_issue.errors:
+            if is_report_page and consolidated_issue.errors:
+                repository_id: str = consolidated_issue.repository_id
+                number: int = consolidated_issue.number
+                html_url: str = consolidated_issue.html_url
+
                 for error_type, error_message in consolidated_issue.errors.items():
-                    repository_id: str = consolidated_issue.repository_id
-                    number: int = consolidated_issue.number
-                    report_page_content += f"| {error_type} | {repository_id}#{number} | {error_message} |\n"
+                    report_page_content += (
+                        f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
+                    )
 
             for topic in consolidated_issue.topics:
                 topics.add(topic)
@@ -339,16 +346,12 @@ class LivingDocumentationGenerator:
             self._generate_index_page(index_page_template, issues)
             logger.info("Markdown page generation - generated `_index.md`.")
 
-        # Sort the error lines alphabetically by the first column (Error Type) if any
-        # Note: Second part of the table is a divider
+        # Generate a report page with a report error summary for the Living Documentation Regime if any
         header, divider, *error_rows = report_page_content.strip().split("\n")
         if error_rows:
-            sorted_rows = sorted(error_rows, key=lambda x: x.split("|")[1].strip())
-            sorted_report_page_content = "\n".join([header, divider] + sorted_rows)
-
-            # Generate a report page with a report summary for the Living Documentation Regime
+            report_page_content = "\n".join([header, divider] + error_rows)
             report_page = report_page_template.format(
-                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=sorted_report_page_content
+                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
             )
             with open(os.path.join(report_page_path, "report_page.md"), "w", encoding="utf-8") as f:
                 f.write(report_page)

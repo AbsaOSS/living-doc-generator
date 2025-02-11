@@ -151,7 +151,7 @@ In this GitHub action, there are two types of user inputs:
       verbose-logging: true
     ```
     
-- **report-page** (optional, `default: false`)
+- **report-page** (optional, `default: true`)
   - **Description**: Enables or disables the report page generation.
   - **Usage**: Set to true to activate.
   - **Example**:

@@ -20,7 +20,6 @@ This module contains a data container for Consolidated Issue, which holds all th
 import logging
 import os
 import re
-from typing import Optional
 
 from github.Issue import Issue
 
@@ -136,7 +135,7 @@ class ConsolidatedIssue:
     # Error property
     @property
     def errors(self) -> dict[str, str]:
-        """Getter of the error message."""
+        """Getter of the errors that occurred during the issue processing."""
         return self.__errors
 
     def update_with_project_data(self, project_issue_status: ProjectStatus) -> None:

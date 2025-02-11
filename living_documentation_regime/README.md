@@ -65,7 +65,6 @@ See the full example of Living Documentation regime step definition (in example 
     verbose-logging: true                  # project verbose (debug) logging feature de/activation
     report-page: true                      # report page generation feature de/activation
 
-
     liv-doc-repositories: |
         [
           {
