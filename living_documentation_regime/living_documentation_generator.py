@@ -288,7 +288,7 @@ class LivingDocumentationGenerator:
         @param issues: A dictionary containing all consolidated issues.
         """
         topics = set()
-        report_page_content = "| Error Type | Issue | Message |\n| --- | --- | --- |\n"
+        report_page_content = "| Error Type | Source | Message |\n| --- | --- | --- |\n"
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
         regime_output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
@@ -311,8 +311,11 @@ class LivingDocumentationGenerator:
             if consolidated_issue.errors:
                 repository_id: str = consolidated_issue.repository_id
                 number: int = consolidated_issue.number
+                html_url: str = consolidated_issue.html_url
                 for error_type, error_message in consolidated_issue.errors.items():
-                    report_page_content += f"| {error_type} | {repository_id}#{number} | {error_message} |\n"
+                    report_page_content += (
+                        f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
+                    )
 
             for topic in consolidated_issue.topics:
                 topics.add(topic)
