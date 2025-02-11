@@ -20,6 +20,7 @@ This module contains a data container for Consolidated Issue, which holds all th
 import logging
 import os
 import re
+from typing import Optional
 
 from github.Issue import Issue
 

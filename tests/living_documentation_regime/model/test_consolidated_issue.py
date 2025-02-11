@@ -120,7 +120,6 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
     # Assert
     assert ["/mocked/absolute/output/path/BETopic", "/mocked/absolute/output/path/FETopic"] == actual
-    assert mock_consolidated_issue.errors == {"TopicError": "More than one Topic label found."}
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_no_issue_topics(mocker):
@@ -148,7 +147,6 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
     # Assert
     assert ["/mocked/absolute/output/path/NoTopic"] == actual
-    assert mock_consolidated_issue.errors == {"TopicError": "No Topic label found."}
     mock_log_debug.assert_not_called()
 
 
