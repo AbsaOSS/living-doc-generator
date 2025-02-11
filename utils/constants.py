@@ -19,6 +19,7 @@ This module contains all constants used across the project.
 """
 # Action inputs
 GITHUB_TOKEN = "GITHUB_TOKEN"
+REPORT_PAGE = "REPORT_PAGE"
 PROJECT_STATE_MINING = "LIV_DOC_PROJECT_STATE_MINING"
 REPOSITORIES = "LIV_DOC_REPOSITORIES"
 STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
@@ -114,6 +115,12 @@ TABLE_HEADER_WITH_PROJECT_DATA = """
 TABLE_HEADER_WITHOUT_PROJECT_DATA = """
 | Organization name | Repository name | Issue 'Number - Title' | Issue state | Issue URL |
 |-------------------|-----------------|------------------------|-------------|-----------|
+"""
+
+# Table header for Report page
+REPORT_PAGE_HEADER = """
+| Error Type | Source | Message |
+| ---------- | ------ | ------- |
 """
 
 # Symbol, when no project is attached to an issue

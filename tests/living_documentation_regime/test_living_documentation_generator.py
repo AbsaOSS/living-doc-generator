@@ -517,7 +517,6 @@ def test_generate_markdown_pages_with_structured_output_enabled_and_topic_groupi
     mock_generate_structured_index_pages = mocker.patch.object(
         LivingDocumentationGenerator, "_generate_structured_index_pages"
     )
-    mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
     mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
 
     # Act
@@ -577,11 +576,13 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_disab
 
 
 def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_output_disabled(
-    mocker, living_documentation_generator, consolidated_issue, load_all_templates_setup
+    mocker, living_documentation_generator, consolidated_issue, load_all_templates_setup, tmp_path
 ):
     # Arrange
     consolidated_issue.topics = ["documentationTopic", "FETopic"]
     issues = {"issue_1": consolidated_issue, "issue_2": consolidated_issue}
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
 
     mocker.patch(
         "living_documentation_regime.living_documentation_generator.ActionInputs.get_is_structured_output_enabled",
@@ -592,8 +593,12 @@ def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_outp
         return_value=True,
     )
     mocker.patch(
+        "living_documentation_regime.living_documentation_generator.ActionInputs.get_is_report_page_generation_enabled",
+        return_value=False,
+    )
+    mocker.patch(
         "living_documentation_regime.living_documentation_generator.make_absolute_path",
-        return_value="/base/output",
+        return_value=output_dir,
     )
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
     mock_generate_root_level_index_page = mocker.patch(
@@ -608,10 +613,12 @@ def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_outp
     living_documentation_generator._generate_markdown_pages(issues)
 
     # Assert
+    report_file = output_dir / "report_page.md"
+    assert not report_file.exists()
     assert 2 == mock_generate_md_issue_page.call_count
     load_all_templates_setup.assert_called_once()
     mock_generate_md_issue_page.assert_any_call("Issue Page Template", consolidated_issue)
-    mock_generate_root_level_index_page.assert_called_once_with("Root Level Page Template", "/base/output")
+    mock_generate_root_level_index_page.assert_called_once_with("Root Level Page Template", output_dir)
     mock_generate_structured_index_pages.assert_not_called()
     mock_generate_index_page.assert_any_call(
         "Data Level Template", list(issues.values()), grouping_topic="documentationTopic"
@@ -637,8 +644,12 @@ def test_generate_markdown_pages_generates_report_page_with_errors(
         return_value=False,
     )
     mocker.patch(
+        "living_documentation_regime.living_documentation_generator.ActionInputs.get_is_report_page_generation_enabled",
+        return_value=True,
+    )
+    mocker.patch(
         "living_documentation_regime.living_documentation_generator.make_absolute_path",
-        return_value=str(output_dir),
+        return_value=output_dir,
     )
     mock_templates = (
         "Issue Page Template",
@@ -1303,6 +1314,7 @@ def test_load_all_templates_loads_correctly(mocker):
 
     assert actual == expected_templates
     assert load_template_mock.call_count == 7
+
 
 def test_load_all_templates_loads_just_some_templates(mocker):
     # Arrange

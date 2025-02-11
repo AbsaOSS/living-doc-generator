@@ -34,6 +34,14 @@ def test_project_state_mining_default():
     assert not actual
 
 
+def test_report_page_default():
+    # Act
+    actual = os.getenv("INPUT_REPORT_PAGE", "true").lower() == "true"
+
+    # Assert
+    assert actual
+
+
 def test_verbose_logging_default():
     # Act
     actual = os.getenv("INPUT_VERBOSE_LOGGING", "false").lower() == "true"

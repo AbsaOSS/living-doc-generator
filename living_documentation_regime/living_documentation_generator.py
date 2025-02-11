@@ -45,6 +45,7 @@ from utils.constants import (
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LIV_DOC_OUTPUT_PATH,
     OUTPUT_PATH,
+    REPORT_PAGE_HEADER,
 )
 
 logger = logging.getLogger(__name__)
@@ -288,10 +289,11 @@ class LivingDocumentationGenerator:
         @param issues: A dictionary containing all consolidated issues.
         """
         topics = set()
-        report_page_content = "| Error Type | Source | Message |\n| --- | --- | --- |\n"
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
+        is_report_page = ActionInputs.get_is_report_page_generation_enabled()
         regime_output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        report_page_content = REPORT_PAGE_HEADER
         report_page_path = make_absolute_path(OUTPUT_PATH)
 
         # Load the template files for generating the Markdown pages
@@ -308,14 +310,16 @@ class LivingDocumentationGenerator:
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
-            if consolidated_issue.errors:
-                repository_id: str = consolidated_issue.repository_id
-                number: int = consolidated_issue.number
-                html_url: str = consolidated_issue.html_url
-                for error_type, error_message in consolidated_issue.errors.items():
-                    report_page_content += (
-                        f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
-                    )
+            if is_report_page:
+                if consolidated_issue.errors:
+                    repository_id: str = consolidated_issue.repository_id
+                    number: int = consolidated_issue.number
+                    html_url: str = consolidated_issue.html_url
+
+                    for error_type, error_message in consolidated_issue.errors.items():
+                        report_page_content += (
+                            f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
+                        )
 
             for topic in consolidated_issue.topics:
                 topics.add(topic)

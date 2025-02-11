@@ -32,6 +32,7 @@ from utils.constants import (
     REPOSITORIES,
     GROUP_OUTPUT_BY_TOPICS,
     STRUCTURED_OUTPUT,
+    REPORT_PAGE,
 )
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,14 @@ class ActionInputs:
         @return: The GitHub authorization token.
         """
         return get_action_input(GITHUB_TOKEN)
+
+    @staticmethod
+    def get_is_report_page_generation_enabled() -> bool:
+        """
+        Getter of the report page switch. True by default.
+        @return: True if report page is enabled, False otherwise.
+        """
+        return get_action_input(REPORT_PAGE, "true").lower() == "true"
 
     @staticmethod
     def get_liv_doc_regime() -> bool:
