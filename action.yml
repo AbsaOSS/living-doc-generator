@@ -8,6 +8,10 @@ inputs:
   liv-doc-regime:
     description: 'Enable or disable the LivDoc regime.'
     required: true
+  report-page:
+    description: 'Enable or disable the generation of report page.'
+    required: false
+    default: 'true'
   verbose-logging:
     description: 'Enable or disable verbose logging.'
     required: false
@@ -59,6 +63,8 @@ runs:
         # Set base env variables common for all regimes
         echo "INPUT_GITHUB_TOKEN=${{ env.GITHUB-TOKEN }}" >> $GITHUB_ENV
         echo "INPUT_LIV_DOC_REGIME=${{ inputs.liv-doc-regime }}" >> $GITHUB_ENV
+        echo "INPUT_REPORT_PAGE=${{ inputs.report-page }}" >> $GITHUB_ENV
+
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
 
         # Add LivDoc-specific env variables if the regime is enabled
@@ -75,6 +81,8 @@ runs:
       env:
         INPUT_GITHUB_TOKEN: ${{ env.INPUT_GITHUB_TOKEN }}
         INPUT_LIV_DOC_REGIME: ${{ env.INPUT_LIV_DOC_REGIME }}
+        INPUT_REPORT_PAGE: ${{ env.INPUT_REPORT_PAGE }}
+
         INPUT_VERBOSE_LOGGING: ${{ env.INPUT_VERBOSE_LOGGING }}
         INPUT_LIV_DOC_REPOSITORIES: ${{ env.INPUT_LIV_DOC_REPOSITORIES }}
         INPUT_LIV_DOC_PROJECT_STATE_MINING: ${{ env.INPUT_LIV_DOC_PROJECT_STATE_MINING }}

@@ -35,7 +35,6 @@ def test_generate_page_filename_correct_behaviour():
 
 def test_generate_page_filename_with_none_title(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.error")
     mock_issue = Issue(None, None, {"number": 1, "title": None}, completed=True)
     mock_consolidated_issue = ConsolidatedIssue("organization/repository", mock_issue)
 
@@ -44,13 +43,9 @@ def test_generate_page_filename_with_none_title(mocker):
 
     # Assert
     assert "1.md" == actual
-    mock_log_error.assert_called_once_with(
-        "Issue page filename generation failed for Issue %s/%s (%s). Issue does not have a title.",
-        "organization",
-        "repository",
-        1,
-        exc_info=True,
-    )
+    assert mock_consolidated_issue.errors == {
+        "AttributeError": "Issue page filename generation failed (issue does not have a title)."
+    }
 
 
 # generate_directory_path
@@ -104,7 +99,6 @@ def test_generate_directory_path_structured_output_enabled_grouping_by_topics_di
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_two_issue_topics(mocker):
     # Arrange
-    mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
         "living_documentation_regime.model.consolidated_issue.make_absolute_path",
         return_value="/mocked/absolute/output/path/",
@@ -123,18 +117,11 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
     # Assert
     assert ["/mocked/absolute/output/path/BETopic", "/mocked/absolute/output/path/FETopic"] == actual
-    mock_log_debug.assert_called_once_with(
-        "Multiple Topic labels found for Issue #%s: %s (%s): %s",
-        1,
-        "Issue Title",
-        "organization/repository",
-        "BETopic, FETopic",
-    )
+    assert mock_consolidated_issue.errors == {"TopicError": "More than one Topic label found."}
 
 
 def test_generate_directory_path_structured_output_disabled_grouping_by_topics_enabled_no_issue_topics(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.error")
     mock_log_debug = mocker.patch("living_documentation_regime.model.consolidated_issue.logger.debug")
     mocker.patch(
         "living_documentation_regime.model.consolidated_issue.make_absolute_path",
@@ -154,9 +141,7 @@ def test_generate_directory_path_structured_output_disabled_grouping_by_topics_e
 
     # Assert
     assert ["/mocked/absolute/output/path/NoTopic"] == actual
-    mock_log_error.assert_called_once_with(
-        "No Topic label found for Issue #%i: %s (%s)", 1, "Issue Title", "organization/repository"
-    )
+    assert mock_consolidated_issue.errors == {"TopicError": "No Topic label found."}
     mock_log_debug.assert_not_called()
 
 
@@ -184,10 +169,4 @@ def test_generate_directory_path_structured_output_enabled_grouping_by_topics_en
         "/mocked/absolute/output/path/organization/repository/BETopic",
         "/mocked/absolute/output/path/organization/repository/FETopic",
     ] == actual
-    mock_log_debug.assert_called_once_with(
-        "Multiple Topic labels found for Issue #%s: %s (%s): %s",
-        1,
-        "Issue Title",
-        "organization/repository",
-        "BETopic, FETopic",
-    )
+    assert mock_consolidated_issue.errors == {"TopicError": "More than one Topic label found."}

@@ -11,6 +11,8 @@
       - [Base Inputs](#base-inputs)
       - [Regime Inputs](#regime-inputs)
 - [Action Outputs](#action-outputs)
+- [Living Documentation Generator Features](#living-documentation-generator-features)
+    - [Report Page](#report-page)
 - [Project Setup](#project-setup)
 - [Run Scripts Locally](#run-scripts-locally)
 - [Run Pylint Check Locally](#run-pylint-check-locally)
@@ -76,6 +78,7 @@ See the full example of action step definition (in example are used non-default 
   with:
     liv-doc-regime: true                   # living documentation regime de/activation
     verbose-logging: true                  # project verbose (debug) logging feature de/activation
+    report-page: true                      # report page generation feature de/activation
     
     # LivDoc Regime configuration
     liv-doc-repositories: |
@@ -147,6 +150,15 @@ In this GitHub action, there are two types of user inputs:
       verbose-logging: true
     ```
     
+- **report-page** (optional, `default: true`)
+  - **Description**: Enables or disables the report page generation.
+  - **Usage**: Set to true to activate.
+  - **Example**:
+    ```yaml
+    with:
+      report-page: true
+    ```
+    
 #### Regime Inputs
 
 Regime-specific inputs are detailed in the respective regime's documentation:
@@ -168,6 +180,30 @@ The output-path can not be an empty string. It can not aim to the root and other
       
     - name: Output Documentation Path
       run: echo "Generated documentation path: ${{ steps.generate_doc.outputs.output-path }}"            
+    ```
+
+---
+## Living Documentation Generator Features
+
+### Report Page
+
+The report page is a summary of the errors found during the generation of living documents.
+
+- **Activation**: To activate this feature, set the `report-page` input to true.
+- **Non-Activated Behavior**: By default, when the feature is inactive, the errors are not listed in the output.
+- **Activated Example**: The report page is generated only, when some error are found during the generation of living documents.
+  - `report-page: true` activates the generation of report page.
+    ```markdown
+    <h3>Report page</h3>
+    
+    This page contains a summary of the errors found during the generation of living documents.
+    
+    <h4>Living Documentation Regime</h4>
+    
+    | Error Type     | Issue                                     | Message                          |
+    | -------------- | ----------------------------------------- | -------------------------------- |
+    | TopicError     | absa-group/living-doc-example-project#89  | No Topic label found.            |
+    | TopicError     | absa-group/living-doc-example-project#19  | More than one Topic label found. |
     ```
 
 ---
@@ -215,6 +251,7 @@ Also make sure that the INPUT_GITHUB_TOKEN is configured in your environment var
 export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
 export INPUT_LIV_DOC_REGIME=true
 export INPUT_VERBOSE_LOGGING=true
+export INPUT_REPORT_PAGE=true
 
 # Environment variables for LivDoc regime functionality
 export INPUT_LIV_DOC_REPOSITORIES='[

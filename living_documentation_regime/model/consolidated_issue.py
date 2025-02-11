@@ -20,7 +20,6 @@ This module contains a data container for Consolidated Issue, which holds all th
 import logging
 import os
 import re
-from typing import Optional
 
 from github.Issue import Issue
 
@@ -50,7 +49,7 @@ class ConsolidatedIssue:
         self.__linked_to_project: bool = False
         self.__project_issue_statuses: list[ProjectStatus] = []
 
-        self.__error: Optional[str] = None
+        self.__errors: dict = {}
 
     # Issue properties
     @property
@@ -135,9 +134,9 @@ class ConsolidatedIssue:
 
     # Error property
     @property
-    def error(self) -> Optional[str]:
-        """Getter of the error message."""
-        return self.__error
+    def errors(self) -> dict[str, str]:
+        """Getter of the errors that occurred during the issue processing."""
+        return self.__errors
 
     def update_with_project_data(self, project_issue_status: ProjectStatus) -> None:
         """
@@ -159,12 +158,8 @@ class ConsolidatedIssue:
             md_filename_base = f"{self.number}_{self.title.lower()}.md"
             page_filename = sanitize_filename(md_filename_base)
         except AttributeError:
-            logger.error(
-                "Issue page filename generation failed for Issue %s/%s (%s). Issue does not have a title.",
-                self.organization_name,
-                self.repository_name,
-                self.number,
-                exc_info=True,
+            self.__errors.update(
+                {"AttributeError": "Issue page filename generation failed (issue does not have a title)."}
             )
             return f"{self.number}.md"
 
@@ -200,18 +195,13 @@ class ConsolidatedIssue:
             # If no label ends with "Topic", create a "NoTopic" issue directory path
             if not topic_labels:
                 self.__topics = ["NoTopic"]
-                logger.error("No Topic label found for Issue #%i: %s (%s)", self.number, self.title, self.repository_id)
+                self.__errors.update({"TopicError": "No Topic label found."})
+
                 no_topic_path = os.path.join(output_path, "NoTopic")
                 return [no_topic_path]
 
             if len(topic_labels) > 1:
-                logger.debug(
-                    "Multiple Topic labels found for Issue #%s: %s (%s): %s",
-                    self.number,
-                    self.title,
-                    self.repository_id,
-                    ", ".join(topic_labels),
-                )
+                self.__errors.update({"TopicError": "More than one Topic label found."})
 
             # Generate a directory path based on a Topic label
             for topic_label in topic_labels:

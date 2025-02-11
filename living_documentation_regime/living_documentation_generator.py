@@ -44,6 +44,8 @@ from utils.constants import (
     TABLE_HEADER_WITH_PROJECT_DATA,
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LIV_DOC_OUTPUT_PATH,
+    OUTPUT_PATH,
+    REPORT_PAGE_HEADER,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,6 +67,7 @@ class LivingDocumentationGenerator:
     INDEX_ORG_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_org_level_page_template.md")
     INDEX_DATA_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_data_level_page_template.md")
     INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_repo_page_template.md")
+    REPORT_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "report_page_template.md")
 
     def __init__(self):
         github_token = ActionInputs.get_github_token()
@@ -114,7 +117,7 @@ class LivingDocumentationGenerator:
 
         @return: None
         """
-        output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        output_path = make_absolute_path(OUTPUT_PATH)
 
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
@@ -288,7 +291,10 @@ class LivingDocumentationGenerator:
         topics = set()
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
-        output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        is_report_page = ActionInputs.get_is_report_page_generation_enabled()
+        regime_output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        report_page_content = REPORT_PAGE_HEADER
+        report_page_path = make_absolute_path(OUTPUT_PATH)
 
         # Load the template files for generating the Markdown pages
         (
@@ -298,18 +304,29 @@ class LivingDocumentationGenerator:
             index_org_level_template,
             index_repo_page_template,
             index_data_level_template,
+            report_page_template,
         ) = self._load_all_templates()
 
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
+            if is_report_page and consolidated_issue.errors:
+                repository_id: str = consolidated_issue.repository_id
+                number: int = consolidated_issue.number
+                html_url: str = consolidated_issue.html_url
+
+                for error_type, error_message in consolidated_issue.errors.items():
+                    report_page_content += (
+                        f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
+                    )
+
             for topic in consolidated_issue.topics:
                 topics.add(topic)
         logger.info("Markdown page generation - generated `%i` issue pages.", len(issues))
 
         # Generate all structure of the index pages
         if is_structured_output:
-            generate_root_level_index_page(index_root_level_page, output_path)
+            generate_root_level_index_page(index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
                 index_data_level_template, index_repo_page_template, index_org_level_template, topics, issues
             )
@@ -317,7 +334,7 @@ class LivingDocumentationGenerator:
         # Generate an index page with a summary table about all issues grouped by topics
         elif is_grouping_by_topics:
             issues = list(issues.values())
-            generate_root_level_index_page(index_root_level_page, output_path)
+            generate_root_level_index_page(index_root_level_page, regime_output_path)
 
             for topic in topics:
                 self._generate_index_page(index_data_level_template, issues, grouping_topic=topic)
@@ -326,7 +343,19 @@ class LivingDocumentationGenerator:
         else:
             issues = list(issues.values())
             self._generate_index_page(index_page_template, issues)
-            logger.info("Markdown page generation - generated `_index.md`")
+            logger.info("Markdown page generation - generated `_index.md`.")
+
+        # Generate a report page with a report error summary for the Living Documentation Regime if any
+        header, divider, *error_rows = report_page_content.strip().split("\n")
+        if error_rows:
+            report_page_content = "\n".join([header, divider] + error_rows)
+            report_page = report_page_template.format(
+                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
+            )
+            with open(os.path.join(report_page_path, "report_page.md"), "w", encoding="utf-8") as f:
+                f.write(report_page)
+
+            logger.warning("Markdown page generation - Report page generated.")
 
     def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
         """
@@ -694,6 +723,10 @@ class LivingDocumentationGenerator:
             LivingDocumentationGenerator.INDEX_DATA_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for data level was not successfully loaded.",
         )
+        report_page_template: Optional[str] = load_template(
+            LivingDocumentationGenerator.REPORT_PAGE_TEMPLATE_FILE,
+            "Report page template file was not successfully loaded.",
+        )
 
         return (
             issue_page_detail_template,
@@ -702,4 +735,5 @@ class LivingDocumentationGenerator:
             index_org_level_template,
             index_repo_page_template,
             index_data_level_template,
+            report_page_template,
         )
