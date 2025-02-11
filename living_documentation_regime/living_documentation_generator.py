@@ -310,16 +310,15 @@ class LivingDocumentationGenerator:
         # Generate a markdown page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
-            if is_report_page:
-                if consolidated_issue.errors:
-                    repository_id: str = consolidated_issue.repository_id
-                    number: int = consolidated_issue.number
-                    html_url: str = consolidated_issue.html_url
+            if is_report_page and consolidated_issue.errors:
+                repository_id: str = consolidated_issue.repository_id
+                number: int = consolidated_issue.number
+                html_url: str = consolidated_issue.html_url
 
-                    for error_type, error_message in consolidated_issue.errors.items():
-                        report_page_content += (
-                            f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
-                        )
+                for error_type, error_message in consolidated_issue.errors.items():
+                    report_page_content += (
+                        f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
+                    )
 
             for topic in consolidated_issue.topics:
                 topics.add(topic)
