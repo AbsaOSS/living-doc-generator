@@ -201,31 +201,54 @@ def test_get_repositories_invalid_string_as_input(mocker):
     mock_exit.assert_called_once_with(1)
 
 
-# validate_inputs
+# validate_repositories_configuration
 
 
-def test_validate_inputs_correct_behaviour(mocker):
+def test_validate_repositories_configuration_correct_behaviour(mocker, config_repository):
     # Arrange
-    repositories_json = [
-        {
-            "organization-name": "organizationABC",
-            "repository-name": "repositoryABC",
-            "query-labels": ["feature"],
-            "projects-title-filter": [],
-        }
-    ]
     mock_log_debug = mocker.patch("living_documentation_regime.action_inputs.logger.debug")
     mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
 
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=repositories_json
+        "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
+    )
+    mocker.patch(
+        "living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="correct_token"
     )
     mock_exit = mocker.patch("sys.exit")
+    fake_correct_response = mocker.Mock()
+    fake_correct_response.status_code = 200
+    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=fake_correct_response)
 
     # Act
-    ActionInputs().validate_inputs()
+    ActionInputs().validate_repositories_configuration()
 
     # Assert
     mock_exit.assert_not_called()
-    mock_log_debug.assert_called_once_with("Action inputs validation successfully completed.")
+    mock_log_debug.assert_called_once_with("Repositories configuration validation successfully completed.")
     mock_log_error.assert_not_called()
+
+
+def test_validate_repositories_configuration_wrong_configuration(mocker, config_repository):
+    # Arrange
+    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
+
+    mocker.patch(
+        "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
+    )
+    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="fake-token")
+    mock_exit = mocker.patch("sys.exit")
+    fake_correct_response = mocker.Mock()
+    fake_correct_response.status_code = 404
+    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=fake_correct_response)
+
+    # Act
+    ActionInputs().validate_repositories_configuration()
+
+    # Assert
+    mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with(
+        "Repository '%s/%s' could not be found on GitHub. Please verify that the repository exists and that your authorization token is correct.",
+        "test_org",
+        "test_repo",
+    )
