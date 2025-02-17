@@ -29,6 +29,7 @@ from utils.utils import get_action_input
 from utils.constants import (
     GITHUB_TOKEN,
     LIV_DOC_REGIME,
+    OUTPUT_FORMATS,
     PROJECT_STATE_MINING,
     REPOSITORIES,
     GROUP_OUTPUT_BY_TOPICS,
@@ -68,6 +69,20 @@ class ActionInputs:
         @return: True if LivDoc regime is enabled, False otherwise.
         """
         return get_action_input(LIV_DOC_REGIME, "false").lower() == "true"
+
+    @staticmethod
+    def get_output_formats() -> list[str]:
+        """
+        Getter of the output formats for generated documents.
+        @return: A list of output formats.
+        """
+        output_formats_json = get_action_input(OUTPUT_FORMATS, "[]").strip().lower()
+        try:
+            normalized_input_json = output_formats_json.replace("'", '"')
+            return json.loads(normalized_input_json)
+        except json.JSONDecodeError:
+            logger.error("Error parsing JSON output formats: %s.", output_formats_json)
+            sys.exit(1)
 
     @staticmethod
     def get_is_project_state_mining_enabled() -> bool:

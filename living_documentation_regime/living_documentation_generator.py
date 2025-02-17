@@ -35,6 +35,7 @@ from living_documentation_regime.model.consolidated_issue import ConsolidatedIss
 from living_documentation_regime.model.project_issue import ProjectIssue
 from utils.decorators import safe_call_decorator
 from utils.github_rate_limiter import GithubRateLimiter
+from utils.output_factory import OutputFactory
 from utils.utils import make_issue_key, generate_root_level_index_page, load_template, make_absolute_path
 from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
@@ -77,10 +78,11 @@ class LivingDocumentationGenerator:
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
         self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
 
-    def generate(self) -> None:
+    def generate(self, output_formats: list[str]) -> None:
         """
         Generate the Living Documentation markdown pages output.
 
+        @param output_formats: A list of output formats to be generated.
         @return: None
         """
         self._clean_output_directory()
@@ -107,7 +109,7 @@ class LivingDocumentationGenerator:
 
         # Generate markdown pages
         logger.info("Markdown page generation - started.")
-        self._generate_markdown_pages(consolidated_issues)
+        self._generate_living_documents(consolidated_issues, output_formats)
         logger.info("Markdown page generation - finished.")
 
     @staticmethod
@@ -281,15 +283,30 @@ class LivingDocumentationGenerator:
         )
         return consolidated_issues
 
-    def _generate_markdown_pages(self, issues: dict[str, ConsolidatedIssue]) -> None:
+    def _generate_living_documents(self, issues: dict[str, ConsolidatedIssue], output_formats: list[str]) -> None:
         """
         Generate the Markdown pages for all consolidated issues, create a summary index page and
         save it all to the output directory.
 
         @param issues: A dictionary containing all consolidated issues.
+        @param output_formats: A list of output formats to be generated.
+        @return: None
         """
+        output_factory = OutputFactory()
+
+        if "markdown" in output_formats:
+            OutputMarkdownFactory().create_output().generate_markdown_pages(issues)
+            output_formats.remove("markdown")
+
+        # if "pdf" in output_formats:
+        #     OutputMarkdownFactory().create_output().generate_markdown_pages(issues)
+        #     output_formats.remove("markdown")
+
+        # If there are still output formats left, we don't have a generation process for them for now
+        if output_formats:
+            logger.error("No output generation process found for these formats: %s", output_formats)
+
         topics = set()
-        report_page_content = "| Error Type | Issue | Message |\n| --- | --- | --- |\n"
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
         is_report_page = ActionInputs.get_is_report_page_generation_enabled()
