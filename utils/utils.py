@@ -116,7 +116,7 @@ def load_template(file_path: str, error_message: str) -> Optional[str]:
             return f.read()
     except IOError:
         logger.error(error_message, exc_info=True)
-        return None
+        sys.exit(1)
 
 
 # GitHub action utils

@@ -40,12 +40,13 @@ def run() -> None:
     logger.info("Starting Living Documentation generation.")
 
     ActionInputs().validate_repositories_configuration()
+    output_formats: list[str] = ActionInputs.get_output_formats()
 
     if ActionInputs.get_liv_doc_regime():
         logger.info("Living Documentation generation - Starting the `LivDoc` generation regime.")
 
         # Generate the Living documentation
-        LivingDocumentationGenerator().generate()
+        LivingDocumentationGenerator().generate(output_formats)
 
         logger.info("Living Documentation generation - `LivDoc` generation regime completed.")
 

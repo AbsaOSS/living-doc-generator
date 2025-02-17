@@ -476,7 +476,7 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_enabl
     mock_generate_md_issue_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_md_issue_page")
 
     # Act
-    living_documentation_generator._generate_markdown_pages(issues)
+    living_documentation_generator._generate_living_documents(issues)
 
     # Assert
     assert 2 == mock_generate_md_issue_page.call_count
@@ -520,7 +520,7 @@ def test_generate_markdown_pages_with_structured_output_enabled_and_topic_groupi
     mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
 
     # Act
-    living_documentation_generator._generate_markdown_pages(issues)
+    living_documentation_generator._generate_living_documents(issues)
 
     # Assert
     assert 3 == mock_generate_md_issue_page.call_count
@@ -562,7 +562,7 @@ def test_generate_markdown_pages_with_structured_output_and_topic_grouping_disab
     mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
 
     # Act
-    living_documentation_generator._generate_markdown_pages(issues)
+    living_documentation_generator._generate_living_documents(issues)
 
     # Assert
     load_all_templates_setup.assert_called_once()
@@ -610,7 +610,7 @@ def test_generate_markdown_pages_with_topic_grouping_enabled_and_structured_outp
     mock_generate_index_page = mocker.patch.object(LivingDocumentationGenerator, "_generate_index_page")
 
     # Act
-    living_documentation_generator._generate_markdown_pages(issues)
+    living_documentation_generator._generate_living_documents(issues)
 
     # Assert
     report_file = output_dir / "report_page.md"
@@ -666,7 +666,7 @@ def test_generate_markdown_pages_generates_report_page_with_errors(
     mock_logger_warning = mocker.patch("living_documentation_regime.living_documentation_generator.logger.warning")
 
     # Act
-    living_documentation_generator._generate_markdown_pages(issues)
+    living_documentation_generator._generate_living_documents(issues)
 
     # Assert
     report_file = output_dir / "report_page.md"
