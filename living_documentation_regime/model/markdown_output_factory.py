@@ -44,9 +44,9 @@ class MarkdownOutputFactory(OutputFactory):
     """A class representing the Markdown format generation factory."""
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-    TEMPLATES_BASE_PATH = os.path.join(os.path.dirname(os.path.dirname(PROJECT_ROOT)),
-                                       "templates",
-                                       "living_documentation_regime")
+    TEMPLATES_BASE_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(PROJECT_ROOT)), "templates", "living_documentation_regime"
+    )
 
     ISSUE_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "issue_detail_page_template.md")
     INDEX_NO_STRUCT_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_no_struct_page_template.md")
