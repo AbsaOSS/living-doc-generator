@@ -39,8 +39,7 @@ def run() -> None:
 
     logger.info("Starting Living Documentation generation.")
 
-    # Validate the action inputs
-    ActionInputs().validate_inputs()
+    ActionInputs().validate_repositories_configuration()
 
     if ActionInputs.get_liv_doc_regime():
         logger.info("Living Documentation generation - Starting the `LivDoc` generation regime.")

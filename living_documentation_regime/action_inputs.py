@@ -22,6 +22,7 @@ which are essential for running the GH action.
 import json
 import logging
 import sys
+import requests
 
 from living_documentation_regime.model.config_repository import ConfigRepository
 from utils.utils import get_action_input
@@ -122,15 +123,30 @@ class ActionInputs:
 
         return repositories
 
-    def validate_inputs(self) -> None:
+    def validate_repositories_configuration(self) -> None:
         """
-        Loads the inputs provided for the Living documentation generator.
-        Logs any validation errors and exits if any are found.
+        Checks that all repositories defined in the configuration are real .
 
         @return: None
         """
+        repositories: list[ConfigRepository] = self.get_repositories()
+        github_token = self.get_github_token()
+        headers = {"Authorization": f"token {github_token}"}
 
-        # Validate INPUT_REPOSITORIES
-        self.get_repositories()
+        for repository in repositories:
+            org_name = repository.organization_name
+            repo_name = repository.repository_name
+            github_repo_url = f"https://api.github.com/repos/{org_name}/{repo_name}"
 
-        logger.debug("Action inputs validation successfully completed.")
+            response = requests.get(github_repo_url, headers=headers, timeout=10)
+
+            if response.status_code == 404:
+                logger.error(
+                    "Repository '%s/%s' could not be found on GitHub. Please verify that the repository "
+                    "exists and that your authorization token is correct.",
+                    org_name,
+                    repo_name,
+                )
+                sys.exit(1)
+
+        logger.debug("Repositories configuration validation successfully completed.")
