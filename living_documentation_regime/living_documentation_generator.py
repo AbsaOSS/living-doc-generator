@@ -59,11 +59,10 @@ class LivingDocumentationGenerator:
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
         self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
 
-    def generate(self, output_formats: list[str]) -> None:
+    def generate(self) -> None:
         """
         Generate the Living Documentation markdown pages output.
 
-        @param output_formats: A list of output formats to be generated.
         @return: None
         """
         self._clean_output_directory()
@@ -90,7 +89,7 @@ class LivingDocumentationGenerator:
 
         # Generate markdown pages
         logger.info("Markdown page generation - started.")
-        self._generate_living_documents(consolidated_issues, output_formats)
+        self._generate_living_documents(consolidated_issues)
         logger.info("Markdown page generation - finished.")
 
     @staticmethod
@@ -265,15 +264,16 @@ class LivingDocumentationGenerator:
         return consolidated_issues
 
     @staticmethod
-    def _generate_living_documents(issues: dict[str, ConsolidatedIssue], output_formats: list[str]) -> None:
+    def _generate_living_documents(issues: dict[str, ConsolidatedIssue]) -> None:
         """
         Generate the Markdown pages for all consolidated issues, create a summary index page and
         save it all to the output directory.
 
         @param issues: A dictionary containing all consolidated issues.
-        @param output_formats: A list of output formats to be generated.
         @return: None
         """
+        output_formats: list[str] = ActionInputs.get_output_formats()
+
         # If list of output formats is by user an empty list, generate all output options
         if not output_formats:
             MarkdownExporterFactory().export(issues)

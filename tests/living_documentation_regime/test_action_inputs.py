@@ -221,7 +221,7 @@ def test_validate_repositories_configuration_correct_behaviour(mocker, config_re
     mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=fake_correct_response)
 
     # Act
-    ActionInputs().validate_repositories_configuration()
+    ActionInputs().validate_user_configuration()
 
     # Assert
     mock_exit.assert_not_called()
@@ -243,7 +243,7 @@ def test_validate_repositories_configuration_wrong_configuration(mocker, config_
     mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=fake_correct_response)
 
     # Act
-    ActionInputs().validate_repositories_configuration()
+    ActionInputs().validate_user_configuration()
 
     # Assert
     mock_exit.assert_called_once_with(1)

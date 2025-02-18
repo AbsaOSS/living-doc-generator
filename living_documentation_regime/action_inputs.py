@@ -138,12 +138,16 @@ class ActionInputs:
 
         return repositories
 
-    def validate_repositories_configuration(self) -> None:
+    def validate_user_configuration(self) -> None:
         """
-        Checks that all repositories defined in the configuration are real .
+        Checks that all the user configuration defined is correct.
 
         @return: None
         """
+        # validate output formats
+        ActionInputs.get_output_formats()
+
+        # validate repositories configuration
         repositories: list[ConfigRepository] = self.get_repositories()
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
@@ -164,4 +168,4 @@ class ActionInputs:
                 )
                 sys.exit(1)
 
-        logger.debug("Repositories configuration validation successfully completed.")
+        logger.debug("User configuration validation successfully completed.")
