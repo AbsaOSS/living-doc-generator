@@ -23,7 +23,7 @@ import os
 from datetime import datetime
 from typing import Optional
 
-from model.output_factory import OutputFactory
+from model.output_factory import ExporterFactory
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from utils.utils import make_absolute_path, generate_root_level_index_page, load_template
@@ -40,7 +40,7 @@ from utils.constants import (
 logger = logging.getLogger(__name__)
 
 
-class MarkdownOutputFactory(OutputFactory):
+class MarkdownExporterFactory(ExporterFactory):
     """A class representing the Markdown format generation factory."""
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -56,7 +56,7 @@ class MarkdownOutputFactory(OutputFactory):
     INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_repo_page_template.md")
     REPORT_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "report_page_template.md")
 
-    def generate_output(self, issues: dict[str, ConsolidatedIssue]) -> None:
+    def export(self, issues: dict[str, ConsolidatedIssue]) -> None:
         """
         A method for generating the output in the Markdown format.
 
@@ -475,31 +475,31 @@ class MarkdownOutputFactory(OutputFactory):
         @return: A tuple containing all loaded template files.
         """
         issue_page_detail_template: Optional[str] = load_template(
-            MarkdownOutputFactory.ISSUE_PAGE_TEMPLATE_FILE,
+            MarkdownExporterFactory.ISSUE_PAGE_TEMPLATE_FILE,
             "Issue page template file was not successfully loaded.",
         )
         index_page_template: Optional[str] = load_template(
-            MarkdownOutputFactory.INDEX_NO_STRUCT_TEMPLATE_FILE,
+            MarkdownExporterFactory.INDEX_NO_STRUCT_TEMPLATE_FILE,
             "Index page template file was not successfully loaded.",
         )
         index_root_level_page: Optional[str] = load_template(
-            MarkdownOutputFactory.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
+            MarkdownExporterFactory.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for root level was not successfully loaded.",
         )
         index_org_level_template: Optional[str] = load_template(
-            MarkdownOutputFactory.INDEX_ORG_LEVEL_TEMPLATE_FILE,
+            MarkdownExporterFactory.INDEX_ORG_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for organization level was not successfully loaded.",
         )
         index_repo_page_template: Optional[str] = load_template(
-            MarkdownOutputFactory.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
+            MarkdownExporterFactory.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
             "Structured index page template file for repository level was not successfully loaded.",
         )
         index_data_level_template: Optional[str] = load_template(
-            MarkdownOutputFactory.INDEX_DATA_LEVEL_TEMPLATE_FILE,
+            MarkdownExporterFactory.INDEX_DATA_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for data level was not successfully loaded.",
         )
         report_page_template: Optional[str] = load_template(
-            MarkdownOutputFactory.REPORT_PAGE_TEMPLATE_FILE,
+            MarkdownExporterFactory.REPORT_PAGE_TEMPLATE_FILE,
             "Report page template file was not successfully loaded.",
         )
 

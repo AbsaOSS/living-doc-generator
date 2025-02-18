@@ -28,7 +28,7 @@ from github.Issue import Issue
 
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.github_projects import GithubProjects
-from living_documentation_regime.model.markdown_output_factory import MarkdownOutputFactory
+from living_documentation_regime.model.markdown_output_factory import MarkdownExporterFactory
 from living_documentation_regime.model.github_project import GithubProject
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_regime.model.project_issue import ProjectIssue
@@ -276,11 +276,11 @@ class LivingDocumentationGenerator:
         """
         # If list of output formats is by user an empty list, generate all output options
         if not output_formats:
-            MarkdownOutputFactory().generate_output(issues)
+            MarkdownExporterFactory().export(issues)
             # PdfOutputFactory().generate_output(issues)
         else:
             if "markdown" in output_formats:
-                MarkdownOutputFactory().generate_output(issues)
+                MarkdownExporterFactory().export(issues)
                 output_formats.remove("markdown")
 
             # if "pdf" in output_formats:

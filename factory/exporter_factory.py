@@ -26,14 +26,14 @@ from living_documentation_regime.model.consolidated_issue import ConsolidatedIss
 logger = logging.getLogger(__name__)
 
 
-class OutputFactory(ABC):
-    """An abstract class representing the Output Factory."""
+class ExporterFactory(ABC):
+    """An abstract class representing the Exporter Factory."""
 
     @abstractmethod
-    def generate_output(self, issues: dict[str, ConsolidatedIssue]) -> None:
+    def export(self, issues: dict[str, ConsolidatedIssue]) -> None:
         """
-        An abstract method for generating the output in the correct format.
+        An abstract method for exporting the output in the correct format.
 
-        @param issues: The data to be saved in the output.
+        @param issues: The data to be saved / exported in the output.
         @return: None
         """
