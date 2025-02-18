@@ -20,20 +20,19 @@ responsible for generating outputs in the correct format.
 
 import logging
 
-from abc import ABC, abstractmethod
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 
 logger = logging.getLogger(__name__)
 
 
-class ExporterFactory(ABC):
-    """An abstract class representing the Exporter Factory."""
+class ExporterFactory:
+    """A class representing the Exporter Factory."""
 
-    @abstractmethod
     def export(self, issues: dict[str, ConsolidatedIssue]) -> None:
         """
-        An abstract method for exporting the output in the correct format.
+        A method for exporting the output in the correct format.
 
         @param issues: The data to be saved / exported in the output.
         @return: None
         """
+        raise NotImplementedError("Subclasses should implement this method")
