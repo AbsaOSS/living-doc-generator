@@ -40,11 +40,12 @@ jobs:
               "projects-title-filter": [] 
             }
           ]
+        
 
     
 
     - name: Verify integration test results
-      run: pytest tests/integration/validate_outputs_test.py
+      run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test1
 
   IntegrationTests2:
     runs-on: ubuntu-latest
@@ -79,9 +80,10 @@ jobs:
                 "projects-title-filter": ["integration-tests-for-living-doc-generator"] 
               }
             ]
+            liv-doc-project-state-mining: true
 
       - name: Verify integration test results
-        run: pytest tests/integration/validate_outputs_test.py
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test2
 
   IntegrationTests3:
     runs-on: ubuntu-latest
@@ -118,4 +120,4 @@ jobs:
             ]
 
       - name: Verify integration test results
-        run: pytest tests/integration/validate_outputs_test.py
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test3
