@@ -286,7 +286,7 @@ chmod +x run_script.sh
 ### Run the Script
 
 ```shell
-./run_script.sh
+source run_script.sh
 ```
 
 ---
@@ -391,7 +391,7 @@ All done! ✨ 🍰 ✨
 
 Unit tests are written using Pytest framework. To run alle the tests, use the following command:
 ```shell
-pytest tests/
+pytest --ignore=tests/integration tests/
 ```
 
 You can modify the directory to control the level of detail or granularity as per your needs.
@@ -409,7 +409,7 @@ The objective of the project is to achieve a minimal score of 80 %. We do exclud
 
 To generate the coverage report, run the following command:
 ```shell
-pytest --cov=. tests/ --cov-fail-under=80 --cov-report=html
+pytest --ignore=tests/integration --cov=. tests/ --cov-fail-under=80 --cov-report=html
 ```
 
 See the coverage report on the path:

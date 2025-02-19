@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 import datetime
+import os
+import shutil
 import time
 import pytest
 from github import Github
@@ -163,3 +165,22 @@ def project_status(mocker):
     project_status.moscow = "Must Have"
 
     return project_status
+
+
+@pytest.fixture(scope="session")
+def setup_for_integration_tests():
+    os.environ["INPUT_LIV_DOC_REGIME"] = "true"
+    os.environ["INPUT_VERBOSE_LOGGING"] = "false"
+    os.environ["INPUT_REPORT_PAGE"] = "true"
+
+    os.environ["INPUT_LIV_DOC_PROJECT_STATE_MINING"] = "true"
+    os.environ["INPUT_LIV_DOC_STRUCTURED_OUTPUT"] = "true"
+    os.environ["INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS"] = "true"
+
+@pytest.fixture(scope="function")
+def clean_for_integration_tests():
+    yield
+    # Cleanup: remove the output folder
+    output_folder = "output"
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder)
