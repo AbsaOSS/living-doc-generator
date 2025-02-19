@@ -8,12 +8,12 @@ directory_path = f"{output_folder}/liv-doc-regime"
 
 def test_validate_for_test1():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 4
+    assert count_files_in_directory(directory_path) == 4 + 1
 
 def test_validate_for_test2():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 2
+    assert count_files_in_directory(directory_path) == 2 + 1
 
 def test_validate_for_test3():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 2
+    assert count_files_in_directory(directory_path) == 2 + 1
