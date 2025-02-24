@@ -17,6 +17,8 @@
 This module contains a factory class for creating exporters.
 """
 import logging
+from typing import Optional
+from exporter.exporter import Exporter
 from living_documentation_regime.exporter.mdoc_exporter import MdocExporter
 from utils.constants import Regime, Format
 
@@ -29,7 +31,14 @@ class ExporterFactory:
     """
 
     @staticmethod
-    def get_exporter(regime: Regime, fmt: str):
+    def get_exporter(regime: Regime, fmt: str) -> Optional[Exporter]:
+        """
+        Get the exporter based on the regime and format.
+
+        @param regime: The regime for which the exporter is needed.
+        @param fmt: The format in which the output should be exported.
+        @return: The exporter for the regime and format.
+        """
         match (regime, fmt):
             case (Regime.LIV_DOC_REGIME, Format.MDOC.value):
                 return MdocExporter()
