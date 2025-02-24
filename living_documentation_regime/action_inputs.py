@@ -77,12 +77,8 @@ class ActionInputs:
         @return: A list of output formats.
         """
         output_formats_json = get_action_input(OUTPUT_FORMATS, "[]").strip().lower()
-        try:
-            normalized_input_json = output_formats_json.replace("'", '"')
-            return json.loads(normalized_input_json)
-        except json.JSONDecodeError:
-            logger.error("Error parsing JSON output formats: %s.", output_formats_json)
-            sys.exit(1)
+        normalized_input_json = output_formats_json.replace("'", '"')
+        return json.loads(normalized_input_json)
 
     @staticmethod
     def get_is_project_state_mining_enabled() -> bool:
@@ -145,7 +141,15 @@ class ActionInputs:
         @return: None
         """
         # validate output formats
-        ActionInputs.get_output_formats()
+        try:
+            output_formats: list[str] = ActionInputs.get_output_formats()
+        except json.JSONDecodeError:
+            logger.error("Error parsing JSON output formats. The correct format should look like '[\"markdown\"]'.")
+            sys.exit(1)
+
+        if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
+            logger.error("User input `output-formats` must be a list of strings (ex. '[\"markdown\"]').")
+            sys.exit(1)
 
         # validate repositories configuration
         repositories: list[ConfigRepository] = self.get_repositories()

@@ -23,7 +23,7 @@ import os
 from datetime import datetime
 from typing import Optional
 
-from model.output_factory import ExporterFactory
+from factory.exporter_factory import ExporterFactory
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from utils.utils import make_absolute_path, generate_root_level_index_page, load_template
