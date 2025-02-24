@@ -23,7 +23,7 @@ import os
 from datetime import datetime
 from typing import Optional
 
-from factory.exporter_factory import ExporterFactory
+from exporter.exporter import Exporter
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from utils.utils import make_absolute_path, generate_root_level_index_page, load_template
@@ -40,8 +40,8 @@ from utils.constants import (
 logger = logging.getLogger(__name__)
 
 
-class MarkdownExporterFactory(ExporterFactory):
-    """A class representing the Markdown format generation factory."""
+class MdocExporter(Exporter):
+    """A class representing the Markdown format generation exporter."""
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
     TEMPLATES_BASE_PATH = os.path.join(
@@ -56,13 +56,10 @@ class MarkdownExporterFactory(ExporterFactory):
     INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_repo_page_template.md")
     REPORT_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "report_page_template.md")
 
-    def export(self, issues: dict[str, ConsolidatedIssue]) -> None:
-        """
-        A method for generating the output in the Markdown format.
+    def export(self, **kwargs) -> None:
+        issues = kwargs.get("issues", {})
+        logger.debug("Exporting %d issues...", len(issues))
 
-        @param issues: The issues to be saved in the output.
-        @return: None
-        """
         topics = set()
         is_structured_output = ActionInputs.get_is_structured_output_enabled()
         is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
@@ -475,31 +472,31 @@ class MarkdownExporterFactory(ExporterFactory):
         @return: A tuple containing all loaded template files.
         """
         issue_page_detail_template: Optional[str] = load_template(
-            MarkdownExporterFactory.ISSUE_PAGE_TEMPLATE_FILE,
+            MdocExporter.ISSUE_PAGE_TEMPLATE_FILE,
             "Issue page template file was not successfully loaded.",
         )
         index_page_template: Optional[str] = load_template(
-            MarkdownExporterFactory.INDEX_NO_STRUCT_TEMPLATE_FILE,
+            MdocExporter.INDEX_NO_STRUCT_TEMPLATE_FILE,
             "Index page template file was not successfully loaded.",
         )
         index_root_level_page: Optional[str] = load_template(
-            MarkdownExporterFactory.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
+            MdocExporter.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for root level was not successfully loaded.",
         )
         index_org_level_template: Optional[str] = load_template(
-            MarkdownExporterFactory.INDEX_ORG_LEVEL_TEMPLATE_FILE,
+            MdocExporter.INDEX_ORG_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for organization level was not successfully loaded.",
         )
         index_repo_page_template: Optional[str] = load_template(
-            MarkdownExporterFactory.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
+            MdocExporter.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
             "Structured index page template file for repository level was not successfully loaded.",
         )
         index_data_level_template: Optional[str] = load_template(
-            MarkdownExporterFactory.INDEX_DATA_LEVEL_TEMPLATE_FILE,
+            MdocExporter.INDEX_DATA_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for data level was not successfully loaded.",
         )
         report_page_template: Optional[str] = load_template(
-            MarkdownExporterFactory.REPORT_PAGE_TEMPLATE_FILE,
+            MdocExporter.REPORT_PAGE_TEMPLATE_FILE,
             "Report page template file was not successfully loaded.",
         )
 

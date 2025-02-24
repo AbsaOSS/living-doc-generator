@@ -14,25 +14,25 @@
 #
 
 """
-This module contains the abstract Output Factory class which is
-responsible for generating outputs in the correct format.
+This module contains a factory class for creating exporters.
 """
-
 import logging
-
-from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
+from living_documentation_regime.exporter.mdoc_exporter import MdocExporter
+from utils.constants import Regime, Format
 
 logger = logging.getLogger(__name__)
 
 
 class ExporterFactory:
-    """A class representing the Exporter Factory."""
+    """
+    A factory class for creating exporters based on adequate regime and format.
+    """
 
-    def export(self, issues: dict[str, ConsolidatedIssue]) -> None:
-        """
-        A method for exporting the output in the correct format.
-
-        @param issues: The data to be saved / exported in the output.
-        @return: None
-        """
-        raise NotImplementedError("Subclasses should implement this method")
+    @staticmethod
+    def get_exporter(regime: Regime, fmt: str):
+        match (regime, fmt):
+            case (Regime.LIV_DOC_REGIME, Format.MDOC.value):
+                return MdocExporter()
+            case _:
+                logger.error("Exporter not found for regime: %s and format: %s", regime, fmt)
+                return None

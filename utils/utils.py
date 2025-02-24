@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import logging
+from enum import Enum
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -120,7 +121,7 @@ def load_template(file_path: str, error_message: str) -> Optional[str]:
 
 
 # GitHub action utils
-def get_action_input(name: str, default: Optional[str] = None) -> str:
+def get_action_input(name: str | Enum, default: Optional[str] = None) -> str:
     """
     Get the input value from the environment variables.
 
@@ -128,6 +129,8 @@ def get_action_input(name: str, default: Optional[str] = None) -> str:
     @param default: The default value to return if the environment variable is not set.
     @return: The value of the specified input parameter, or an empty string
     """
+    if isinstance(name, Enum):
+        name = name.value
     return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default)
 
 

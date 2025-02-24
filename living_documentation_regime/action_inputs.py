@@ -28,13 +28,13 @@ from living_documentation_regime.model.config_repository import ConfigRepository
 from utils.utils import get_action_input
 from utils.constants import (
     GITHUB_TOKEN,
-    LIV_DOC_REGIME,
     OUTPUT_FORMATS,
     PROJECT_STATE_MINING,
     REPOSITORIES,
     GROUP_OUTPUT_BY_TOPICS,
     STRUCTURED_OUTPUT,
     REPORT_PAGE,
+    Regime,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class ActionInputs:
         Getter of the LivDoc regime switch.
         @return: True if LivDoc regime is enabled, False otherwise.
         """
-        return get_action_input(LIV_DOC_REGIME, "false").lower() == "true"
+        return get_action_input(Regime.LIV_DOC_REGIME, "false").lower() == "true"
 
     @staticmethod
     def get_output_formats() -> list[str]:

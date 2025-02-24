@@ -26,9 +26,9 @@ from typing import Callable
 from github import Github, Auth
 from github.Issue import Issue
 
+from factory.exporter_factory import ExporterFactory
 from living_documentation_regime.action_inputs import ActionInputs
 from living_documentation_regime.github_projects import GithubProjects
-from living_documentation_regime.model.markdown_output_factory import MarkdownExporterFactory
 from living_documentation_regime.model.github_project import GithubProject
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_regime.model.project_issue import ProjectIssue
@@ -39,6 +39,7 @@ from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
     ISSUE_STATE_ALL,
     OUTPUT_PATH,
+    Regime,
 )
 
 logger = logging.getLogger(__name__)
@@ -266,27 +267,15 @@ class LivingDocumentationGenerator:
     @staticmethod
     def _generate_living_documents(issues: dict[str, ConsolidatedIssue]) -> None:
         """
-        Generate the Markdown pages for all consolidated issues, create a summary index page and
-        save it all to the output directory.
+        Generate the pages for all consolidated issues, create a summary index page and
+        save it all to the output directory in correct format.
 
         @param issues: A dictionary containing all consolidated issues.
         @return: None
         """
-        output_formats: list[str] = ActionInputs.get_output_formats()
-
-        # If list of output formats is by user an empty list, generate all output options
-        if not output_formats:
-            MarkdownExporterFactory().export(issues)
-            # PdfOutputFactory().generate_output(issues)
-        else:
-            if "markdown" in output_formats:
-                MarkdownExporterFactory().export(issues)
-                output_formats.remove("markdown")
-
-            # if "pdf" in output_formats:
-            #     PdfOutputFactory().generate_output(issues)
-            #     output_formats.remove("pdf")
-
-            # If there are still output formats left, we don't have a generation process for them for now
-            if output_formats:
-                logger.error("No generation process for these formats: %s", output_formats)
+        for output_format in ActionInputs.get_output_formats():
+            exporter = ExporterFactory.get_exporter(Regime.LIV_DOC_REGIME, output_format)
+            if exporter:
+                exporter.export(issues=issues)
+            else:
+                logger.error("No generation process for this format: %s", output_format)
