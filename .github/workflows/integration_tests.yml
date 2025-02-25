@@ -6,9 +6,9 @@ on:
   pull_request:
 
 jobs:
-  IntegrationTests1:
+  TestWithoutProjectMining:
     runs-on: ubuntu-latest
-    name: Integration Tests all issues
+    name: Integration Tests without project mining
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -45,11 +45,49 @@ jobs:
     
 
     - name: Verify integration test results
-      run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test1
+      run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_without_project_mining
 
-  IntegrationTests2:
+  TestsWithProjectMining:
     runs-on: ubuntu-latest
-    name: Integration Tests in project
+    name: Integration Tests with project mining
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Integration test
+        id: generate_living_doc
+        uses: ./
+        env:
+          GITHUB-TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          liv-doc-regime: true
+          liv-doc-repositories: |
+            [
+              {
+                "organization-name": "AbsaOSS",
+                "repository-name": "living-doc-generator",
+                "query-labels": ["int-tests"],
+                "projects-title-filter": [] 
+              }
+            ]
+          liv-doc-project-state-mining: true
+
+      - name: Verify integration test results
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_wit_project_mining
+
+  TestWithProjectMiningExcludeProject:
+    runs-on: ubuntu-latest
+    name: Integration Tests with project mining and excluded project
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -80,44 +118,7 @@ jobs:
                 "projects-title-filter": ["integration-tests-for-living-doc-generator"] 
               }
             ]
-            liv-doc-project-state-mining: true
+          liv-doc-project-state-mining: true
 
       - name: Verify integration test results
-        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test2
-
-  IntegrationTests3:
-    runs-on: ubuntu-latest
-    name: Integration Tests bug label
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v5.1.0
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Integration test
-        id: generate_living_doc
-        uses: ./
-        env:
-          GITHUB-TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          liv-doc-regime: true
-          liv-doc-repositories: |
-            [
-              {
-                "organization-name": "AbsaOSS",
-                "repository-name": "living-doc-generator",
-                "query-labels": ["int-tests", "bug"],
-                "projects-title-filter": [] 
-              }
-            ]
-
-      - name: Verify integration test results
-        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test3
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_wit_project_mining_and_excluded_project
