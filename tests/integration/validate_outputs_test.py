@@ -7,7 +7,7 @@ issue89_path = f"{directory_path}/89_test_user_story_in_project.md"
 issue90_path = f"{directory_path}/90_test_documented_feature_in_project.md"
 issue91_path = f"{directory_path}/91_test_user_story.md"
 
-issue88 = '''
+issue88_header = '''
 | Attribute | Content |
 |---|---|
 | Organization name | AbsaOSS |
@@ -19,9 +19,10 @@ issue88 = '''
 | Created at | 2025-02-19 08:45:06+00:00 |
 | Updated at | 2025-02-25 13:54:16+00:00 |
 | Closed at | None |
-| Labels | int-tests, DocumentedFeature |
-
+| Labels | int-tests, DocumentedFeature |'''
+issue88_content ='''
  
+
 <h3>Issue Content</h3>
 
 # Feature
@@ -37,7 +38,7 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue89 = '''
+issue89_header = '''
 
 | Attribute | Content |
 |---|---|
@@ -50,8 +51,8 @@ issue89 = '''
 | Created at | 2025-02-19 08:48:59+00:00 |
 | Updated at | 2025-02-25 13:47:55+00:00 |
 | Closed at | None |
-| Labels | int-tests, DocumentedUserStory |
-
+| Labels | int-tests, DocumentedUserStory |'''
+issue89_content ='''
  
 <h3>Issue Content</h3>
 
@@ -87,7 +88,7 @@ Some user story description
     - Step 1: [Instruction]
     - Step 2: [Instruction]
 '''
-issue90 = '''
+issue90_header = '''
 | Attribute | Content |
 |---|---|
 | Organization name | AbsaOSS |
@@ -99,8 +100,8 @@ issue90 = '''
 | Created at | 2025-02-19 08:55:41+00:00 |
 | Updated at | 2025-02-25 13:54:07+00:00 |
 | Closed at | None |
-| Labels | int-tests, DocumentedFeature |
-
+| Labels | int-tests, DocumentedFeature |'''
+issue90_content ='''
  
 <h3>Issue Content</h3>
 
@@ -117,7 +118,7 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue91 = '''
+issue91_header = '''
 | Attribute | Content |
 |---|---|
 | Organization name | AbsaOSS |
@@ -129,8 +130,8 @@ issue91 = '''
 | Created at | 2025-02-19 08:58:08+00:00 |
 | Updated at | 2025-02-25 13:45:46+00:00 |
 | Closed at | None |
-| Labels | int-tests, DocumentedUserStory |
-
+| Labels | int-tests, DocumentedUserStory |'''
+issue91_content = '''
  
 <h3>Issue Content</h3>
 
@@ -166,6 +167,19 @@ Some user story description
     - Step 1: [Instruction]
     - Step 2: [Instruction]'''
 
+S_P1_TODO = '''
+| Project title     | integration-tests-for-living-doc-generator  |
+| Status            | Todo                                        |
+| Priority          | P1                                          |
+| Size              | S                                           |
+| MoSCoW            | ---                                         |'''
+
+M_P0_IN_PROGRESS = '''
+| Project title     | integration-tests-for-living-doc-generator  |
+| Status            | In Progress                                 |
+| Priority          | P0                                          |
+| Size              | M                                           |
+| MoSCoW            | ---                                         |'''
 def count_files_in_directory(directory):
     return len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
 
@@ -178,21 +192,23 @@ def validate_issue(path, issue):
 def test_validate_for_test_without_project_mining():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
-    assert validate_issue(issue88_path, issue88)
-    assert validate_issue(issue89_path, issue89)
-    assert validate_issue(issue90_path, issue90)
-    assert validate_issue(issue91_path, issue91)
+    assert validate_issue(issue88_path, issue88_header + issue88_content)
+    assert validate_issue(issue89_path, issue89_header + issue89_content)
+    assert validate_issue(issue90_path, issue90_header + issue90_content)
+    assert validate_issue(issue91_path, issue91_header + issue91_content)
 
 def test_validate_for_test_wit_project_mining():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
-    assert not validate_issue(issue88_path, issue88)
-    assert not validate_issue(issue89_path, issue89)
-    assert not validate_issue(issue90_path, issue90)
-    assert not validate_issue(issue91_path, issue91)
+    assert validate_issue(issue88_path, issue88_header + issue88_content)
+    assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
+    assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
+    assert validate_issue(issue91_path, issue91_header + issue91_content)
 
 def test_validate_for_test_wit_project_mining_and_excluded_project():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 2 + 1
-    assert not validate_issue(issue88_path, issue88)
-    assert not validate_issue(issue91_path, issue91)
+    assert count_files_in_directory(directory_path) == 4 + 1
+    assert validate_issue(issue88_path, issue88_header + issue88_content)
+    assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
+    assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
+    assert validate_issue(issue91_path, issue91_header + issue91_content)
