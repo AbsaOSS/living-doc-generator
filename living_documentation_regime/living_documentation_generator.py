@@ -89,9 +89,7 @@ class LivingDocumentationGenerator:
         logger.info("Issue and project data consolidation - finished.")
 
         # Generate markdown pages
-        logger.info("Markdown page generation - started.")
         self._generate_living_documents(consolidated_issues)
-        logger.info("Markdown page generation - finished.")
 
     @staticmethod
     def _clean_output_directory() -> None:
@@ -268,7 +266,7 @@ class LivingDocumentationGenerator:
     def _generate_living_documents(issues: dict[str, ConsolidatedIssue]) -> None:
         """
         Generate the pages for all consolidated issues, create a summary index page and
-        save it all to the output directory in correct format.
+        save it all to the output directory in format selected by a user.
 
         @param issues: A dictionary containing all consolidated issues.
         @return: None

@@ -25,7 +25,7 @@ class Exporter:
 
     def export(self, **kwargs) -> None:
         """
-        A method for exporting the output in the correct format.
+        A method for exporting the output in the selected format.
 
         @param kwargs: Additional arguments for the export method
         @return: None

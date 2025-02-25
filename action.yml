@@ -68,7 +68,6 @@ runs:
         echo "INPUT_LIV_DOC_REGIME=${{ inputs.liv-doc-regime }}" >> $GITHUB_ENV
         echo "INPUT_OUTPUT_FORMATS=$(echo '${{ inputs.output-formats }}' | jq -c .)" >> $GITHUB_ENV
         echo "INPUT_REPORT_PAGE=${{ inputs.report-page }}" >> $GITHUB_ENV
-
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
 
         # Add LivDoc-specific env variables if the regime is enabled
@@ -86,6 +85,7 @@ runs:
         INPUT_GITHUB_TOKEN: ${{ env.INPUT_GITHUB_TOKEN }}
         INPUT_LIV_DOC_REGIME: ${{ env.INPUT_LIV_DOC_REGIME }}
         INPUT_OUTPUT_FORMATS: ${{ env.INPUT_OUTPUT_FORMATS }}
+
         INPUT_REPORT_PAGE: ${{ env.INPUT_REPORT_PAGE }}
         INPUT_VERBOSE_LOGGING: ${{ env.INPUT_VERBOSE_LOGGING }}
 

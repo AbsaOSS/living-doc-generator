@@ -44,7 +44,9 @@ This Generator supports multiple mining regimes, each with its own unique functi
 
 ### Prerequisites
 
-Before we begin, ensure you have a GitHub Token with permission to fetch repository data such as Issues and Pull Requests.
+Before we begin, ensure you have a following prerequisites:
+- GitHub Token with permission to fetch repository data such as Issues and Pull Requests,
+- Python version 3.12 or higher.
 
 ### Adding the Action to Your Workflow
 

@@ -14,8 +14,8 @@
 #
 
 """
-This module contains the Markdown Output Factory class which is responsible
-for generating outputs in the Markdown format.
+This module contains the MDoc Output Factory class which is responsible
+for generating outputs in the MDoc format.
 """
 
 import logging
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class MdocExporter(Exporter):
-    """A class representing the Markdown format generation exporter."""
+    """A class representing the MDoc format generation exporter."""
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
     TEMPLATES_BASE_PATH = os.path.join(
@@ -57,6 +57,8 @@ class MdocExporter(Exporter):
     REPORT_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "report_page_template.md")
 
     def export(self, **kwargs) -> None:
+        logger.info("MDoc page generation - started.")
+
         issues = kwargs.get("issues", {})
         logger.debug("Exporting %d issues...", len(issues))
 
@@ -68,7 +70,7 @@ class MdocExporter(Exporter):
         report_page_content = REPORT_PAGE_HEADER
         report_page_path = make_absolute_path(OUTPUT_PATH)
 
-        # Load the template files for generating the Markdown pages
+        # Load the template files for generating the MDoc pages
         (
             issue_page_detail_template,
             index_page_template,
@@ -79,7 +81,7 @@ class MdocExporter(Exporter):
             report_page_template,
         ) = self._load_all_templates()
 
-        # Generate a markdown page for every issue
+        # Generate a MDoc page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
             if is_report_page and consolidated_issue.errors:
@@ -94,7 +96,7 @@ class MdocExporter(Exporter):
 
             for topic in consolidated_issue.topics:
                 topics.add(topic)
-        logger.info("Markdown page generation - generated `%i` issue pages.", len(issues))
+        logger.info("MDoc page generation - generated `%i` issue pages.", len(issues))
 
         # Generate all structure of the index pages
         if is_structured_output:
@@ -115,7 +117,7 @@ class MdocExporter(Exporter):
         else:
             issues = list(issues.values())
             self._generate_index_page(index_page_template, issues)
-            logger.info("Markdown page generation - generated `_index.md`.")
+            logger.info("MDoc page generation - generated `_index.md`.")
 
         # Generate a report page with a report error summary for the Living Documentation Regime if any
         header, divider, *error_rows = report_page_content.strip().split("\n")
@@ -127,13 +129,15 @@ class MdocExporter(Exporter):
             with open(os.path.join(report_page_path, "report_page.md"), "w", encoding="utf-8") as f:
                 f.write(report_page)
 
-            logger.warning("Markdown page generation - Report page generated.")
+            logger.warning("MDoc page generation - Report page generated.")
+
+        logger.info("MDoc page generation - finished.")
 
     def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
         """
-        Generates a single issue Markdown page from a template and save to the output directory.
+        Generates a single issue MDoc page from a template and save to the output directory.
 
-        @param issue_page_template: The template string for generating the single markdown issue page.
+        @param issue_page_template: The template string for generating the single MDoc issue page.
         @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
         @return: None
         """
@@ -163,12 +167,12 @@ class MdocExporter(Exporter):
         for page_directory_path in page_directory_paths:
             os.makedirs(page_directory_path, exist_ok=True)
 
-            # Save the single issue Markdown page
+            # Save the single issue MDoc page
             page_filename = consolidated_issue.generate_page_filename()
             with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
                 f.write(issue_md_page_content)
 
-            logger.debug("Generated Markdown page: %s.", page_filename)
+            logger.debug("Generated MDoc page: %s.", page_filename)
 
     def _generate_structured_index_pages(
         self,
@@ -181,9 +185,9 @@ class MdocExporter(Exporter):
         """
         Generates a set of index pages due to a structured output feature.
 
-        @param index_data_level_template: The template string for generating the data level index markdown page.
-        @param index_repo_level_template: The template string for generating the repository level index markdown page.
-        @param index_org_level_template: The template string for generating the organization level index markdown page.
+        @param index_data_level_template: The template string for generating the data level index MDoc page.
+        @param index_repo_level_template: The template string for generating the repository level index MDoc page.
+        @param index_org_level_template: The template string for generating the organization level index MDoc page.
         @param topics: A set of topics used for grouping issues.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @return: None
@@ -228,7 +232,7 @@ class MdocExporter(Exporter):
                     repository_id,
                 )
 
-            logger.info("Markdown page generation - generated `_index.md` pages for %s.", repository_id)
+            logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
     def _generate_index_page(
         self,
@@ -240,7 +244,7 @@ class MdocExporter(Exporter):
         """
         Generates an index page with a summary of all issues and save it to the output directory.
 
-        @param issue_index_page_template: The template string for generating the index markdown page.
+        @param issue_index_page_template: The template string for generating the index mdoc page.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @param repository_id: The repository id used if the structured output is generated.
         @param grouping_topic: The topic used if the grouping issues by topics is enabled.
@@ -258,9 +262,9 @@ class MdocExporter(Exporter):
             if ActionInputs.get_is_grouping_by_topics_enabled():
                 for topic in consolidated_issue.topics:
                     if grouping_topic == topic:
-                        issue_table += self._generate_markdown_line(consolidated_issue)
+                        issue_table += self._generate_mdoc_line(consolidated_issue)
             else:
-                issue_table += self._generate_markdown_line(consolidated_issue)
+                issue_table += self._generate_mdoc_line(consolidated_issue)
 
         # Prepare issues replacement for the index page
         replacement = {
@@ -289,7 +293,7 @@ class MdocExporter(Exporter):
         """
         Generates an index page for the structured output based on the level.
 
-        @param index_template: The template string for generating the index markdown page.
+        @param index_template: The template string for generating the index MDoc page.
         @param level: The level of the index page. Enum for "org" or "repo".
         @param repository_id: The repository id of a repository that stores the issues.
         @return: None
@@ -318,12 +322,12 @@ class MdocExporter(Exporter):
             f.write(sub_level_index_page)
 
     @staticmethod
-    def _generate_markdown_line(consolidated_issue: ConsolidatedIssue) -> str:
+    def _generate_mdoc_line(consolidated_issue: ConsolidatedIssue) -> str:
         """
-        Generates a markdown summary line for a single issue.
+        Generates a MDoc summary line for a single issue.
 
         @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
-        @return: The markdown line for the issue.
+        @return: The MDoc line for the issue.
         """
         organization_name = consolidated_issue.organization_name
         repository_name = consolidated_issue.repository_name
@@ -345,13 +349,13 @@ class MdocExporter(Exporter):
             else:
                 linked_to_project = LINKED_TO_PROJECT_FALSE
 
-            # Generate the Markdown issue line WITH extra project data
+            # Generate the MDoc issue line WITH extra project data
             md_issue_line = (
                 f"| {organization_name} | {repository_name} | [#{number} - {title}]({issue_mdoc_link}) |"
                 f" {linked_to_project} | {status} |<a href='{url}' target='_blank'>GitHub link</a> |\n"
             )
         else:
-            # Generate the Markdown issue line WITHOUT project data
+            # Generate the MDoc issue line WITHOUT project data
             md_issue_line = (
                 f"| {organization_name} | {repository_name} | [#{number} - {title}]({issue_mdoc_link}) |"
                 f" {state} |<a href='{url}' target='_blank'>GitHub link</a> |\n"
@@ -371,7 +375,7 @@ class MdocExporter(Exporter):
         labels = consolidated_issue.labels
         labels = ", ".join(labels) if labels else None
 
-        # Format issue URL as a Markdown link
+        # Format issue URL as a MDoc link
         issue_url = consolidated_issue.html_url
         issue_url = f"<a href='{issue_url}' target='_blank'>GitHub link</a> " if issue_url else None
 
@@ -433,10 +437,10 @@ class MdocExporter(Exporter):
                 linked_to_project = LINKED_TO_PROJECT_FALSE
                 values.append(linked_to_project)
 
-        # Initialize the Markdown table
+        # Initialize the MDoc table
         issue_info = "| Attribute | Content |\n|---|---|\n"
 
-        # Add together all the attributes from the summary table in Markdown format
+        # Add together all the attributes from the summary table in MDoc format
         for attribute, content in zip(headers, values):
             issue_info += f"| {attribute} | {content} |\n"
 
@@ -467,7 +471,7 @@ class MdocExporter(Exporter):
     @staticmethod
     def _load_all_templates() -> tuple[Optional[str], ...]:
         """
-        Load all template files for generating the Markdown pages.
+        Load all template files for generating the MDoc pages.
 
         @return: A tuple containing all loaded template files.
         """

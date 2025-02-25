@@ -172,4 +172,12 @@ class ActionInputs:
                 )
                 sys.exit(1)
 
+        # log user configuration
         logger.debug("User configuration validation successfully completed.")
+        logger.debug("User required input `liv-doc-regime`: %s.", ActionInputs.get_liv_doc_regime())
+        logger.debug("User required input `output-formats`: %s.", ActionInputs.get_output_formats())
+        logger.debug("User input `report-page`: %s.", ActionInputs.get_is_report_page_generation_enabled())
+        logger.debug("User regime input `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
+        logger.debug("User input `liv-doc-project-state-mining`: %s.", ActionInputs.get_is_project_state_mining_enabled())
+        logger.debug("User input `liv-doc-structured-output`: %s.", ActionInputs.get_is_structured_output_enabled())
+        logger.debug("User input `liv-doc-group-output-by-topics`: %s.", ActionInputs.get_is_grouping_by_topics_enabled())
