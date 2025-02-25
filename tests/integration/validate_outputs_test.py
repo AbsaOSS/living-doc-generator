@@ -21,8 +21,8 @@ issue88_header = '''
 | Closed at | None |
 | Labels | int-tests, DocumentedFeature |'''
 issue88_content ='''
- 
 
+ 
 <h3>Issue Content</h3>
 
 # Feature
@@ -39,7 +39,6 @@ Feature description
 - [ ] subtask 2
 '''
 issue89_header = '''
-
 | Attribute | Content |
 |---|---|
 | Organization name | AbsaOSS |
@@ -53,6 +52,7 @@ issue89_header = '''
 | Closed at | None |
 | Labels | int-tests, DocumentedUserStory |'''
 issue89_content ='''
+
  
 <h3>Issue Content</h3>
 
@@ -102,6 +102,7 @@ issue90_header = '''
 | Closed at | None |
 | Labels | int-tests, DocumentedFeature |'''
 issue90_content ='''
+
  
 <h3>Issue Content</h3>
 
@@ -132,6 +133,7 @@ issue91_header = '''
 | Closed at | None |
 | Labels | int-tests, DocumentedUserStory |'''
 issue91_content = '''
+
  
 <h3>Issue Content</h3>
 
