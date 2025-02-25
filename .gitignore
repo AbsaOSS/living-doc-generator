@@ -159,7 +159,7 @@ cython_debug/
 /.idea/
 
 # Generated outputs
-output/
+output_only_regime_true/
 
 # Debugging script file
 run_me.sh
