@@ -22,18 +22,20 @@ which are essential for running the GH action.
 import json
 import logging
 import sys
+
 import requests
 
 from living_documentation_regime.model.config_repository import ConfigRepository
 from utils.utils import get_action_input
 from utils.constants import (
     GITHUB_TOKEN,
-    LIV_DOC_REGIME,
+    OUTPUT_FORMATS,
     PROJECT_STATE_MINING,
     REPOSITORIES,
     GROUP_OUTPUT_BY_TOPICS,
     STRUCTURED_OUTPUT,
     REPORT_PAGE,
+    Regime,
 )
 
 logger = logging.getLogger(__name__)
@@ -67,7 +69,18 @@ class ActionInputs:
         Getter of the LivDoc regime switch.
         @return: True if LivDoc regime is enabled, False otherwise.
         """
-        return get_action_input(LIV_DOC_REGIME, "false").lower() == "true"
+        regime: str = Regime.LIV_DOC_REGIME.value
+        return get_action_input(regime, "false").lower() == "true"
+
+    @staticmethod
+    def get_output_formats() -> list[str]:
+        """
+        Getter of the output formats for generated documents.
+        @return: A list of output formats.
+        """
+        output_formats_string = get_action_input(OUTPUT_FORMATS, "mdoc").strip().lower()
+        output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
+        return output_formats
 
     @staticmethod
     def get_is_project_state_mining_enabled() -> bool:
@@ -123,12 +136,18 @@ class ActionInputs:
 
         return repositories
 
-    def validate_repositories_configuration(self) -> None:
+    def validate_user_configuration(self) -> None:
         """
-        Checks that all repositories defined in the configuration are real .
-
+        Checks that all the user configuration defined is correct.
         @return: None
         """
+        # validate output formats
+        output_formats: list[str] = ActionInputs.get_output_formats()
+        if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
+            logger.error('User input `liv-doc-output-formats` must be a list of strings (e.g. "mdoc, pdf").')
+            sys.exit(1)
+
+        # validate repositories configuration
         repositories: list[ConfigRepository] = self.get_repositories()
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
@@ -149,4 +168,16 @@ class ActionInputs:
                 )
                 sys.exit(1)
 
-        logger.debug("Repositories configuration validation successfully completed.")
+        # log user configuration
+        logger.debug("User configuration validation successfully completed.")
+        logger.debug("User required input `liv-doc-regime`: %s.", ActionInputs.get_liv_doc_regime())
+        logger.debug("User input `report-page`: %s.", ActionInputs.get_is_report_page_generation_enabled())
+        logger.debug("User regime input `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
+        logger.debug(
+            "User input `liv-doc-project-state-mining`: %s.", ActionInputs.get_is_project_state_mining_enabled()
+        )
+        logger.debug("User input `liv-doc-structured-output`: %s.", ActionInputs.get_is_structured_output_enabled())
+        logger.debug(
+            "User input `liv-doc-group-output-by-topics`: %s.", ActionInputs.get_is_grouping_by_topics_enabled()
+        )
+        logger.debug("User input `liv-doc-output-formats`: %s.", ActionInputs.get_output_formats())

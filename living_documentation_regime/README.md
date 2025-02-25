@@ -16,6 +16,7 @@
   - [Living Documentation Page Generation](#living-documentation-page-generation)
     - [Structured Output](#structured-output)
     - [Output Grouped by Topics](#output-grouped-by-topics)
+    - [Output Formats](#output-formats)
 
 This regime is designed to data-mine GitHub repositories for [documentation tickets](#documentation-ticket-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in a format compatible with an [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer), providing detailed feature overview pages and in-depth feature descriptions.
 
@@ -83,6 +84,7 @@ See the full example of Living Documentation regime step definition (in example 
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
+    liv-doc-output-formats: "mdoc, pdf"    # output formats selection for the Living Documentation Regime
 ```
 
 ---
@@ -140,6 +142,16 @@ Configure the Living Documentation regime by customizing the following parameter
     ```yaml
     with:
       liv-doc-group-output-by-topics: true
+    ```
+    
+- **liv-doc-output-formats** (optional, `default: 'mdoc'`)
+  - **Input description**: Selects the output formats for the Living Documentation Regime.
+  - **Feature description**: [Output formats](#output-formats)
+  - **Usage**: Provide a comma-separated list of output formats.
+  - **Example**:
+    ```yaml
+    with:
+      liv-doc-output-formats: "mdoc, pdf"
     ```
 
 ---
@@ -344,3 +356,12 @@ To gain a better understanding of the term "Topic", refer to the [Labels](#label
     |- _index.md
     ```
     
+#### Output Formats
+
+The feature allows you to select the output formats for the Living Documentation Regime.
+
+- **Activation**: To activate this feature, set the liv-doc-output-formats input to a comma-separated string of your desired formats (e.g., "mdoc, pdf").
+- **Non-Activated Behavior**: By default, the **mdoc** output format is selected.
+
+Living Documentation Regime supports following output formats:
+- **mdoc**
