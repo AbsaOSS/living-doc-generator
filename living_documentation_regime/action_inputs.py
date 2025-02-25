@@ -144,7 +144,7 @@ class ActionInputs:
         # validate output formats
         output_formats: list[str] = ActionInputs.get_output_formats()
         if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
-            logger.error('User input `liv-doc-output-formats` must be a list of strings (ex. "mdoc, pdf").')
+            logger.error('User input `liv-doc-output-formats` must be a list of strings (e.g. "mdoc, pdf").')
             sys.exit(1)
 
         # validate repositories configuration

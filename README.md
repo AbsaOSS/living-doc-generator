@@ -107,6 +107,7 @@ See the full example of action step definition (in example are used non-default 
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
+    liv-doc-output-formats: "mdoc, pdf"    # output formats selection for the Living Documentation Regime
 ```
 
 ---
@@ -269,6 +270,7 @@ export INPUT_LIV_DOC_REPOSITORIES='[
 export INPUT_LIV_DOC_PROJECT_STATE_MINING=true
 export INPUT_LIV_DOC_STRUCTURED_OUTPUT=true
 export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
+export INPUT_LIV_DOC_OUTPUT_FORMATS="mdoc"
 ```
 
 ### Running the script locally
