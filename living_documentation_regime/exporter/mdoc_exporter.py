@@ -81,6 +81,9 @@ class MdocExporter(Exporter):
             report_page_template,
         ) = self._load_all_templates()
 
+        # TODO: if some of templates doesnt load (returns None instead) log the issue
+        #  and return a bool for correct failing of action
+
         # Generate a MDoc page for every issue
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)

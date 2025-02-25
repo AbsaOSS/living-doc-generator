@@ -78,9 +78,9 @@ class ActionInputs:
         Getter of the output formats for generated documents.
         @return: A list of output formats.
         """
-        output_formats_json = get_action_input(OUTPUT_FORMATS).strip().lower()
-        normalized_input_json = output_formats_json.replace("'", '"')
-        return json.loads(normalized_input_json)
+        output_formats_string = get_action_input(OUTPUT_FORMATS, "mdoc").strip().lower()
+        output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
+        return output_formats
 
     @staticmethod
     def get_is_project_state_mining_enabled() -> bool:
@@ -139,23 +139,12 @@ class ActionInputs:
     def validate_user_configuration(self) -> None:
         """
         Checks that all the user configuration defined is correct.
-
         @return: None
         """
         # validate output formats
-        output_formats_json = get_action_input(OUTPUT_FORMATS)
-        if not output_formats_json:
-            logger.error("User input output-formats is required, add an input in following format '[\"mdoc\"]').")
-            sys.exit(1)
-
-        try:
-            output_formats: list[str] = ActionInputs.get_output_formats()
-        except json.JSONDecodeError:
-            logger.error("Error parsing JSON output formats. The correct format should look like '[\"mdoc\"]'.")
-            sys.exit(1)
-
+        output_formats: list[str] = ActionInputs.get_output_formats()
         if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
-            logger.error('User input `output-formats` must be a list of strings (ex. \'["mdoc", "pdf"]\').')
+            logger.error('User input `liv-doc-output-formats` must be a list of strings (ex. "mdoc, pdf").')
             sys.exit(1)
 
         # validate repositories configuration
@@ -182,7 +171,6 @@ class ActionInputs:
         # log user configuration
         logger.debug("User configuration validation successfully completed.")
         logger.debug("User required input `liv-doc-regime`: %s.", ActionInputs.get_liv_doc_regime())
-        logger.debug("User required input `output-formats`: %s.", ActionInputs.get_output_formats())
         logger.debug("User input `report-page`: %s.", ActionInputs.get_is_report_page_generation_enabled())
         logger.debug("User regime input `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
         logger.debug(
@@ -192,3 +180,4 @@ class ActionInputs:
         logger.debug(
             "User input `liv-doc-group-output-by-topics`: %s.", ActionInputs.get_is_grouping_by_topics_enabled()
         )
+        logger.debug("User input `liv-doc-output-formats`: %s.", ActionInputs.get_output_formats())
