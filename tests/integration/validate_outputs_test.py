@@ -189,7 +189,12 @@ def count_files_in_directory(directory):
 def validate_issue(path, issue):
     with open(path, 'r') as f:
         markdown_string = f.read()
-        return issue in markdown_string
+        if issue not in markdown_string:
+            print(issue)
+            print("\n=====================-\n")
+            print(markdown_string)
+            return False
+        return True
 
 
 def test_validate_for_test_without_project_mining():
