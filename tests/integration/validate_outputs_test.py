@@ -209,12 +209,8 @@ def test_validate_for_test_whit_project_mining():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
     assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
-    assert validate_issue(issue89_path, issue89_header)
-    assert validate_issue(issue89_path, S_P1_TODO )
-    assert validate_issue(issue89_path, issue89_content)
-    assert validate_issue(issue90_path, issue90_header)
-    assert validate_issue(issue90_path, M_P0_IN_PROGRESS)
-    assert validate_issue(issue90_path, issue90_content)
+    assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
+    assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
     assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
 
 def test_validate_for_test_whit_project_mining_and_excluded_project():
