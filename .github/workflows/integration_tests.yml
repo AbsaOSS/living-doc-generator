@@ -28,7 +28,7 @@ jobs:
       id: generate_living_doc
       uses: ./
       env:
-        GITHUB-TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
       with:
         liv-doc-regime: true
         liv-doc-repositories: |
@@ -68,7 +68,7 @@ jobs:
         id: generate_living_doc
         uses: ./
         env:
-          GITHUB-TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
         with:
           liv-doc-regime: true
           liv-doc-repositories: |
@@ -106,7 +106,7 @@ jobs:
         id: generate_living_doc
         uses: ./
         env:
-          GITHUB-TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
         with:
           liv-doc-regime: true
           liv-doc-repositories: |
