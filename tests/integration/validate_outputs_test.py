@@ -1,6 +1,6 @@
 import os
 
-output_folder = "../../output"
+output_folder = "output"
 directory_path = f"{output_folder}/liv-doc-regime"
 issue88_path = f"{directory_path}/88_test_documented_feature_.md"
 issue89_path = f"{directory_path}/89_test_user_story_in_project.md"
