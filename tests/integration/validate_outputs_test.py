@@ -168,20 +168,21 @@ Some user story description
 - **Steps**:
     - Step 1: [Instruction]
     - Step 2: [Instruction]'''
-
+link_to_project_false = '''
+| Linked to project | 🔴 |'''
 S_P1_TODO = '''
-| Project title     | integration-tests-for-living-doc-generator  |
-| Status            | Todo                                        |
-| Priority          | P1                                          |
-| Size              | S                                           |
-| MoSCoW            | ---                                         |'''
+| Project title | integration-tests-for-living-doc-generator |
+| Status | Todo |
+| Priority | P1 |
+| Size | S |
+| MoSCoW | --- |'''
 
 M_P0_IN_PROGRESS = '''
-| Project title     | integration-tests-for-living-doc-generator  |
-| Status            | In Progress                                 |
-| Priority          | P0                                          |
-| Size              | M                                           |
-| MoSCoW            | ---                                         |'''
+| Project title | integration-tests-for-living-doc-generator |
+| Status | In Progress |
+| Priority | P0 |
+| Size | M |
+| MoSCoW | --- |'''
 def count_files_in_directory(directory):
     return len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
 
@@ -202,15 +203,15 @@ def test_validate_for_test_without_project_mining():
 def test_validate_for_test_wit_project_mining():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
-    assert validate_issue(issue88_path, issue88_header + issue88_content)
+    assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
     assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
     assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
-    assert validate_issue(issue91_path, issue91_header + issue91_content)
+    assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
 
 def test_validate_for_test_wit_project_mining_and_excluded_project():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
-    assert validate_issue(issue88_path, issue88_header + issue88_content)
+    assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
     assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
     assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
-    assert validate_issue(issue91_path, issue91_header + issue91_content)
+    assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
