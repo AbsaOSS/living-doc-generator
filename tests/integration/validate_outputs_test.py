@@ -200,7 +200,7 @@ def test_validate_for_test_without_project_mining():
     assert validate_issue(issue90_path, issue90_header + issue90_content)
     assert validate_issue(issue91_path, issue91_header + issue91_content)
 
-def test_validate_for_test_wit_project_mining():
+def test_validate_for_test_whit_project_mining():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
     assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
@@ -208,7 +208,7 @@ def test_validate_for_test_wit_project_mining():
     assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
     assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
 
-def test_validate_for_test_wit_project_mining_and_excluded_project():
+def test_validate_for_test_whit_project_mining_and_excluded_project():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
     assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)

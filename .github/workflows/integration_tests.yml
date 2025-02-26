@@ -83,7 +83,7 @@ jobs:
           liv-doc-project-state-mining: true
 
       - name: Verify integration test results
-        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_wit_project_mining
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_whit_project_mining
 
   TestWithProjectMiningExcludeProject:
     runs-on: ubuntu-latest
@@ -121,4 +121,4 @@ jobs:
           liv-doc-project-state-mining: true
 
       - name: Verify integration test results
-        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_wit_project_mining_and_excluded_project
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_whit_project_mining_and_excluded_project
