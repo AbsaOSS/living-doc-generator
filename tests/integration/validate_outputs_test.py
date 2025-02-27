@@ -17,7 +17,7 @@ issue88_header = '''
 | State | open |
 | Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/88' target='_blank'>GitHub link</a>  |
 | Created at | 2025-02-19 08:45:06+00:00 |
-| Updated at | 2025-02-25 13:54:16+00:00 |
+| Updated at | 2025-02-27 09:55:11+00:00 |
 | Closed at | None |
 | Labels | int-tests, DocumentedFeature |'''
 issue88_content ='''
@@ -48,7 +48,7 @@ issue89_header = '''
 | State | open |
 | Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/89' target='_blank'>GitHub link</a>  |
 | Created at | 2025-02-19 08:48:59+00:00 |
-| Updated at | 2025-02-25 13:47:55+00:00 |
+| Updated at | 2025-02-27 09:55:11+00:00 |
 | Closed at | None |
 | Labels | int-tests, DocumentedUserStory |'''
 issue89_content ='''
@@ -98,7 +98,7 @@ issue90_header = '''
 | State | open |
 | Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/90' target='_blank'>GitHub link</a>  |
 | Created at | 2025-02-19 08:55:41+00:00 |
-| Updated at | 2025-02-25 13:54:07+00:00 |
+| Updated at | 2025-02-27 09:55:12+00:00 |
 | Closed at | None |
 | Labels | int-tests, DocumentedFeature |'''
 issue90_content ='''
@@ -129,7 +129,7 @@ issue91_header = '''
 | State | open |
 | Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/91' target='_blank'>GitHub link</a>  |
 | Created at | 2025-02-19 08:58:08+00:00 |
-| Updated at | 2025-02-25 13:45:46+00:00 |
+| Updated at | 2025-02-27 09:55:12+00:00 |
 | Closed at | None |
 | Labels | int-tests, DocumentedUserStory |'''
 issue91_content = '''
