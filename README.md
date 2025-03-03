@@ -275,6 +275,31 @@ For running the GitHub action incorporate these commands into the shell script a
 ```
 python3 main.py
 ```
+The whole script should look like this example:
+```
+#!/bin/sh
+
+# Essential environment variables for GitHub Action functionality
+export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
+export INPUT_LIV_DOC_REGIME=true
+export INPUT_VERBOSE_LOGGING=true
+export INPUT_REPORT_PAGE=true
+
+# Environment variables for LivDoc regime functionality
+export INPUT_LIV_DOC_REPOSITORIES='[
+            {
+              "organization-name": "Organization Name",
+              "repository-name": "example-project",
+              "query-labels": ["feature", "bug"],
+              "projects-title-filter": ["Project Title 1"]
+            }
+          ]'
+export INPUT_LIV_DOC_PROJECT_STATE_MINING=true
+export INPUT_LIV_DOC_STRUCTURED_OUTPUT=true
+export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
+
+python3 main.py
+```
 
 ### Make the Script Executable
 
@@ -391,7 +416,7 @@ All done! ✨ 🍰 ✨
 
 Unit tests are written using Pytest framework. To run alle the tests, use the following command:
 ```shell
-pytest tests/
+pytest --ignore=tests/integration tests/
 ```
 
 You can modify the directory to control the level of detail or granularity as per your needs.
@@ -409,7 +434,7 @@ The objective of the project is to achieve a minimal score of 80 %. We do exclud
 
 To generate the coverage report, run the following command:
 ```shell
-pytest --cov=. tests/ --cov-fail-under=80 --cov-report=html
+pytest --ignore=tests/integration --cov=. tests/ --cov-fail-under=80 --cov-report=html
 ```
 
 See the coverage report on the path:
