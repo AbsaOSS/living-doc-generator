@@ -275,6 +275,31 @@ For running the GitHub action incorporate these commands into the shell script a
 ```
 python3 main.py
 ```
+The whole script should look like this example:
+```
+#!/bin/sh
+
+# Essential environment variables for GitHub Action functionality
+export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
+export INPUT_LIV_DOC_REGIME=true
+export INPUT_VERBOSE_LOGGING=true
+export INPUT_REPORT_PAGE=true
+
+# Environment variables for LivDoc regime functionality
+export INPUT_LIV_DOC_REPOSITORIES='[
+            {
+              "organization-name": "Organization Name",
+              "repository-name": "example-project",
+              "query-labels": ["feature", "bug"],
+              "projects-title-filter": ["Project Title 1"]
+            }
+          ]'
+export INPUT_LIV_DOC_PROJECT_STATE_MINING=true
+export INPUT_LIV_DOC_STRUCTURED_OUTPUT=true
+export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
+
+python3 main.py
+```
 
 ### Make the Script Executable
 
@@ -286,7 +311,7 @@ chmod +x run_script.sh
 ### Run the Script
 
 ```shell
-source run_script.sh
+./run_script.sh
 ```
 
 ---
