@@ -160,7 +160,7 @@ class ActionInputs:
                     org_name,
                     repo_name,
                     response.status_code,
-                    response.text
+                    response.text,
                 )
                 sys.exit(1)
 
