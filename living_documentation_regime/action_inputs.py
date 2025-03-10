@@ -133,6 +133,12 @@ class ActionInputs:
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
 
+        # Validate GitHub token
+        response = requests.get("https://api.github.com/octocat", headers=headers, timeout=10)
+        if response.status_code == 401:
+            logger.error("Invalid GitHub token. Please verify that the token is correct.")
+            sys.exit(1)
+
         for repository in repositories:
             org_name = repository.organization_name
             repo_name = repository.repository_name
@@ -146,6 +152,15 @@ class ActionInputs:
                     "exists and that your authorization token is correct.",
                     org_name,
                     repo_name,
+                )
+                sys.exit(1)
+            if response.status_code != 200:
+                logger.error(
+                    "An error occurred while validating the repository '%s/%s'. The response status code is %s.",
+                    org_name,
+                    repo_name,
+                    response.status_code,
+                    response.text
                 )
                 sys.exit(1)
 
