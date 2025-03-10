@@ -16,7 +16,7 @@
 import json
 import os
 
-from living_documentation_regime.action_inputs import ActionInputs
+from action_inputs import ActionInputs
 from living_documentation_regime.model.config_repository import ConfigRepository
 
 

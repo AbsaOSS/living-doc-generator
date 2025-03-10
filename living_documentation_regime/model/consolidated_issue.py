@@ -24,7 +24,7 @@ from typing import Optional
 
 from github.Issue import Issue
 
-from living_documentation_regime.action_inputs import ActionInputs
+from action_inputs import ActionInputs
 from living_documentation_regime.model.project_status import ProjectStatus
 from utils.constants import LIV_DOC_OUTPUT_PATH
 from utils.utils import sanitize_filename, make_absolute_path

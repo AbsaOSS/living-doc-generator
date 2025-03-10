@@ -27,7 +27,7 @@ from github import Github, Auth
 from github.Issue import Issue
 
 from factory.exporter_factory import ExporterFactory
-from living_documentation_regime.action_inputs import ActionInputs
+from action_inputs import ActionInputs
 from living_documentation_regime.github_projects import GithubProjects
 from living_documentation_regime.model.github_project import GithubProject
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue

@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Optional
 
 from exporter.exporter import Exporter
-from living_documentation_regime.action_inputs import ActionInputs
+from action_inputs import ActionInputs
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from utils.utils import make_absolute_path, generate_root_level_index_page, load_template
 from utils.constants import (

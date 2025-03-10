@@ -133,8 +133,8 @@ The way how to generate and store a token into the GitHub repository secrets is 
 ### Inputs
 
 In this GitHub action, there are two types of user inputs:
-- **Base Inputs**: Inputs that are common to all regimes.
-- **Regime Inputs**: Inputs that are specific to a particular regime.
+- **[Base Inputs](#base-inputs)**: Inputs that are common to all regimes.
+- **[Regime Inputs](#regime-inputs)**: Inputs that are specific to a particular regime.
 
 #### Base Inputs
 - **liv-doc-regime** (required)

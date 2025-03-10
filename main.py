@@ -21,7 +21,7 @@ for the GH Action.
 
 import logging
 
-from living_documentation_regime.action_inputs import ActionInputs
+from action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
 from utils.constants import OUTPUT_PATH
 from utils.utils import set_action_output, make_absolute_path
