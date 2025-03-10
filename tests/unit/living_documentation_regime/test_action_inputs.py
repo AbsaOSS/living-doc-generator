@@ -252,3 +252,19 @@ def test_validate_repositories_configuration_wrong_configuration(mocker, config_
         "test_org",
         "test_repo",
     )
+
+def test_validate_repositories_wrong_token(mocker, config_repository):
+    # Arrange
+    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
+
+    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="")
+    mock_exit = mocker.patch("sys.exit")
+
+    # Act
+    ActionInputs().validate_repositories_configuration()
+
+    # Assert
+    mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with(
+        "Invalid GitHub token. Please verify that the token is correct."
+    )

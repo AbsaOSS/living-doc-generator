@@ -154,7 +154,7 @@ class ActionInputs:
                     repo_name,
                 )
                 sys.exit(1)
-            if response.status_code != 200:
+            elif response.status_code != 200:
                 logger.error(
                     "An error occurred while validating the repository '%s/%s'. The response status code is %s.",
                     org_name,
