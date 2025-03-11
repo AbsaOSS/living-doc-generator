@@ -24,9 +24,7 @@ from utils.constants import OUTPUT_PATH
 
 def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
     # Arrange
-    mock_error_response = mocker.Mock()
-    mock_error_response.status_code = 404
-    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=mock_error_response)
+    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.validate_repositories_configuration")
 
     expected_output_path = os.path.abspath(OUTPUT_PATH)
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
@@ -59,9 +57,7 @@ def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
 
 def test_run_with_zero_regimes_enabled(mocker):
     # Arrange
-    mock_error_response = mocker.Mock()
-    mock_error_response.status_code = 404
-    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=mock_error_response)
+    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.validate_repositories_configuration")
 
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
     mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token", "INPUT_LIV_DOC_REGIME": "false"})

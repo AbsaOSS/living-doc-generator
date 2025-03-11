@@ -135,11 +135,12 @@ class ActionInputs:
 
         # Validate GitHub token
         response = requests.get("https://api.github.com/octocat", headers=headers, timeout=10)
-        if response.status_code == 401:
-            logger.error("Can not connect to GitHub. Possible cause: Invalid GitHub token. Please verify that the token is correct.",
-                         response.status_code,
-                         response.text,
-                         )
+        if response.status_code != 200:
+            logger.error(
+                "Can not connect to GitHub. Possible cause: Invalid GitHub token. Please verify that the token is correct.",
+                response.status_code,
+                response.text,
+            )
             sys.exit(1)
 
         repository_error_count = 0
