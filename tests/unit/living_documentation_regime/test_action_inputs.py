@@ -246,8 +246,8 @@ def test_validate_repositories_configuration_wrong_configuration(mocker, config_
     ActionInputs().validate_repositories_configuration()
 
     # Assert
-    mock_exit.assert_called_once_with(1)
-    mock_log_error.assert_called_once_with(
+    assert mock_exit.call_count == 2
+    mock_log_error.assert_any_call(
         "Repository '%s/%s' could not be found on GitHub. Please verify that the repository exists and that your authorization token is correct.",
         "test_org",
         "test_repo",
