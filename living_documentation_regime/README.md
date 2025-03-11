@@ -84,7 +84,7 @@ See the full example of Living Documentation regime step definition (in example 
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
-    liv-doc-output-formats: "mdoc, pdf"    # output formats selection for the Living Documentation Regime
+    liv-doc-output-formats: "mdoc"         # output formats selection, supported: mdoc
 ```
 
 ---
@@ -151,7 +151,7 @@ Configure the Living Documentation regime by customizing the following parameter
   - **Example**:
     ```yaml
     with:
-      liv-doc-output-formats: "mdoc, pdf"
+      liv-doc-output-formats: "mdoc"
     ```
 
 ---
@@ -364,4 +364,4 @@ The feature allows you to select the output formats for the Living Documentation
 - **Non-Activated Behavior**: By default, the **mdoc** output format is selected.
 
 Living Documentation Regime supports following output formats:
-- **mdoc**
+- **mdoc**: compatible with [CPS Mdoc Viewer project](https://github.com/AbsaOSS/cps-mdoc-viewer) 

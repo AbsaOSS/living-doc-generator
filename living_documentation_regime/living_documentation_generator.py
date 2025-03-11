@@ -49,7 +49,7 @@ class LivingDocumentationGenerator:
     """
     A class representing the Living Documentation Generator.
     The class uses several helper methods to fetch required data from GitHub, consolidate the data
-    and generate the markdown pages as the output of Living Documentation action.
+    and generate the output in required format as the output of action's Living Documentation regime.
     """
 
     def __init__(self):
@@ -62,7 +62,7 @@ class LivingDocumentationGenerator:
 
     def generate(self) -> None:
         """
-        Generate the Living Documentation markdown pages output.
+        Generate the Living Documentation Regime output.
 
         @return: None
         """
@@ -265,13 +265,12 @@ class LivingDocumentationGenerator:
     @staticmethod
     def _generate_living_documents(issues: dict[str, ConsolidatedIssue]) -> None:
         """
-        Generate the pages for all consolidated issues, create a summary index page and
-        save it all to the output directory in format selected by a user.
+        Generate the output in the required formats.
 
         @param issues: A dictionary containing all consolidated issues.
         @return: None
         """
-        for output_format in ActionInputs.get_output_formats():
+        for output_format in ActionInputs.get_liv_doc_output_formats():
             exporter = ExporterFactory.get_exporter(Regime.LIV_DOC_REGIME, output_format)
             if exporter:
                 exporter.export(issues=issues)
