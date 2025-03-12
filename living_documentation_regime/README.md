@@ -95,7 +95,9 @@ Configure the Living Documentation regime by customizing the following parameter
 ### Regime Inputs
 - **liv-doc-repositories** (optional, `default: '[]'`)
   - **Description**: A JSON string defining the repositories to be included in the documentation generation.
-  - **Usage**: Provide a list of repositories including the organization name, repository name, query labels, and any attached projects you wish to filter. The query-labels and projects-title-filter parameters are optional. Only issues with the specified labels and projects will be fetched. To fetch all issues (all labels), either omit these parameters or leave the lists empty.
+  - **Usage**: Provide a list of repositories, including the organization name, repository name, query labels, and any attached projects you wish to filter.
+    - The `query-labels` include parameter is optional. Only issues with the specified labels will be fetched. To fetch all issues (all labels), omit this parameter or leave the list empty.
+    - The `projects-title-filter` include parameter is optional. Only issues linked to the specified projects will be fetched. To fetch all issues (all projects), either omit this parameter or leave the list empty.
   - **Example**:
     ```yaml
     with:
