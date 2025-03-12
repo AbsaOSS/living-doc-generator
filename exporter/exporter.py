@@ -23,7 +23,7 @@ class Exporter:
     A parent class for creating exporters.
     """
 
-    def export(self, **kwargs) -> None:
+    def export(self, **kwargs) -> bool:
         """
         A method for exporting the output in the selected format.
 

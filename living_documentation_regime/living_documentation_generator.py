@@ -270,9 +270,16 @@ class LivingDocumentationGenerator:
         @param issues: A dictionary containing all consolidated issues.
         @return: None
         """
+        statuses: list[bool] = []
+
         for output_format in ActionInputs.get_liv_doc_output_formats():
             exporter = ExporterFactory.get_exporter(Regime.LIV_DOC_REGIME, output_format)
             if exporter:
-                exporter.export(issues=issues)
+                statuses.append(exporter.export(issues=issues))
             else:
                 logger.error("No generation process for this format: %s", output_format)
+
+        if all(statuses):
+            logger.info("Living Documentation output generated successfully.")
+        else:
+            logger.error("Living Documentation output generation failed.")

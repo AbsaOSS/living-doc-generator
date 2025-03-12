@@ -44,7 +44,7 @@ class ConsolidatedIssue:
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
         self.__repository_id: str = repository_id
-        self.__topics: list = []
+        self.__topics: list[str] = []
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False

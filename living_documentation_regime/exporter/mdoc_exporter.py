@@ -20,6 +20,7 @@ for generating outputs in the MDoc format.
 
 import logging
 import os
+
 from datetime import datetime
 from typing import Optional
 
@@ -30,7 +31,6 @@ from utils.utils import make_absolute_path, generate_root_level_index_page, load
 from utils.constants import (
     LIV_DOC_OUTPUT_PATH,
     REPORT_PAGE_HEADER,
-    OUTPUT_PATH,
     TABLE_HEADER_WITH_PROJECT_DATA,
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LINKED_TO_PROJECT_TRUE,
@@ -56,85 +56,94 @@ class MdocExporter(Exporter):
     INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_repo_page_template.md")
     REPORT_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "report_page_template.md")
 
-    def export(self, **kwargs) -> None:
+    def __init__(self):
+        self._issue_page_detail_template: Optional[str] = None
+        self._index_page_template: Optional[str] = None
+        self._index_root_level_page: Optional[str] = None
+        self._index_org_level_template: Optional[str] = None
+        self._index_repo_page_template: Optional[str] = None
+        self._index_data_level_template: Optional[str] = None
+        self._report_page_template: Optional[str] = None
+
+        self._report_page_content = REPORT_PAGE_HEADER
+
+    def export(self, **kwargs) -> bool:
         logger.info("MDoc page generation - started.")
 
-        issues = kwargs.get("issues", {})
+        issues: dict[str, ConsolidatedIssue] = kwargs.get("issues", {})
         logger.debug("Exporting %d issues...", len(issues))
 
-        topics = set()
-        is_structured_output = ActionInputs.get_is_structured_output_enabled()
-        is_grouping_by_topics = ActionInputs.get_is_grouping_by_topics_enabled()
-        is_report_page = ActionInputs.get_is_report_page_generation_enabled()
-        regime_output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
-        report_page_content = REPORT_PAGE_HEADER
-        report_page_path = make_absolute_path(OUTPUT_PATH)
-
         # Load the template files for generating the MDoc pages
-        (
-            issue_page_detail_template,
-            index_page_template,
-            index_root_level_page,
-            index_org_level_template,
-            index_repo_page_template,
-            index_data_level_template,
-            report_page_template,
-        ) = self._load_all_templates()
-
-        # TODO: if some of templates doesnt load (returns None instead) log the issue
-        #  and return a bool for correct failing of action
+        if not self._load_all_templates():
+            return False
 
         # Generate a MDoc page for every issue
+        topics = self._generate_page_per_issue(issues)
+
+        # Generate all structure of the index pages
+        self._generate_output_structure(issues, topics)
+
+        # Generate a report page
+        if ActionInputs.get_is_report_page_generation_enabled():
+            self._generate_report_page()
+
+        logger.info("MDoc page generation - finished.")
+        return True
+
+    def _generate_report_page(self):
+        header, divider, *error_rows = self._report_page_content.strip().split("\n")
+        if error_rows:
+            report_page_content = "\n".join([header, divider] + error_rows)
+            report_page = self._report_page_template.format(
+                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
+            )
+            with open(os.path.join(make_absolute_path(LIV_DOC_OUTPUT_PATH), "report_page.md"), "w", encoding="utf-8") as f:
+                f.write(report_page)
+
+            logger.warning("MDoc page generation - Report page generated.")
+
+    def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> set[str]:
+        topics: set[str] = set()
         for consolidated_issue in issues.values():
-            self._generate_md_issue_page(issue_page_detail_template, consolidated_issue)
-            if is_report_page and consolidated_issue.errors:
+            self._generate_md_issue_page(self._issue_page_detail_template, consolidated_issue)
+            if ActionInputs.get_is_report_page_generation_enabled() and consolidated_issue.errors:
                 repository_id: str = consolidated_issue.repository_id
                 number: int = consolidated_issue.number
                 html_url: str = consolidated_issue.html_url
 
                 for error_type, error_message in consolidated_issue.errors.items():
-                    report_page_content += (
+                    self._report_page_content += (
                         f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
                     )
 
             for topic in consolidated_issue.topics:
                 topics.add(topic)
-        logger.info("MDoc page generation - generated `%i` issue pages.", len(issues))
 
-        # Generate all structure of the index pages
-        if is_structured_output:
-            generate_root_level_index_page(index_root_level_page, regime_output_path)
+        logger.info("MDoc page generation - generated `%i` issue pages.", len(issues))
+        logger.info("Identified `%i` unique topics.", len(topics))
+        return topics
+
+    def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue], topics: set[str]) -> None:
+        regime_output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        if ActionInputs.get_is_structured_output_enabled():
+            generate_root_level_index_page(self._index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
-                index_data_level_template, index_repo_page_template, index_org_level_template, topics, issues
+                self._index_data_level_template, self._index_repo_page_template, self._index_org_level_template, topics, issues
             )
 
         # Generate an index page with a summary table about all issues grouped by topics
-        elif is_grouping_by_topics:
-            issues = list(issues.values())
-            generate_root_level_index_page(index_root_level_page, regime_output_path)
+        elif ActionInputs.get_is_grouping_by_topics_enabled():
+            issues: list[ConsolidatedIssue] = list(issues.values())
+            generate_root_level_index_page(self._index_root_level_page, regime_output_path)
 
             for topic in topics:
-                self._generate_index_page(index_data_level_template, issues, grouping_topic=topic)
+                self._generate_index_page(self._index_data_level_template, issues, grouping_topic=topic)
 
         # Generate an index page with a summary table about all issues
         else:
-            issues = list(issues.values())
-            self._generate_index_page(index_page_template, issues)
+            issues: list[ConsolidatedIssue] = list(issues.values())
+            self._generate_index_page(self._index_page_template, issues)
             logger.info("MDoc page generation - generated `_index.md`.")
-
-        # Generate a report page with a report error summary for the Living Documentation Regime if any
-        header, divider, *error_rows = report_page_content.strip().split("\n")
-        if error_rows:
-            report_page_content = "\n".join([header, divider] + error_rows)
-            report_page = report_page_template.format(
-                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
-            )
-            with open(os.path.join(report_page_path, "report_page.md"), "w", encoding="utf-8") as f:
-                f.write(report_page)
-
-            logger.warning("MDoc page generation - Report page generated.")
-
-        logger.info("MDoc page generation - finished.")
 
     def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
         """
@@ -471,48 +480,43 @@ class MdocExporter(Exporter):
 
         return output_path
 
-    @staticmethod
-    def _load_all_templates() -> tuple[Optional[str], ...]:
+    def _load_all_templates(self) -> bool:
         """
         Load all template files for generating the MDoc pages.
 
         @return: A tuple containing all loaded template files.
         """
-        issue_page_detail_template: Optional[str] = load_template(
+        self._issue_page_detail_template: Optional[str] = load_template(
             MdocExporter.ISSUE_PAGE_TEMPLATE_FILE,
             "Issue page template file was not successfully loaded.",
         )
-        index_page_template: Optional[str] = load_template(
+        self._index_page_template: Optional[str] = load_template(
             MdocExporter.INDEX_NO_STRUCT_TEMPLATE_FILE,
             "Index page template file was not successfully loaded.",
         )
-        index_root_level_page: Optional[str] = load_template(
+        self._index_root_level_page: Optional[str] = load_template(
             MdocExporter.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for root level was not successfully loaded.",
         )
-        index_org_level_template: Optional[str] = load_template(
+        self._index_org_level_template: Optional[str] = load_template(
             MdocExporter.INDEX_ORG_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for organization level was not successfully loaded.",
         )
-        index_repo_page_template: Optional[str] = load_template(
+        self._index_repo_page_template: Optional[str] = load_template(
             MdocExporter.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
             "Structured index page template file for repository level was not successfully loaded.",
         )
-        index_data_level_template: Optional[str] = load_template(
+        self._index_data_level_template: Optional[str] = load_template(
             MdocExporter.INDEX_DATA_LEVEL_TEMPLATE_FILE,
             "Structured index page template file for data level was not successfully loaded.",
         )
-        report_page_template: Optional[str] = load_template(
+        self._report_page_template: Optional[str] = load_template(
             MdocExporter.REPORT_PAGE_TEMPLATE_FILE,
             "Report page template file was not successfully loaded.",
         )
 
-        return (
-            issue_page_detail_template,
-            index_page_template,
-            index_root_level_page,
-            index_org_level_template,
-            index_repo_page_template,
-            index_data_level_template,
-            report_page_template,
-        )
+        if not all([self._issue_page_detail_template, self._index_page_template, self._index_root_level_page, self._index_org_level_template, self._index_repo_page_template, self._index_data_level_template, self._report_page_template]):
+            logger.error("MDoc page generation - failed to load all templates.")
+            return False
+
+        return True
