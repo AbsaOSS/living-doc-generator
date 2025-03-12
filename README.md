@@ -133,14 +133,15 @@ Configure the action by customizing the following parameters based on your needs
 
 ### Environment Variables
 
-- **REPOSITORIES_ACCESS_TOKEN**:
-  - **Description**: GitHub access token for authentication, that has a permission to access all defined repositories / projects.
-  - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.REPOSITORIES_ACCESS_TOKEN }}`.
-  - **Example**:
-    ```yaml
-    env:
-      GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}
-    ```
+| Variable Name                | Description                                                                                                | Required | Usage                                                                                                                              |
+|------------------------------|------------------------------------------------------------------------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------|
+| `REPOSITORIES_ACCESS_TOKEN`  | GitHub access token for authentication, that has permission to access all defined repositories / projects. | Yes      | Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.REPOSITORIES_ACCESS_TOKEN }}`. |
+
+- **Example**:
+  ```yaml
+  env:
+    GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}
+  ```
 
 The way how to generate and store a token into the GitHub repository secrets is described in the [support chapter](#how-to-create-a-token-with-required-scope).
 
@@ -151,33 +152,21 @@ In this GitHub action, there are two types of user inputs:
 - **[Regime Inputs](#regime-inputs)**: Inputs that are specific to a particular regime.
 
 #### Base Inputs
-- **liv-doc-regime** (required)
-  - **Description**: Enables or disables Living Documentation regime.
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      liv-doc-regime: true
-    ```
 
-- **verbose-logging** (optional, `default: false`)
-  - **Description**: Enables or disables verbose (debug) logging.
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      verbose-logging: true
-    ```
-    
-- **report-page** (optional, `default: true`)
-  - **Description**: Enables or disables the report page generation.
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      report-page: true
-    ```
-    
+| Input Name        | Description                                      | Required | Default | Usage                     | 
+|-------------------|--------------------------------------------------|----------|---------|---------------------------|
+| `liv-doc-regime`  | Enables or disables Living Documentation regime. | Yes      | N/A     | Set to true to activate.  |
+| `verbose-logging` | Enables or disables verbose (debug) logging.     | No       | `false`   | Set to true to activate.  |
+| `report-page`     | Enables or disables the report page generation.  | No       | `true`    | Set to true to activate.  |
+
+- **Examples**
+```yaml
+with:
+  liv-doc-regime: true
+  verbose-logging: true
+  report-page: true
+```
+
 #### Regime Inputs
 
 Regime-specific inputs are detailed in the respective regime's documentation:

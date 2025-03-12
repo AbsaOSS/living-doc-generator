@@ -90,71 +90,39 @@ See the full example of Living Documentation regime step definition (in example 
 ---
 ## Regime Configuration
 
-Configure the Living Documentation regime by customizing the following parameters based on your needs:
+Configure the Living Documentation regime by customizing the following parameters:
 
-### Regime Inputs
-- **liv-doc-repositories** (optional, `default: '[]'`)
-  - **Description**: A JSON string defining the repositories to be included in the documentation generation.
-  - **Usage**: Provide a list of repositories, including the organization name, repository name, query labels, and any attached projects you wish to filter.
-    - The `query-labels` include parameter is optional. Only issues with the specified labels will be fetched. To fetch all issues (all labels), omit this parameter or leave the list empty.
-    - The `projects-title-filter` include parameter is optional. Only issues linked to the specified projects will be fetched. To fetch all issues (all projects), either omit this parameter or leave the list empty.
-  - **Example**:
-    ```yaml
-    with:
-      liv-doc-repositories: |
-        [
-          {
-            "organization-name": "fin-services",
-            "repository-name": "investment-app",
-            "query-labels": ["feature", "enhancement"]
-          },
-          {
-            "organization-name": "open-source-initiative",
-            "repository-name": "community-driven-project",
-            "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
-          }
-        ]
-    ```
+| Input Name                       | Description                                                                                                                                                                                | Required | Default   | Usage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `liv-doc-repositories`           | A JSON string defining the repositories to be included in the documentation generation.                                                                                                    | No       | `'[]'`    | Provide a list of repositories, including the organization name, repository name, query labels, and any attached projects you wish to filter.<br><br> The `query-labels` include parameter is optional. Only issues with the specified labels will be fetched. To fetch all issues (all labels), omit this parameter or leave the list empty. <br> The `projects-title-filter` include parameter is optional. Only issues linked to the specified projects will be fetched. To fetch all issues (all projects), either omit this parameter or leave the list empty. |
+| `liv-doc-project-state-mining`   | Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects). | No       | `false` ` | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `liv-doc-structured-output`      | Enables or disables [structured output](#structured-output).                                                                                                                               | No       | `false`   | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `liv-doc-group-output-by-topics` | Enable or disable [grouping tickets by topics](#output-grouped-by-topics) in the summary index.md file.                                                                                    | No       | `false`   | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `liv-doc-output-formats`         | Selects the [output formats](#output-formats) for the Living Documentation Regime.                                                                                                                          | No       | `mdoc`    | Provide a comma-separated list of output formats.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
-- **liv-doc-project-state-mining** (optional, `default: false`)
-  - **Input description**: Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects).
-  - **Feature description**: [Data mining from GitHub projects](#data-mining-from-github-projects)
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      liv-doc-project-state-mining: true
-    ```
-    
-- **liv-doc-structured-output** (optional, `default: false`)
-  - **Input description**: Enables or disables structured output.
-  - **Feature description**: [Structured output](#structured-output)
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
+- **Example**
+
+  ```yaml
+  with:
+    liv-doc-repositories: |
+      [
+        {
+          "organization-name": "fin-services",
+          "repository-name": "investment-app",
+          "query-labels": ["feature", "enhancement"]
+        },
+        {
+          "organization-name": "open-source-initiative",
+          "repository-name": "community-driven-project",
+          "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
+        }
+      ]
+  
+      liv-doc-project-state-mining: true 
       liv-doc-structured-output: true
-    ```
-
-- **liv-doc-group-output-by-topics** (optional, `default: false`)
-  - **Input description**: Enable or disable grouping tickets by topics in the summary index.md file.
-  - **Feature description**: [Output grouped by topics](#output-grouped-by-topics)
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
       liv-doc-group-output-by-topics: true
-    ```
-    
-- **liv-doc-output-formats** (optional, `default: 'mdoc'`)
-  - **Input description**: Selects the output formats for the Living Documentation Regime.
-  - **Feature description**: [Output formats](#output-formats)
-  - **Usage**: Provide a comma-separated list of output formats.
-  - **Example**:
-    ```yaml
-    with:
       liv-doc-output-formats: "mdoc"
-    ```
+  ```
 
 ---
 ## Expected Output
