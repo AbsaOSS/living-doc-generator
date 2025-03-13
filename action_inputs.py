@@ -153,6 +153,17 @@ class ActionInputs:
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
 
+        # Validate GitHub token
+        response = requests.get("https://api.github.com/octocat", headers=headers, timeout=10)
+        if response.status_code != 200:
+            logger.error(
+                "Can not connect to GitHub. Possible cause: Invalid GitHub token. Please verify that the token is correct.",
+                response.status_code,
+                response.text,
+            )
+            sys.exit(1)
+
+        repository_error_count = 0
         for repository in repositories:
             org_name = repository.organization_name
             repo_name = repository.repository_name
@@ -167,7 +178,18 @@ class ActionInputs:
                     org_name,
                     repo_name,
                 )
-                sys.exit(1)
+                repository_error_count += 1
+            elif response.status_code != 200:
+                logger.error(
+                    "An error occurred while validating the repository '%s/%s'. The response status code is %s.",
+                    org_name,
+                    repo_name,
+                    response.status_code,
+                    response.text,
+                )
+                repository_error_count += 1
+        if repository_error_count > 0:
+            sys.exit(1)
 
         # log user configuration
         logger.debug("User configuration validation successfully completed.")

@@ -238,9 +238,31 @@ def test_validate_repositories_configuration_wrong_configuration(mocker, config_
     )
     mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="fake-token")
     mock_exit = mocker.patch("sys.exit")
-    fake_correct_response = mocker.Mock()
-    fake_correct_response.status_code = 404
-    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=fake_correct_response)
+    mock_error_response = mocker.Mock()
+    mock_error_response.status_code = 404
+    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=mock_error_response)
+
+    # Act
+    ActionInputs().validate_repositories_configuration()
+
+    # Assert
+    assert mock_exit.call_count == 2
+    mock_log_error.assert_any_call(
+        "Repository '%s/%s' could not be found on GitHub. Please verify that the repository exists and that your authorization token is correct.",
+        "test_org",
+        "test_repo",
+    )
+
+def test_validate_repositories_wrong_token(mocker, config_repository):
+    # Arrange
+    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
+
+    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="")
+    mock_exit = mocker.patch("sys.exit")
+
+    mocker.patch(
+        "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=list()
+    )
 
     # Act
     ActionInputs().validate_user_configuration()
@@ -248,7 +270,7 @@ def test_validate_repositories_configuration_wrong_configuration(mocker, config_
     # Assert
     mock_exit.assert_called_once_with(1)
     mock_log_error.assert_called_once_with(
-        "Repository '%s/%s' could not be found on GitHub. Please verify that the repository exists and that your authorization token is correct.",
-        "test_org",
-        "test_repo",
+        "Can not connect to GitHub. Possible cause: Invalid GitHub token. Please verify that the token is correct.",
+         401,
+        '{"message":"Bad credentials","documentation_url":"https://docs.github.com/rest","status":"401"}'
     )
