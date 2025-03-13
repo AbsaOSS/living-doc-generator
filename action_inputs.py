@@ -143,7 +143,7 @@ class ActionInputs:
         logger.debug("User configuration validation started")
 
         # validate output formats
-        output_formats: list[str] = ActionInputs.get_liv_doc_output_formats()
+        output_formats = ActionInputs.get_liv_doc_output_formats()
         if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
             logger.error('User input `liv-doc-output-formats` must be a list of strings (e.g. "mdoc, pdf").')
             sys.exit(1)
@@ -203,7 +203,15 @@ class ActionInputs:
         # log liv-doc regime user inputs
         if ActionInputs.get_liv_doc_regime():
             logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
-            logger.debug("Regime(LivDoc): `liv-doc-project-state-mining`: %s.", ActionInputs.get_is_project_state_mining_enabled())
-            logger.debug("Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.get_is_structured_output_enabled())
-            logger.debug("Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.", ActionInputs.get_is_grouping_by_topics_enabled())
+            logger.debug(
+                "Regime(LivDoc): `liv-doc-project-state-mining`: %s.",
+                ActionInputs.get_is_project_state_mining_enabled(),
+            )
+            logger.debug(
+                "Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.get_is_structured_output_enabled()
+            )
+            logger.debug(
+                "Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.",
+                ActionInputs.get_is_grouping_by_topics_enabled(),
+            )
             logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())

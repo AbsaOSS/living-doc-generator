@@ -22,7 +22,7 @@ from utils.utils import (
     validate_query_format,
     get_action_input,
     set_action_output,
-    set_action_failed,
+    set_action_failed, load_template, generate_root_level_index_page,
 )
 
 
@@ -166,3 +166,57 @@ def test_set_failed(mocker):
 
     mock_print.assert_called_with("::error::failure message")
     mock_exit.assert_called_with(1)
+
+
+# generate_root_level_index_page
+
+
+def test_generate_root_level_index_page(mocker):
+    # Arrange
+    index_root_level_page = "Root Level Template Content"
+    output_path = "/base/output"
+    mock_open = mocker.patch("builtins.open", mocker.mock_open())
+
+    # Act
+    generate_root_level_index_page(index_root_level_page, output_path)
+
+    # Assert
+    mock_open.assert_called_with("/base/output/_index.md", "w", encoding="utf-8")
+    handle = mock_open()
+    handle.write.assert_called_with(index_root_level_page)
+
+
+# load_template
+
+
+def test_load_template(mocker):
+    # Arrange
+    file_path = "templates/test_template.html"
+    error_message = "Template file was not successfully loaded."
+    expected_content = "Template Content"
+    mock_open = mocker.patch("builtins.open", mocker.mock_open(read_data=expected_content))
+
+    # Act
+    actual_content = load_template(file_path, error_message)
+
+    # Assert
+    mock_open.assert_called_with(file_path, "r", encoding="utf-8")
+    assert actual_content == expected_content
+
+import pytest
+import logging
+
+def test_load_template_error(mocker):
+    # Arrange
+    file_path = "templates/non_existent_template.html"
+    error_message = "Template file was not successfully loaded."
+    mock_open = mocker.patch("builtins.open", side_effect=FileNotFoundError)
+    mock_logger = mocker.patch("utils.utils.logger")
+
+    # Act
+    result = load_template(file_path, error_message)
+
+    # Assert
+    assert result is None
+    mock_open.assert_called_with(file_path, "r", encoding="utf-8")
+    mock_logger.error.assert_called_with(error_message, exc_info=True)

@@ -92,7 +92,7 @@ def test_get_repositories_correct_behaviour(mocker):
         },
     ]
     mocker.patch(
-        "living_documentation_regime.action_inputs.get_action_input", return_value=json.dumps(repositories_json)
+        "action_inputs.get_action_input", return_value=json.dumps(repositories_json)
     )
 
     # Act
@@ -114,8 +114,8 @@ def test_get_repositories_correct_behaviour(mocker):
 
 def test_get_repositories_default_value_as_json(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mocker.patch("living_documentation_regime.action_inputs.get_action_input", return_value="[]")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+    mocker.patch("action_inputs.get_action_input", return_value="[]")
     mock_exit = mocker.patch("sys.exit")
 
     # Act
@@ -129,8 +129,8 @@ def test_get_repositories_default_value_as_json(mocker):
 
 def test_get_repositories_empty_object_as_input(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mocker.patch("living_documentation_regime.action_inputs.get_action_input", return_value="{}")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+    mocker.patch("action_inputs.get_action_input", return_value="{}")
     mock_exit = mocker.patch("sys.exit")
 
     # Act
@@ -144,8 +144,8 @@ def test_get_repositories_empty_object_as_input(mocker):
 
 def test_get_repositories_error_with_loading_repository_json(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mocker.patch("living_documentation_regime.action_inputs.get_action_input", return_value="[{}]")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+    mocker.patch("action_inputs.get_action_input", return_value="[{}]")
     mocker.patch.object(ConfigRepository, "load_from_json", return_value=False)
     mock_exit = mocker.patch("sys.exit")
 
@@ -159,8 +159,8 @@ def test_get_repositories_error_with_loading_repository_json(mocker):
 
 def test_get_repositories_number_instead_of_json(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mocker.patch("living_documentation_regime.action_inputs.get_action_input", return_value=1)
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+    mocker.patch("action_inputs.get_action_input", return_value=1)
     mock_exit = mocker.patch("sys.exit")
 
     # Act
@@ -173,8 +173,8 @@ def test_get_repositories_number_instead_of_json(mocker):
 
 def test_get_repositories_empty_string_as_input(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mocker.patch("living_documentation_regime.action_inputs.get_action_input", return_value="")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+    mocker.patch("action_inputs.get_action_input", return_value="")
     mock_exit = mocker.patch("sys.exit")
 
     # Act
@@ -188,8 +188,8 @@ def test_get_repositories_empty_string_as_input(mocker):
 
 def test_get_repositories_invalid_string_as_input(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
-    mocker.patch("living_documentation_regime.action_inputs.get_action_input", return_value="not a JSON string")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+    mocker.patch("action_inputs.get_action_input", return_value="not a JSON string")
     mock_exit = mocker.patch("sys.exit")
 
     # Act
@@ -206,44 +206,80 @@ def test_get_repositories_invalid_string_as_input(mocker):
 
 def test_validate_repositories_configuration_correct_behaviour(mocker, config_repository):
     # Arrange
-    mock_log_debug = mocker.patch("living_documentation_regime.action_inputs.logger.debug")
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
+    mock_log_debug = mocker.patch("action_inputs.logger.debug")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
 
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
+        "action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="correct_token"
+        "action_inputs.ActionInputs.get_github_token", return_value="correct_token"
+    )
+    mocker.patch(
+        "action_inputs.ActionInputs.get_liv_doc_regime", return_value="true"
     )
     mock_exit = mocker.patch("sys.exit")
     fake_correct_response = mocker.Mock()
     fake_correct_response.status_code = 200
-    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=fake_correct_response)
+    mocker.patch("action_inputs.requests.get", return_value=fake_correct_response)
 
     # Act
     ActionInputs().validate_user_configuration()
 
     # Assert
     mock_exit.assert_not_called()
-    mock_log_debug.assert_called_once_with("Repositories configuration validation successfully completed.")
+    mock_log_debug.assert_has_calls(
+        [
+            mocker.call("User configuration validation started"),
+            mocker.call("User configuration validation successfully completed."),
+            mocker.call('Regime: `LivDoc`: %s.', 'Enabled'),
+            mocker.call('Global: `report-page`: %s.', True),
+            mocker.call('Regime(LivDoc): `liv-doc-repositories`: %s.', mocker.ANY),
+            mocker.call('Regime(LivDoc): `liv-doc-project-state-mining`: %s.', False),
+            mocker.call('Regime(LivDoc): `liv-doc-structured-output`: %s.', False),
+            mocker.call('Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.', False),
+            mocker.call('Regime(LivDoc): `liv-doc-output-formats`: %s.', ['mdoc']),
+    ],
+        any_order=False,
+    )
     mock_log_error.assert_not_called()
 
 
-def test_validate_repositories_configuration_wrong_configuration(mocker, config_repository):
+def test_validate_user_configuration_wrong_output_format(mocker):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+    mock_exit = mocker.patch("sys.exit")
+    mocker.patch("action_inputs.ActionInputs.get_liv_doc_output_formats", return_value=123)  # Invalid value
+
+    fake_correct_response = mocker.Mock()
+    fake_correct_response.status_code = 200
+    mocker.patch("requests.get", return_value=fake_correct_response)
+
+    # Act
+    ActionInputs().validate_user_configuration()
+
+    # Assert
+    mock_log_error.assert_called_once_with(
+        'User input `liv-doc-output-formats` must be a list of strings (e.g. "mdoc, pdf").'
+    )
+    mock_exit.assert_called_once_with(1)
+
+
+def test_validate_user_configuration_wrong_repository_404(mocker, config_repository):
+    # Arrange
+    mock_log_error = mocker.patch("action_inputs.logger.error")
 
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
+        "action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
     )
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="fake-token")
+    mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="fake-token")
     mock_exit = mocker.patch("sys.exit")
     mock_error_response = mocker.Mock()
     mock_error_response.status_code = 404
-    mocker.patch("living_documentation_regime.action_inputs.requests.get", return_value=mock_error_response)
+    mocker.patch("action_inputs.requests.get", return_value=mock_error_response)
 
     # Act
-    ActionInputs().validate_repositories_configuration()
+    ActionInputs().validate_user_configuration()
 
     # Assert
     assert mock_exit.call_count == 2
@@ -253,15 +289,45 @@ def test_validate_repositories_configuration_wrong_configuration(mocker, config_
         "test_repo",
     )
 
+
+def test_validate_user_configuration_wrong_repository_non_200(mocker, config_repository):
+    # Arrange
+    mock_log_error = mocker.patch("action_inputs.logger.error")
+
+    mocker.patch(
+        "action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
+    )
+    mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="correct_token")
+    mock_exit = mocker.patch("sys.exit")
+
+    mock_response_200 = mocker.Mock()
+    mock_response_200.status_code = 200
+    mock_response_500 = mocker.Mock()
+    mock_response_500.status_code = 500
+    mocker.patch("requests.get", side_effect=[mock_response_200, mock_response_500])
+
+    # Act
+    ActionInputs().validate_user_configuration()
+
+    # Assert
+    mock_exit.assert_called_once_with(1)
+    mock_log_error.assert_called_once_with(
+        "An error occurred while validating the repository '%s/%s'. The response status code is %s.",
+        "test_org",
+        "test_repo",
+        500,
+        mock_response_500.text,
+    )
+
 def test_validate_repositories_wrong_token(mocker, config_repository):
     # Arrange
-    mock_log_error = mocker.patch("living_documentation_regime.action_inputs.logger.error")
+    mock_log_error = mocker.patch("action_inputs.logger.error")
 
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.get_github_token", return_value="")
+    mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="")
     mock_exit = mocker.patch("sys.exit")
 
     mocker.patch(
-        "living_documentation_regime.action_inputs.ActionInputs.get_repositories", return_value=list()
+        "action_inputs.ActionInputs.get_repositories", return_value=list()
     )
 
     # Act

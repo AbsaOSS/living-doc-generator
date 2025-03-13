@@ -274,10 +274,11 @@ class LivingDocumentationGenerator:
 
         for output_format in ActionInputs.get_liv_doc_output_formats():
             exporter = ExporterFactory.get_exporter(Regime.LIV_DOC_REGIME, output_format)
-            if exporter:
+            if exporter is not None:
                 statuses.append(exporter.export(issues=issues))
             else:
                 logger.error("No generation process for this format: %s", output_format)
+                statuses.append(False)
 
         if all(statuses):
             logger.info("Living Documentation output generated successfully.")

@@ -97,7 +97,9 @@ class MdocExporter(Exporter):
             report_page = self._report_page_template.format(
                 date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
             )
-            with open(os.path.join(make_absolute_path(LIV_DOC_OUTPUT_PATH), "report_page.md"), "w", encoding="utf-8") as f:
+            with open(
+                os.path.join(make_absolute_path(LIV_DOC_OUTPUT_PATH), "report_page.md"), "w", encoding="utf-8"
+            ) as f:
                 f.write(report_page)
 
             logger.warning("MDoc page generation - Report page generated.")
@@ -128,7 +130,11 @@ class MdocExporter(Exporter):
         if ActionInputs.get_is_structured_output_enabled():
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
-                self._index_data_level_template, self._index_repo_page_template, self._index_org_level_template, topics, issues
+                self._index_data_level_template,
+                self._index_repo_page_template,
+                self._index_org_level_template,
+                topics,
+                issues,
             )
 
         # Generate an index page with a summary table about all issues grouped by topics
@@ -515,7 +521,17 @@ class MdocExporter(Exporter):
             "Report page template file was not successfully loaded.",
         )
 
-        if not all([self._issue_page_detail_template, self._index_page_template, self._index_root_level_page, self._index_org_level_template, self._index_repo_page_template, self._index_data_level_template, self._report_page_template]):
+        if not all(
+            [
+                self._issue_page_detail_template,
+                self._index_page_template,
+                self._index_root_level_page,
+                self._index_org_level_template,
+                self._index_repo_page_template,
+                self._index_data_level_template,
+                self._report_page_template,
+            ]
+        ):
             logger.error("MDoc page generation - failed to load all templates.")
             return False
 
