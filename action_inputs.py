@@ -140,6 +140,8 @@ class ActionInputs:
         Checks that all the user configurations defined are correct.
         @return: None
         """
+        logger.debug("User configuration validation started")
+
         # validate output formats
         output_formats: list[str] = ActionInputs.get_liv_doc_output_formats()
         if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
@@ -171,15 +173,15 @@ class ActionInputs:
         logger.debug("User configuration validation successfully completed.")
 
         # log regime: enabled/disabled
-        logger.debug("Required: `liv-doc-regime`: %s.", ActionInputs.get_liv_doc_regime())
+        logger.debug("Regime: `LivDoc`: %s.", "Enabled" if ActionInputs.get_liv_doc_regime() else "Disabled")
 
         # log common user inputs
-        logger.debug("`report-page`: %s.", ActionInputs.get_is_report_page_generation_enabled())
+        logger.debug("Global: `report-page`: %s.", ActionInputs.get_is_report_page_generation_enabled())
 
         # log liv-doc regime user inputs
         if ActionInputs.get_liv_doc_regime():
-            logger.debug("Regime: `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
-            logger.debug("Regime: `liv-doc-project-state-mining`: %s.", ActionInputs.get_is_project_state_mining_enabled())
-            logger.debug("Regime: `liv-doc-structured-output`: %s.", ActionInputs.get_is_structured_output_enabled())
-            logger.debug("Regime: `liv-doc-group-output-by-topics`: %s.", ActionInputs.get_is_grouping_by_topics_enabled())
-            logger.debug("Regime: `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())
+            logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
+            logger.debug("Regime(LivDoc): `liv-doc-project-state-mining`: %s.", ActionInputs.get_is_project_state_mining_enabled())
+            logger.debug("Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.get_is_structured_output_enabled())
+            logger.debug("Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.", ActionInputs.get_is_grouping_by_topics_enabled())
+            logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())
