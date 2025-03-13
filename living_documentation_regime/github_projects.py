@@ -76,18 +76,16 @@ class GithubProjects:
             # Fetch the response from the API
             response = self.__session.post("https://api.github.com/graphql", json={"query": query})
             # Check if the request was successful
+            if "errors" in response.json():
+                logger.error("An error occurred: %s.", response.json()["errors"], exc_info=True)
+                return None
             response.raise_for_status()
 
             return response.json()["data"]
 
-        # Specific error handling for HTTP errors
-        except requests.HTTPError as http_err:
-            logger.error("HTTP error occurred: %s.", http_err, exc_info=True)
-
         except requests.RequestException as req_err:
             logger.error("An error occurred: %s.", req_err, exc_info=True)
-
-        return None
+            return None
 
     def get_repository_projects(self, repository: Repository, projects_title_filter: list[str]) -> list[GithubProject]:
         """
