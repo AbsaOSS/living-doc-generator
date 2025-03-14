@@ -24,7 +24,7 @@ from typing import Optional
 
 from github.Issue import Issue
 
-from living_documentation_regime.action_inputs import ActionInputs
+from action_inputs import ActionInputs
 from living_documentation_regime.model.project_status import ProjectStatus
 from utils.constants import LIV_DOC_OUTPUT_PATH
 from utils.utils import sanitize_filename, make_absolute_path
@@ -44,7 +44,7 @@ class ConsolidatedIssue:
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
         self.__repository_id: str = repository_id
-        self.__topics: list = []
+        self.__topics: list[str] = []
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False

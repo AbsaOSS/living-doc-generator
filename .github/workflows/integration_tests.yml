@@ -39,7 +39,8 @@ jobs:
               "query-labels": ["int-tests"],
               "projects-title-filter": [] 
             }
-          ] 
+          ]
+        verbose-logging: true
 
     - name: Verify integration test results
       run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_without_project_mining
@@ -78,6 +79,7 @@ jobs:
               }
             ]
           liv-doc-project-state-mining: true
+          verbose-logging: true
 
       - name: Verify integration test results
         run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_whit_project_mining
@@ -116,6 +118,7 @@ jobs:
               }
             ]
           liv-doc-project-state-mining: true
+          verbose-logging: true
 
       - name: Verify integration test results
         run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_whit_project_mining_and_excluded_project

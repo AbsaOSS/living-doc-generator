@@ -15,19 +15,33 @@
 #
 
 """
-This module contains all constants used across the project.
+This module contains all constants and enums used across the project.
 """
-# Action inputs
+from enum import Enum
+
+# General Action inputs
 GITHUB_TOKEN = "GITHUB_TOKEN"
 REPORT_PAGE = "REPORT_PAGE"
-PROJECT_STATE_MINING = "LIV_DOC_PROJECT_STATE_MINING"
-REPOSITORIES = "LIV_DOC_REPOSITORIES"
-STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
-GROUP_OUTPUT_BY_TOPICS = "LIV_DOC_GROUP_OUTPUT_BY_TOPICS"
+
+# Living Documentation Regime Action inputs
+LIV_DOC_PROJECT_STATE_MINING = "LIV_DOC_PROJECT_STATE_MINING"
+LIV_DOC_REPOSITORIES = "LIV_DOC_REPOSITORIES"
+LIV_DOC_STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
+LIV_DOC_GROUP_OUTPUT_BY_TOPICS = "LIV_DOC_GROUP_OUTPUT_BY_TOPICS"
+LIV_DOC_OUTPUT_FORMATS = "LIV_DOC_OUTPUT_FORMATS"
+
 
 # Mining regimes
-LIV_DOC_REGIME = "LIV_DOC_REGIME"
-# CI_REGIME = "CI_REGIME"
+class Regime(Enum):
+    LIV_DOC_REGIME = "LIV_DOC_REGIME"
+    # CI_REGIME = "CI_REGIME"
+
+
+# Export formats
+class Format(Enum):
+    MDOC = "mdoc"
+    # PDF = "PDF"
+
 
 # Regime output paths
 OUTPUT_PATH = "./output"
