@@ -78,6 +78,7 @@ class ActionInputs:
         @return: A list of LivDoc output formats.
         """
         output_formats_string = get_action_input(LIV_DOC_OUTPUT_FORMATS, "mdoc").strip().lower()
+        logger.debug(f"XXX - LivDoc output formats: {output_formats_string}")
         output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
         return output_formats
 
