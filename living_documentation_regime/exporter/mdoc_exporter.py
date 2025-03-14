@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
 class MdocExporter(Exporter):
     """A class representing the MDoc format generation exporter."""
+
     def __init__(self, output_path: str):
         self._output_path = output_path
         self._issue_page_detail_template: Optional[str] = None
