@@ -128,6 +128,8 @@ def get_action_input(name: str, default: Optional[str] = None) -> str:
     @param default: The default value to return if the environment variable is not set.
     @return: The value of the specified input parameter, or an empty string
     """
+    logger.debug(f"XXX all os envs: {os.environ}")
+
     return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default)
 
 
