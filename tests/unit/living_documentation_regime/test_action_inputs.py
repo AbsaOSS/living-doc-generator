@@ -312,12 +312,13 @@ def test_validate_user_configuration_wrong_repository_non_200(mocker, config_rep
     # Assert
     mock_exit.assert_called_once_with(1)
     mock_log_error.assert_called_once_with(
-        "An error occurred while validating the repository '%s/%s'. The response status code is %s.",
+        "An error occurred while validating the repository '%s/%s'. The response status code is %s. Response: %s",
         "test_org",
         "test_repo",
         500,
         mock_response_500.text,
     )
+
 
 def test_validate_repositories_wrong_token(mocker, config_repository):
     # Arrange
@@ -336,7 +337,7 @@ def test_validate_repositories_wrong_token(mocker, config_repository):
     # Assert
     mock_exit.assert_called_once_with(1)
     mock_log_error.assert_called_once_with(
-        "Can not connect to GitHub. Possible cause: Invalid GitHub token. Please verify that the token is correct.",
+        "Can not connect to GitHub. Possible cause: Invalid GitHub token. Status code: %s, Response: %s",
          401,
         '{"message":"Bad credentials","documentation_url":"https://docs.github.com/rest","status":"401"}'
     )
