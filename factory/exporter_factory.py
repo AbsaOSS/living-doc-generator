@@ -25,13 +25,14 @@ from utils.constants import Regime, Format
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-few-public-methods
 class ExporterFactory:
     """
     A factory class for creating exporters based on adequate regime and format.
     """
 
     @staticmethod
-    def get_exporter(regime: Regime, fmt: str) -> Optional[Exporter]:
+    def get_exporter(regime: Regime, fmt: str, regime_output_path: str) -> Optional[Exporter]:
         """
         Get the exporter based on the regime and format.
 
@@ -41,7 +42,7 @@ class ExporterFactory:
         """
         match (regime, fmt):
             case (Regime.LIV_DOC_REGIME, Format.MDOC.value):
-                return MdocExporter()
+                return MdocExporter(regime_output_path)
             case _:
                 logger.error("Exporter not found for regime: %s and format: %s", regime, fmt)
                 return None

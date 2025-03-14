@@ -22,6 +22,7 @@ import logging
 import os
 
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from exporter.exporter import Exporter
@@ -29,7 +30,6 @@ from action_inputs import ActionInputs
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from utils.utils import make_absolute_path, generate_root_level_index_page, load_template
 from utils.constants import (
-    LIV_DOC_OUTPUT_PATH,
     REPORT_PAGE_HEADER,
     TABLE_HEADER_WITH_PROJECT_DATA,
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
@@ -40,23 +40,11 @@ from utils.constants import (
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-instance-attributes, too-few-public-methods
 class MdocExporter(Exporter):
     """A class representing the MDoc format generation exporter."""
-
-    PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-    TEMPLATES_BASE_PATH = os.path.join(
-        os.path.dirname(os.path.dirname(PROJECT_ROOT)), "templates", "living_documentation_regime"
-    )
-
-    ISSUE_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "issue_detail_page_template.md")
-    INDEX_NO_STRUCT_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_no_struct_page_template.md")
-    INDEX_ROOT_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_root_level_page_template.md")
-    INDEX_ORG_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_org_level_page_template.md")
-    INDEX_DATA_LEVEL_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_data_level_page_template.md")
-    INDEX_TOPIC_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "_index_repo_page_template.md")
-    REPORT_PAGE_TEMPLATE_FILE = os.path.join(TEMPLATES_BASE_PATH, "report_page_template.md")
-
-    def __init__(self):
+    def __init__(self, output_path: str):
+        self._output_path = output_path
         self._issue_page_detail_template: Optional[str] = None
         self._index_page_template: Optional[str] = None
         self._index_root_level_page: Optional[str] = None
@@ -98,7 +86,7 @@ class MdocExporter(Exporter):
                 date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
             )
             with open(
-                os.path.join(make_absolute_path(LIV_DOC_OUTPUT_PATH), "report_page.md"), "w", encoding="utf-8"
+                os.path.join(make_absolute_path(self._output_path), "report_page.md"), "w", encoding="utf-8"
             ) as f:
                 f.write(report_page)
 
@@ -126,7 +114,7 @@ class MdocExporter(Exporter):
         return topics
 
     def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue], topics: set[str]) -> None:
-        regime_output_path = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        regime_output_path = make_absolute_path(self._output_path)
         if ActionInputs.get_is_structured_output_enabled():
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
@@ -192,6 +180,7 @@ class MdocExporter(Exporter):
 
             logger.debug("Generated MDoc page: %s.", page_filename)
 
+    # pylint: disable=too-many-arguments
     def _generate_structured_index_pages(
         self,
         index_data_level_template: str,
@@ -306,8 +295,7 @@ class MdocExporter(Exporter):
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(index_page)
 
-    @staticmethod
-    def _generate_sub_level_index_page(index_template: str, level: str, repository_id: str) -> None:
+    def _generate_sub_level_index_page(self, index_template: str, level: str, repository_id: str) -> None:
         """
         Generates an index page for the structured output based on the level.
 
@@ -335,7 +323,8 @@ class MdocExporter(Exporter):
         sub_level_index_page = index_template.format(**replacement)
 
         # Create a sub index page file
-        output_path = os.path.join(make_absolute_path(LIV_DOC_OUTPUT_PATH), index_level_dir)
+        output_path = os.path.join(make_absolute_path(self._output_path), index_level_dir)
+        os.makedirs(output_path, exist_ok=True)
         with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(sub_level_index_page)
 
@@ -464,8 +453,7 @@ class MdocExporter(Exporter):
 
         return issue_info
 
-    @staticmethod
-    def _generate_index_directory_path(repository_id: Optional[str], topic: Optional[str]) -> str:
+    def _generate_index_directory_path(self, repository_id: Optional[str], topic: Optional[str]) -> str:
         """
         Generates a directory path based on if structured output is required.
 
@@ -473,7 +461,7 @@ class MdocExporter(Exporter):
         @param topic: The topic used for grouping issues.
         @return: The generated directory path.
         """
-        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+        output_path: str = make_absolute_path(self._output_path)
 
         if ActionInputs.get_is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
@@ -492,32 +480,44 @@ class MdocExporter(Exporter):
 
         @return: A tuple containing all loaded template files.
         """
+        project_root = Path(__file__).resolve().parent.parent.parent
+        # project_root = os.path.dirname(os.path.abspath(__file__))
+        templates_base_path = os.path.join(project_root, "templates", "living_documentation_regime")
+
+        issue_page_template_file = os.path.join(templates_base_path, "issue_detail_page_template.md")
+        index_no_struct_template_file = os.path.join(templates_base_path, "_index_no_struct_page_template.md")
+        index_root_level_template_file = os.path.join(templates_base_path, "_index_root_level_page_template.md")
+        index_org_level_template_file = os.path.join(templates_base_path, "_index_org_level_page_template.md")
+        index_data_level_template_file = os.path.join(templates_base_path, "_index_data_level_page_template.md")
+        index_topic_page_template_file = os.path.join(templates_base_path, "_index_repo_page_template.md")
+        report_page_template_file = os.path.join(templates_base_path, "report_page_template.md")
+
         self._issue_page_detail_template: Optional[str] = load_template(
-            MdocExporter.ISSUE_PAGE_TEMPLATE_FILE,
+            issue_page_template_file,
             "Issue page template file was not successfully loaded.",
         )
         self._index_page_template: Optional[str] = load_template(
-            MdocExporter.INDEX_NO_STRUCT_TEMPLATE_FILE,
+            index_no_struct_template_file,
             "Index page template file was not successfully loaded.",
         )
         self._index_root_level_page: Optional[str] = load_template(
-            MdocExporter.INDEX_ROOT_LEVEL_TEMPLATE_FILE,
+            index_root_level_template_file,
             "Structured index page template file for root level was not successfully loaded.",
         )
         self._index_org_level_template: Optional[str] = load_template(
-            MdocExporter.INDEX_ORG_LEVEL_TEMPLATE_FILE,
+            index_org_level_template_file,
             "Structured index page template file for organization level was not successfully loaded.",
         )
         self._index_repo_page_template: Optional[str] = load_template(
-            MdocExporter.INDEX_TOPIC_PAGE_TEMPLATE_FILE,
+            index_topic_page_template_file,
             "Structured index page template file for repository level was not successfully loaded.",
         )
         self._index_data_level_template: Optional[str] = load_template(
-            MdocExporter.INDEX_DATA_LEVEL_TEMPLATE_FILE,
+            index_data_level_template_file,
             "Structured index page template file for data level was not successfully loaded.",
         )
         self._report_page_template: Optional[str] = load_template(
-            MdocExporter.REPORT_PAGE_TEMPLATE_FILE,
+            report_page_template_file,
             "Report page template file was not successfully loaded.",
         )
 

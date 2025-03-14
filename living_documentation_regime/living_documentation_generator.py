@@ -34,17 +34,17 @@ from living_documentation_regime.model.consolidated_issue import ConsolidatedIss
 from living_documentation_regime.model.project_issue import ProjectIssue
 from utils.decorators import safe_call_decorator
 from utils.github_rate_limiter import GithubRateLimiter
-from utils.utils import make_issue_key, make_absolute_path
+from utils.utils import make_issue_key
 from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
     ISSUE_STATE_ALL,
-    OUTPUT_PATH,
     Regime,
 )
 
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-few-public-methods
 class LivingDocumentationGenerator:
     """
     A class representing the Living Documentation Generator.
@@ -52,9 +52,10 @@ class LivingDocumentationGenerator:
     and generate the output in required format as the output of action's Living Documentation regime.
     """
 
-    def __init__(self):
+    def __init__(self, output_path: str):
         github_token = ActionInputs.get_github_token()
 
+        self.__regime_output_path = os.path.join(output_path, "liv-doc-regime")
         self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
         self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
@@ -67,7 +68,7 @@ class LivingDocumentationGenerator:
         @return: None
         """
         self._clean_output_directory()
-        logger.debug("Output directory cleaned.")
+        logger.debug("Regime's 'LivDoc' output directory cleaned.")
 
         # Data mine GitHub issues with defined labels from all repositories
         logger.info("Fetching repository GitHub issues - started.")
@@ -91,18 +92,15 @@ class LivingDocumentationGenerator:
         # Generate markdown pages
         self._generate_living_documents(consolidated_issues)
 
-    @staticmethod
-    def _clean_output_directory() -> None:
+    def _clean_output_directory(self) -> None:
         """
         Clean the output directory from the previous run.
 
         @return: None
         """
-        output_path = make_absolute_path(OUTPUT_PATH)
-
-        if os.path.exists(output_path):
-            shutil.rmtree(output_path)
-        os.makedirs(output_path)
+        if os.path.exists(self.__regime_output_path):
+            shutil.rmtree(self.__regime_output_path)
+        os.makedirs(self.__regime_output_path)
 
     def _fetch_github_issues(self) -> dict[str, list[Issue]]:
         """
@@ -262,8 +260,7 @@ class LivingDocumentationGenerator:
         )
         return consolidated_issues
 
-    @staticmethod
-    def _generate_living_documents(issues: dict[str, ConsolidatedIssue]) -> None:
+    def _generate_living_documents(self, issues: dict[str, ConsolidatedIssue]) -> None:
         """
         Generate the output in the required formats.
 
@@ -273,7 +270,7 @@ class LivingDocumentationGenerator:
         statuses: list[bool] = []
 
         for output_format in ActionInputs.get_liv_doc_output_formats():
-            exporter = ExporterFactory.get_exporter(Regime.LIV_DOC_REGIME, output_format)
+            exporter = ExporterFactory.get_exporter(Regime.LIV_DOC_REGIME, output_format, self.__regime_output_path)
             if exporter is not None:
                 statuses.append(exporter.export(issues=issues))
             else:

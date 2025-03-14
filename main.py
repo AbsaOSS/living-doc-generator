@@ -40,12 +40,13 @@ def run() -> None:
     logger.info("Living Documentation generator - starting.")
 
     ActionInputs().validate_user_configuration()
+    output_path: str = make_absolute_path(OUTPUT_PATH)
 
     if ActionInputs.get_liv_doc_regime():
         logger.info("Living Documentation generator - Starting the `LivDoc` generation regime.")
 
         # Generate the Living documentation
-        LivingDocumentationGenerator().generate()
+        LivingDocumentationGenerator(output_path).generate()
 
         logger.info("Living Documentation generator - `LivDoc` generation regime completed.")
     else:
@@ -60,7 +61,6 @@ def run() -> None:
     #     logger.info("Living Documentation generator - `CI` generation regime completed.")
 
     # Set the output for the GitHub Action
-    output_path: str = make_absolute_path(OUTPUT_PATH)
     set_action_output("output-path", output_path)
     logger.info("Living Documentation generator - root output path set to `%s`.", output_path)
 

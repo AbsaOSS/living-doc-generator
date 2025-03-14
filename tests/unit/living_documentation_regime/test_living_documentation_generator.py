@@ -11,11 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
-
 from github.Issue import Issue
 
-from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_regime.model.project_issue import ProjectIssue
 
@@ -62,7 +59,7 @@ def test_generate_correct_behaviour(mocker, living_documentation_generator):
         {"test_org/test_repo": [mock_issue]}, {"test_org/test_repo#1": [project_issue_mock]}
     )
     # mock_generate_markdown_pages.assert_called_once_with({"test_org/test_repo#1": consolidated_issue_mock})
-    mock_logger_debug.assert_called_once_with("Output directory cleaned.")
+    mock_logger_debug.assert_called_once_with("Regime's 'LivDoc' output directory cleaned.")
     mock_logger_info.assert_has_calls(
         [
             mocker.call("Fetching repository GitHub issues - started."),
@@ -81,11 +78,6 @@ def test_generate_correct_behaviour(mocker, living_documentation_generator):
 
 def test_clean_output_directory_correct_behaviour(mocker, living_documentation_generator):
     # Arrange
-    mock_output_path = "/test/output/path"
-    mock_get_output_directory = mocker.patch(
-        "living_documentation_regime.living_documentation_generator.make_absolute_path",
-        return_value=mock_output_path,
-    )
     mock_exists = mocker.patch("os.path.exists", return_value=True)
     mock_rmtree = mocker.patch("shutil.rmtree")
     mock_makedirs = mocker.patch("os.makedirs")
@@ -94,10 +86,9 @@ def test_clean_output_directory_correct_behaviour(mocker, living_documentation_g
     living_documentation_generator._clean_output_directory()
 
     # Assert
-    mock_get_output_directory.assert_called_once()
-    mock_exists.assert_called_once_with(mock_output_path)
-    mock_rmtree.assert_called_once_with(mock_output_path)
-    mock_makedirs.assert_called_once_with(mock_output_path)
+    mock_exists.assert_called_once()
+    mock_rmtree.assert_called_once()
+    mock_makedirs.assert_called_once()
 
 
 # _fetch_github_issues

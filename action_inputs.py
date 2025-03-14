@@ -157,7 +157,7 @@ class ActionInputs:
         response = requests.get("https://api.github.com/octocat", headers=headers, timeout=10)
         if response.status_code != 200:
             logger.error(
-                "Can not connect to GitHub. Possible cause: Invalid GitHub token. Please verify that the token is correct.",
+                "Can not connect to GitHub. Possible cause: Invalid GitHub token. Status code: %s, Response: %s",
                 response.status_code,
                 response.text,
             )
@@ -181,7 +181,8 @@ class ActionInputs:
                 repository_error_count += 1
             elif response.status_code != 200:
                 logger.error(
-                    "An error occurred while validating the repository '%s/%s'. The response status code is %s.",
+                    "An error occurred while validating the repository '%s/%s'. "
+                    "The response status code is %s. Response: %s",
                     org_name,
                     repo_name,
                     response.status_code,
