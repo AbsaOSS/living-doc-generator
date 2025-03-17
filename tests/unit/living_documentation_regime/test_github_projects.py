@@ -22,7 +22,7 @@ from living_documentation_regime.github_projects import GithubProjects
 
 
 def test_send_graphql_query_correct_behaviour(mocker):
-    expected_data = {"repository": {"projectsV2": {"nodes": [{"id": "PVT_k", "number": 3, "title": "Board"}]}}}
+    expected_data = {"repository": {"projectsV2": {"nodes": [{ "id": "PVT_kwDOARSy184AyllA", "number": 13, "title": "integration-tests-for-living-doc-generator" }]}}}
     expected_response = {"data": expected_data}
 
     mock_session = mocker.Mock()
@@ -41,19 +41,22 @@ def test_send_graphql_query_correct_behaviour(mocker):
 
 
 def test_send_graphql_query_http_error(mocker):
+    expected_response = {"data": {"repository": "null"},"errors": [{"type": "NOT_FOUND","path": ["repository"],"locations": [{"line": 7,"column": 19}],"message": "Could not resolve to a Repository with the name 'name/repo'."}]}
     mock_session = mocker.Mock()
+    mock_session.post.return_value.json.return_value = expected_response
+    mock_session.post.return_value.raise_for_status = lambda: None
+
     mocker.patch.object(
         GithubProjects,
         "_GithubProjects__initialize_request_session",
         lambda self: setattr(self, "_GithubProjects__session", mock_session),
     )
     mock_log_error = mocker.patch("living_documentation_regime.github_projects.logger.error")
-    mock_session.post.side_effect = requests.HTTPError("HTTP error occurred")
 
     actual = GithubProjects("token123")._send_graphql_query("query")
 
     assert actual is None
-    mock_log_error.assert_called_once_with("HTTP error occurred: %s.", mocker.ANY, exc_info=True)
+    mock_log_error.assert_called_once_with("An error occurred: %s.", mocker.ANY, exc_info=True)
 
 
 def test_send_graphql_query_request_exception(mocker):
