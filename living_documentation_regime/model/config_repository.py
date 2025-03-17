@@ -74,3 +74,7 @@ class ConfigRepository:
         except TypeError as e:
             logger.error("The repository JSON input does not have a dictionary structure: %s.", e, exc_info=True)
         return False
+
+    def __repr__(self):
+        return f"ConfigRepository(organization_name={self.organization_name}, repository_name={self.repository_name}, " \
+               f"query_labels={self.query_labels}, projects_title_filter={self.projects_title_filter})"
