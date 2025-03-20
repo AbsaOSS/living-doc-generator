@@ -55,7 +55,7 @@ class ActionInputs:
         return get_action_input(GITHUB_TOKEN)
 
     @staticmethod
-    def get_is_report_page_generation_enabled() -> bool:
+    def is_report_page_generation_enabled() -> bool:
         """
         Getter of the report page switch. True by default.
         @return: True if report page is enabled, False otherwise.
@@ -63,7 +63,7 @@ class ActionInputs:
         return get_action_input(REPORT_PAGE, "true").lower() == "true"
 
     @staticmethod
-    def get_liv_doc_regime() -> bool:
+    def is_living_doc_regime_enabled() -> bool:
         """
         Getter of the LivDoc regime switch.
         @return: True if LivDoc regime is enabled, False otherwise.
@@ -82,7 +82,17 @@ class ActionInputs:
         return output_formats
 
     @staticmethod
-    def get_is_project_state_mining_enabled() -> bool:
+    def get_liv_doc_output_formats() -> list[str]:
+        """
+        Getter of the LivDoc regime output formats for generated documents.
+        @return: A list of LivDoc output formats.
+        """
+        output_formats_string = get_action_input(LIV_DOC_OUTPUT_FORMATS, "mdoc").strip().lower()
+        output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
+        return output_formats
+
+    @staticmethod
+    def is_project_state_mining_enabled() -> bool:
         """
         Getter of the project state mining switch.
         @return: True if project state mining is enabled, False otherwise.
@@ -90,7 +100,7 @@ class ActionInputs:
         return get_action_input(LIV_DOC_PROJECT_STATE_MINING, "false").lower() == "true"
 
     @staticmethod
-    def get_is_grouping_by_topics_enabled() -> bool:
+    def is_grouping_by_topics_enabled() -> bool:
         """
         Getter of the switch, that will group the tickets in the index.md file by topics.
         @return: True if grouping by topics is enabled, False otherwise.
@@ -98,7 +108,7 @@ class ActionInputs:
         return get_action_input(LIV_DOC_GROUP_OUTPUT_BY_TOPICS, "false").lower() == "true"
 
     @staticmethod
-    def get_is_structured_output_enabled() -> bool:
+    def is_structured_output_enabled() -> bool:
         """
         Getter of the structured output switch.
         @return: True if structured output is enabled, False otherwise.
@@ -141,12 +151,6 @@ class ActionInputs:
         @return: None
         """
         logger.debug("User configuration validation started")
-
-        # validate output formats
-        output_formats = ActionInputs.get_liv_doc_output_formats()
-        if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
-            logger.error('User input `liv-doc-output-formats` must be a list of strings (e.g. "mdoc, pdf").')
-            sys.exit(1)
 
         # validate repositories configuration
         repositories: list[ConfigRepository] = self.get_repositories()
@@ -196,23 +200,23 @@ class ActionInputs:
         logger.debug("User configuration validation successfully completed.")
 
         # log regime: enabled/disabled
-        logger.debug("Regime: `LivDoc`: %s.", "Enabled" if ActionInputs.get_liv_doc_regime() else "Disabled")
+        logger.debug("Regime: `LivDoc`: %s.", "Enabled" if ActionInputs.is_living_doc_regime_enabled() else "Disabled")
 
         # log common user inputs
-        logger.debug("Global: `report-page`: %s.", ActionInputs.get_is_report_page_generation_enabled())
+        logger.debug("Global: `report-page`: %s.", ActionInputs.is_report_page_generation_enabled())
 
         # log liv-doc regime user inputs
-        if ActionInputs.get_liv_doc_regime():
+        if ActionInputs.is_living_doc_regime_enabled():
             logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
             logger.debug(
                 "Regime(LivDoc): `liv-doc-project-state-mining`: %s.",
-                ActionInputs.get_is_project_state_mining_enabled(),
+                ActionInputs.is_project_state_mining_enabled(),
             )
             logger.debug(
-                "Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.get_is_structured_output_enabled()
+                "Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.is_structured_output_enabled()
             )
             logger.debug(
                 "Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.",
-                ActionInputs.get_is_grouping_by_topics_enabled(),
+                ActionInputs.is_grouping_by_topics_enabled(),
             )
             logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())

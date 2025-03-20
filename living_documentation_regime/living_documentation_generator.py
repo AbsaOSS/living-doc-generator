@@ -163,7 +163,7 @@ class LivingDocumentationGenerator:
 
         @return: A dictionary containing project issue objects with unique key.
         """
-        if not ActionInputs.get_is_project_state_mining_enabled():
+        if not ActionInputs.is_project_state_mining_enabled():
             logger.info("Fetching GitHub project data - project mining is not allowed.")
             return {}
 
