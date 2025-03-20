@@ -38,6 +38,7 @@ inputs:
     description: 'Comma-separated list of wanted output formats for Living Documentation Regime.'
     required: false
     default: 'mdoc'
+
 outputs:
   output-path:
     description: 'Path to the generated living documentation files.'

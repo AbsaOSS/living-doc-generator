@@ -73,9 +73,13 @@ See the default action step definition:
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
+    report-page: true
+    
     # regimes de/activation
     liv-doc-regime: false
 ```
+
+> **Report page**: The report page is a summary of the errors found during the generation of living documents.
 
 See the default action step definitions for each regime:
 
@@ -162,9 +166,9 @@ In this GitHub action, there are two types of user inputs:
 - **Examples**
 ```yaml
 with:
-  liv-doc-regime: true
-  verbose-logging: true
-  report-page: true
+  liv-doc-regime: true      # Activation of Living Documentation regime
+  verbose-logging: true     # Activation of verbose (debug) logging
+  report-page: true         # Allowing creation of report page - each regime can fill it with errors.
 ```
 
 #### Regime Inputs
