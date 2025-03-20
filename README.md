@@ -27,7 +27,21 @@
   - [License Information](#license-information)
   - [Contact or Support Information](#contact-or-support-information)
 
-![vision.jpg](img/vision.jpg)
+## Planning
+
+| Task                      | Description                                                             | Status      | Due Date |
+|---------------------------|-------------------------------------------------------------------------|-------------|----------|
+| Released v0.1.0 PoC       | Initial proof of concept release                                       | Done        | 10/2024  |
+| Report page               | Introduce report page, No Topic chapter, filtering, and detection code | Done        | 01/2025  |
+| Output generators         | Make the solution more general and support easy format switching       | In progress | 03/2025  |
+| User Story mining         | Mining of User Stories and integrating as a new output type            | Planned     | 2025     |
+| Requirements mining       | Mining of Requirements and integrating as a new output type            | Planned     | 2025     |
+| Support of test headers mining | Define test header formats, mine data, and enhance coverage matrix | Planned     | TBD      |
+| Support of coverage matrix | Connect test headers with documented types and integrate as output    | Planned     | TBD      |
+| Release notes mining      | Mine repositories release information and integrate as output type     | Planned     | TBD      |
+| CI jobs mining            | Mine GH workflow files, analyze, and integrate as output type         | Planned     | TBD      |
+| Incidents mining          | Mine registered incidents and integrate as a new output type          | Planned     | TBD      |
+| User Guide generation     | Generate a User Guide based on User Stories and integrate as output   | Planned     | TBD      |
 
 ## Motivation
 
@@ -44,7 +58,9 @@ This Generator supports multiple mining regimes, each with its own unique functi
 
 ### Prerequisites
 
-Before we begin, ensure you have a GitHub Token with permission to fetch repository data such as Issues and Pull Requests.
+Before we begin, ensure you have a following prerequisites:
+- GitHub Token with permission to fetch repository data such as Issues and Pull Requests,
+- Python version 3.12 or higher.
 
 ### Adding the Action to Your Workflow
 
@@ -57,9 +73,13 @@ See the default action step definition:
   env:
     GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}  
   with:
+    report-page: true
+    
     # regimes de/activation
     liv-doc-regime: false
 ```
+
+> **Report page**: The report page is a summary of the errors found during the generation of living documents.
 
 See the default action step definitions for each regime:
 
@@ -105,6 +125,7 @@ See the full example of action step definition (in example are used non-default 
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
     liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
+    liv-doc-output-formats: "mdoc"         # output formats selection, supported: mdoc
 ```
 
 ---
@@ -116,51 +137,40 @@ Configure the action by customizing the following parameters based on your needs
 
 ### Environment Variables
 
-- **REPOSITORIES_ACCESS_TOKEN**:
-  - **Description**: GitHub access token for authentication, that has a permission to access all defined repositories / projects.
-  - **Usage**: Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.REPOSITORIES_ACCESS_TOKEN }}`.
-  - **Example**:
-    ```yaml
-    env:
-      GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}
-    ```
+| Variable Name                | Description                                                                                                | Required | Usage                                                                                                                              |
+|------------------------------|------------------------------------------------------------------------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------|
+| `REPOSITORIES_ACCESS_TOKEN`  | GitHub access token for authentication, that has permission to access all defined repositories / projects. | Yes      | Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.REPOSITORIES_ACCESS_TOKEN }}`. |
+
+- **Example**:
+  ```yaml
+  env:
+    GITHUB-TOKEN: ${{ secrets.REPOSITORIES_ACCESS_TOKEN }}
+  ```
 
 The way how to generate and store a token into the GitHub repository secrets is described in the [support chapter](#how-to-create-a-token-with-required-scope).
 
 ### Inputs
 
 In this GitHub action, there are two types of user inputs:
-- **Base Inputs**: Inputs that are common to all regimes.
-- **Regime Inputs**: Inputs that are specific to a particular regime.
+- **[Base Inputs](#base-inputs)**: Inputs that are common to all regimes.
+- **[Regime Inputs](#regime-inputs)**: Inputs that are specific to a particular regime.
 
 #### Base Inputs
-- **liv-doc-regime** (required)
-  - **Description**: Enables or disables Living Documentation regime.
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      liv-doc-regime: true
-    ```
 
-- **verbose-logging** (optional, `default: false`)
-  - **Description**: Enables or disables verbose (debug) logging.
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      verbose-logging: true
-    ```
-    
-- **report-page** (optional, `default: true`)
-  - **Description**: Enables or disables the report page generation.
-  - **Usage**: Set to true to activate.
-  - **Example**:
-    ```yaml
-    with:
-      report-page: true
-    ```
-    
+| Input Name        | Description                                      | Required | Default | Usage                     | 
+|-------------------|--------------------------------------------------|----------|---------|---------------------------|
+| `liv-doc-regime`  | Enables or disables Living Documentation regime. | Yes      | N/A     | Set to true to activate.  |
+| `verbose-logging` | Enables or disables verbose (debug) logging.     | No       | `false`   | Set to true to activate.  |
+| `report-page`     | Enables or disables the report page generation.  | No       | `true`    | Set to true to activate.  |
+
+- **Examples**
+```yaml
+with:
+  liv-doc-regime: true      # Activation of Living Documentation regime
+  verbose-logging: true     # Activation of verbose (debug) logging
+  report-page: true         # Allowing creation of report page - each regime can fill it with errors.
+```
+
 #### Regime Inputs
 
 Regime-specific inputs are detailed in the respective regime's documentation:
@@ -267,6 +277,7 @@ export INPUT_LIV_DOC_REPOSITORIES='[
 export INPUT_LIV_DOC_PROJECT_STATE_MINING=true
 export INPUT_LIV_DOC_STRUCTURED_OUTPUT=true
 export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
+export INPUT_LIV_DOC_OUTPUT_FORMATS="mdoc"
 ```
 
 ### Running the script locally
@@ -297,6 +308,7 @@ export INPUT_LIV_DOC_REPOSITORIES='[
 export INPUT_LIV_DOC_PROJECT_STATE_MINING=true
 export INPUT_LIV_DOC_STRUCTURED_OUTPUT=true
 export INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=true
+export INPUT_LIV_DOC_OUTPUT_FORMATS="mdoc"
 
 python3 main.py
 ```

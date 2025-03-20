@@ -24,7 +24,7 @@ from utils.constants import OUTPUT_PATH
 
 def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
     # Arrange
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.validate_repositories_configuration")
+    mocker.patch("action_inputs.ActionInputs.validate_user_configuration")
 
     expected_output_path = os.path.abspath(OUTPUT_PATH)
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
@@ -45,11 +45,11 @@ def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
     mock_living_doc_generator.assert_called_once()
     mock_log_info.assert_has_calls(
         [
-            mocker.call("Starting Living Documentation generation."),
-            mocker.call("Living Documentation generation - Starting the `LivDoc` generation regime."),
-            mocker.call("Living Documentation generation - `LivDoc` generation regime completed."),
-            mocker.call("Living Documentation generation - output path set to `%s`.", expected_output_path),
-            mocker.call("Living Documentation generation completed."),
+            mocker.call("Living Documentation generator - starting."),
+            mocker.call("Living Documentation generator - Starting the `LivDoc` generation regime."),
+            mocker.call("Living Documentation generator - `LivDoc` generation regime completed."),
+            mocker.call("Living Documentation generator - root output path set to `%s`.", expected_output_path),
+            mocker.call("Living Documentation generator - ending."),
         ],
         any_order=False,
     )
@@ -57,7 +57,7 @@ def test_run_correct_behaviour_with_all_regimes_enabled(mocker):
 
 def test_run_with_zero_regimes_enabled(mocker):
     # Arrange
-    mocker.patch("living_documentation_regime.action_inputs.ActionInputs.validate_repositories_configuration")
+    mocker.patch("action_inputs.ActionInputs.validate_user_configuration")
 
     mock_log_info = mocker.patch("logging.getLogger").return_value.info
     mocker.patch.dict(os.environ, {"INPUT_GITHUB_TOKEN": "fake_token", "INPUT_LIV_DOC_REGIME": "false"})
@@ -71,9 +71,10 @@ def test_run_with_zero_regimes_enabled(mocker):
     mock_living_doc_generator.assert_not_called()
     mock_log_info.assert_has_calls(
         [
-            mocker.call("Starting Living Documentation generation."),
-            mocker.call("Living Documentation generation - output path set to `%s`.", expected_output_path),
-            mocker.call("Living Documentation generation completed."),
+            mocker.call("Living Documentation generator - starting."),
+            mocker.call("Living Documentation generator - `LivDoc` generation regime disabled."),
+            mocker.call("Living Documentation generator - root output path set to `%s`.", expected_output_path),
+            mocker.call("Living Documentation generator - ending."),
         ],
         any_order=False,
     )

@@ -28,12 +28,13 @@ from living_documentation_regime.model.config_repository import ConfigRepository
 from utils.utils import get_action_input
 from utils.constants import (
     GITHUB_TOKEN,
-    LIV_DOC_REGIME,
-    PROJECT_STATE_MINING,
-    REPOSITORIES,
-    GROUP_OUTPUT_BY_TOPICS,
-    STRUCTURED_OUTPUT,
+    LIV_DOC_OUTPUT_FORMATS,
+    LIV_DOC_PROJECT_STATE_MINING,
+    LIV_DOC_REPOSITORIES,
+    LIV_DOC_GROUP_OUTPUT_BY_TOPICS,
+    LIV_DOC_STRUCTURED_OUTPUT,
     REPORT_PAGE,
+    Regime,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ class ActionInputs:
         return get_action_input(GITHUB_TOKEN)
 
     @staticmethod
-    def get_is_report_page_generation_enabled() -> bool:
+    def is_report_page_generation_enabled() -> bool:
         """
         Getter of the report page switch. True by default.
         @return: True if report page is enabled, False otherwise.
@@ -62,36 +63,47 @@ class ActionInputs:
         return get_action_input(REPORT_PAGE, "true").lower() == "true"
 
     @staticmethod
-    def get_liv_doc_regime() -> bool:
+    def is_living_doc_regime_enabled() -> bool:
         """
         Getter of the LivDoc regime switch.
         @return: True if LivDoc regime is enabled, False otherwise.
         """
-        return get_action_input(LIV_DOC_REGIME, "false").lower() == "true"
+        regime: str = Regime.LIV_DOC_REGIME.value
+        return get_action_input(regime, "false").lower() == "true"
 
     @staticmethod
-    def get_is_project_state_mining_enabled() -> bool:
+    def get_liv_doc_output_formats() -> list[str]:
+        """
+        Getter of the LivDoc regime output formats for generated documents.
+        @return: A list of LivDoc output formats.
+        """
+        output_formats_string = get_action_input(LIV_DOC_OUTPUT_FORMATS, "mdoc").strip().lower()
+        output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
+        return output_formats
+
+    @staticmethod
+    def is_project_state_mining_enabled() -> bool:
         """
         Getter of the project state mining switch.
         @return: True if project state mining is enabled, False otherwise.
         """
-        return get_action_input(PROJECT_STATE_MINING, "false").lower() == "true"
+        return get_action_input(LIV_DOC_PROJECT_STATE_MINING, "false").lower() == "true"
 
     @staticmethod
-    def get_is_grouping_by_topics_enabled() -> bool:
+    def is_grouping_by_topics_enabled() -> bool:
         """
         Getter of the switch, that will group the tickets in the index.md file by topics.
         @return: True if grouping by topics is enabled, False otherwise.
         """
-        return get_action_input(GROUP_OUTPUT_BY_TOPICS, "false").lower() == "true"
+        return get_action_input(LIV_DOC_GROUP_OUTPUT_BY_TOPICS, "false").lower() == "true"
 
     @staticmethod
-    def get_is_structured_output_enabled() -> bool:
+    def is_structured_output_enabled() -> bool:
         """
         Getter of the structured output switch.
         @return: True if structured output is enabled, False otherwise.
         """
-        return get_action_input(STRUCTURED_OUTPUT, "false").lower() == "true"
+        return get_action_input(LIV_DOC_STRUCTURED_OUTPUT, "false").lower() == "true"
 
     @staticmethod
     def get_repositories() -> list[ConfigRepository]:
@@ -100,7 +112,7 @@ class ActionInputs:
         @return: A list of Config Repositories.
         """
         repositories = []
-        repositories_json = get_action_input(REPOSITORIES, "[]")
+        repositories_json = get_action_input(LIV_DOC_REPOSITORIES, "[]")
         try:
             # Parse repositories json string into json dictionary format
             repositories_json = json.loads(repositories_json)
@@ -123,12 +135,14 @@ class ActionInputs:
 
         return repositories
 
-    def validate_repositories_configuration(self) -> None:
+    def validate_user_configuration(self) -> None:
         """
-        Checks that all repositories defined in the configuration are real .
-
+        Checks that all the user configurations defined are correct.
         @return: None
         """
+        logger.debug("User configuration validation started")
+
+        # validate repositories configuration
         repositories: list[ConfigRepository] = self.get_repositories()
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
@@ -137,7 +151,7 @@ class ActionInputs:
         response = requests.get("https://api.github.com/octocat", headers=headers, timeout=10)
         if response.status_code != 200:
             logger.error(
-                "Can not connect to GitHub. Possible cause: Invalid GitHub token. Please verify that the token is correct.",
+                "Can not connect to GitHub. Possible cause: Invalid GitHub token. Status code: %s, Response: %s",
                 response.status_code,
                 response.text,
             )
@@ -161,7 +175,8 @@ class ActionInputs:
                 repository_error_count += 1
             elif response.status_code != 200:
                 logger.error(
-                    "An error occurred while validating the repository '%s/%s'. The response status code is %s.",
+                    "An error occurred while validating the repository '%s/%s'. "
+                    "The response status code is %s. Response: %s",
                     org_name,
                     repo_name,
                     response.status_code,
@@ -171,4 +186,27 @@ class ActionInputs:
         if repository_error_count > 0:
             sys.exit(1)
 
-        logger.debug("Repositories configuration validation successfully completed.")
+        # log user configuration
+        logger.debug("User configuration validation successfully completed.")
+
+        # log regime: enabled/disabled
+        logger.debug("Regime: `LivDoc`: %s.", "Enabled" if ActionInputs.is_living_doc_regime_enabled() else "Disabled")
+
+        # log common user inputs
+        logger.debug("Global: `report-page`: %s.", ActionInputs.is_report_page_generation_enabled())
+
+        # log liv-doc regime user inputs
+        if ActionInputs.is_living_doc_regime_enabled():
+            logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
+            logger.debug(
+                "Regime(LivDoc): `liv-doc-project-state-mining`: %s.",
+                ActionInputs.is_project_state_mining_enabled(),
+            )
+            logger.debug(
+                "Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.is_structured_output_enabled()
+            )
+            logger.debug(
+                "Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.",
+                ActionInputs.is_grouping_by_topics_enabled(),
+            )
+            logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())

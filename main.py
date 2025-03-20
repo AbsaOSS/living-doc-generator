@@ -21,7 +21,7 @@ for the GH Action.
 
 import logging
 
-from living_documentation_regime.action_inputs import ActionInputs
+from action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
 from utils.constants import OUTPUT_PATH
 from utils.utils import set_action_output, make_absolute_path
@@ -37,32 +37,34 @@ def run() -> None:
     setup_logging()
     logger = logging.getLogger(__name__)
 
-    logger.info("Starting Living Documentation generation.")
+    logger.info("Living Documentation generator - starting.")
 
-    ActionInputs().validate_repositories_configuration()
+    ActionInputs().validate_user_configuration()
+    output_path: str = make_absolute_path(OUTPUT_PATH)
 
-    if ActionInputs.get_liv_doc_regime():
-        logger.info("Living Documentation generation - Starting the `LivDoc` generation regime.")
+    if ActionInputs.is_living_doc_regime_enabled():
+        logger.info("Living Documentation generator - Starting the `LivDoc` generation regime.")
 
         # Generate the Living documentation
-        LivingDocumentationGenerator().generate()
+        LivingDocumentationGenerator(output_path).generate()
 
-        logger.info("Living Documentation generation - `LivDoc` generation regime completed.")
+        logger.info("Living Documentation generator - `LivDoc` generation regime completed.")
+    else:
+        logger.info("Living Documentation generator - `LivDoc` generation regime disabled.")
 
     # elif ActionInputs.get_ci_regime():
-    #     logger.info("Living Documentation generation - Starting the `CI` generation regime.")
+    #     logger.info("Living Documentation generator - Starting the `CI` generation regime.")
     #
     #     # Generate the CI Documentation
     #     CiDocumentationGenerator().generate()
     #
-    #     logger.info("Living Documentation generation - `CI` generation regime completed.")
+    #     logger.info("Living Documentation generator - `CI` generation regime completed.")
 
     # Set the output for the GitHub Action
-    output_path: str = make_absolute_path(OUTPUT_PATH)
     set_action_output("output-path", output_path)
-    logger.info("Living Documentation generation - output path set to `%s`.", output_path)
+    logger.info("Living Documentation generator - root output path set to `%s`.", output_path)
 
-    logger.info("Living Documentation generation completed.")
+    logger.info("Living Documentation generator - ending.")
 
 
 if __name__ == "__main__":
