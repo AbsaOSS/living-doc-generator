@@ -119,9 +119,6 @@ class MdocExporter(Exporter):
         if ActionInputs.is_structured_output_enabled():
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
-                self._index_data_level_template,
-                self._index_repo_page_template,
-                self._index_org_level_template,
                 topics,
                 issues,
             )
@@ -184,9 +181,6 @@ class MdocExporter(Exporter):
     # pylint: disable=too-many-arguments
     def _generate_structured_index_pages(
         self,
-        index_data_level_template: str,
-        index_repo_level_template: str,
-        index_org_level_template: str,
         topics: set[str],
         consolidated_issues: dict[str, ConsolidatedIssue],
     ) -> None:
