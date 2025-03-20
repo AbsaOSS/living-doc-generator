@@ -216,7 +216,7 @@ def test_validate_repositories_configuration_correct_behaviour(mocker, config_re
         "action_inputs.ActionInputs.get_github_token", return_value="correct_token"
     )
     mocker.patch(
-        "action_inputs.ActionInputs.get_liv_doc_regime", return_value="true"
+        "action_inputs.ActionInputs.is_living_doc_regime_enabled", return_value="true"
     )
     mock_exit = mocker.patch("sys.exit")
     fake_correct_response = mocker.Mock()
@@ -243,26 +243,6 @@ def test_validate_repositories_configuration_correct_behaviour(mocker, config_re
         any_order=False,
     )
     mock_log_error.assert_not_called()
-
-
-def test_validate_user_configuration_wrong_output_format(mocker):
-    # Arrange
-    mock_log_error = mocker.patch("action_inputs.logger.error")
-    mock_exit = mocker.patch("sys.exit")
-    mocker.patch("action_inputs.ActionInputs.get_liv_doc_output_formats", return_value=123)  # Invalid value
-
-    fake_correct_response = mocker.Mock()
-    fake_correct_response.status_code = 200
-    mocker.patch("requests.get", return_value=fake_correct_response)
-
-    # Act
-    ActionInputs().validate_user_configuration()
-
-    # Assert
-    mock_log_error.assert_called_once_with(
-        'User input `liv-doc-output-formats` must be a list of strings (e.g. "mdoc, pdf").'
-    )
-    mock_exit.assert_called_once_with(1)
 
 
 def test_validate_user_configuration_wrong_repository_404(mocker, config_repository):

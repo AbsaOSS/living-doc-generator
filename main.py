@@ -42,7 +42,7 @@ def run() -> None:
     ActionInputs().validate_user_configuration()
     output_path: str = make_absolute_path(OUTPUT_PATH)
 
-    if ActionInputs.get_liv_doc_regime():
+    if ActionInputs.is_living_doc_regime_enabled():
         logger.info("Living Documentation generator - Starting the `LivDoc` generation regime.")
 
         # Generate the Living documentation

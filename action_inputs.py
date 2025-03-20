@@ -63,7 +63,7 @@ class ActionInputs:
         return get_action_input(REPORT_PAGE, "true").lower() == "true"
 
     @staticmethod
-    def get_liv_doc_regime() -> bool:
+    def is_living_doc_regime_enabled() -> bool:
         """
         Getter of the LivDoc regime switch.
         @return: True if LivDoc regime is enabled, False otherwise.
@@ -142,12 +142,6 @@ class ActionInputs:
         """
         logger.debug("User configuration validation started")
 
-        # validate output formats
-        output_formats = ActionInputs.get_liv_doc_output_formats()
-        if not isinstance(output_formats, list) or not all(isinstance(fmt, str) for fmt in output_formats):
-            logger.error('User input `liv-doc-output-formats` must be a list of strings (e.g. "mdoc, pdf").')
-            sys.exit(1)
-
         # validate repositories configuration
         repositories: list[ConfigRepository] = self.get_repositories()
         github_token = self.get_github_token()
@@ -196,13 +190,13 @@ class ActionInputs:
         logger.debug("User configuration validation successfully completed.")
 
         # log regime: enabled/disabled
-        logger.debug("Regime: `LivDoc`: %s.", "Enabled" if ActionInputs.get_liv_doc_regime() else "Disabled")
+        logger.debug("Regime: `LivDoc`: %s.", "Enabled" if ActionInputs.is_living_doc_regime_enabled() else "Disabled")
 
         # log common user inputs
         logger.debug("Global: `report-page`: %s.", ActionInputs.get_is_report_page_generation_enabled())
 
         # log liv-doc regime user inputs
-        if ActionInputs.get_liv_doc_regime():
+        if ActionInputs.is_living_doc_regime_enabled():
             logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
             logger.debug(
                 "Regime(LivDoc): `liv-doc-project-state-mining`: %s.",
