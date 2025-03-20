@@ -76,5 +76,7 @@ class ConfigRepository:
         return False
 
     def __repr__(self):
-        return f"ConfigRepository(organization_name={self.organization_name}, repository_name={self.repository_name}, " \
-               f"query_labels={self.query_labels}, projects_title_filter={self.projects_title_filter})"
+        return (
+            f"ConfigRepository(organization_name={self.organization_name}, repository_name={self.repository_name}, "
+            f"query_labels={self.query_labels}, projects_title_filter={self.projects_title_filter})"
+        )
