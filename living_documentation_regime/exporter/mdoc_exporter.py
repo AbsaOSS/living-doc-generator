@@ -96,7 +96,7 @@ class MdocExporter(Exporter):
     def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> set[str]:
         topics: set[str] = set()
         for consolidated_issue in issues.values():
-            self._generate_md_issue_page(self._issue_page_detail_template, consolidated_issue)
+            self._generate_md_issue_page(consolidated_issue)
             if ActionInputs.is_report_page_generation_enabled() and consolidated_issue.errors:
                 repository_id: str = consolidated_issue.repository_id
                 number: int = consolidated_issue.number
@@ -119,9 +119,6 @@ class MdocExporter(Exporter):
         if ActionInputs.is_structured_output_enabled():
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
-                self._index_data_level_template,
-                self._index_repo_page_template,
-                self._index_org_level_template,
                 topics,
                 issues,
             )
@@ -140,7 +137,7 @@ class MdocExporter(Exporter):
             self._generate_index_page(self._index_page_template, issues)
             logger.info("MDoc page generation - generated `_index.md`.")
 
-    def _generate_md_issue_page(self, issue_page_template: str, consolidated_issue: ConsolidatedIssue) -> None:
+    def _generate_md_issue_page(self, consolidated_issue: ConsolidatedIssue) -> None:
         """
         Generates a single issue MDoc page from a template and save to the output directory.
 
@@ -167,7 +164,7 @@ class MdocExporter(Exporter):
         }
 
         # Run through all replacements and update template keys with adequate content
-        issue_md_page_content = issue_page_template.format(**replacements)
+        issue_md_page_content = self._issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
         page_directory_paths: list[str] = consolidated_issue.generate_directory_path(issue_table)
@@ -184,9 +181,6 @@ class MdocExporter(Exporter):
     # pylint: disable=too-many-arguments
     def _generate_structured_index_pages(
         self,
-        index_data_level_template: str,
-        index_repo_level_template: str,
-        index_org_level_template: str,
         topics: set[str],
         consolidated_issues: dict[str, ConsolidatedIssue],
     ) -> None:
@@ -212,7 +206,7 @@ class MdocExporter(Exporter):
         for repository_id, issues in issues_by_repository.items():
             organization_name, repository_name = repository_id.split("/")
 
-            self._generate_sub_level_index_page(index_org_level_template, "org", repository_id)
+            self._generate_sub_level_index_page(self._index_org_level_template, "org", repository_id)
             logger.debug(
                 "Generated organization level `_index.md` for %s.",
                 organization_name,
@@ -220,21 +214,21 @@ class MdocExporter(Exporter):
 
             # Generate an index pages for the documentation based on the grouped issues by topics
             if ActionInputs.is_grouping_by_topics_enabled():
-                self._generate_sub_level_index_page(index_repo_level_template, "repo", repository_id)
+                self._generate_sub_level_index_page(self._index_repo_page_template, "repo", repository_id)
                 logger.debug(
                     "Generated repository level _index.md` for repository: %s.",
                     repository_name,
                 )
 
                 for topic in topics:
-                    self._generate_index_page(index_data_level_template, issues, repository_id, topic)
+                    self._generate_index_page(self._index_data_level_template, issues, repository_id, topic)
                     logger.debug(
                         "Generated data level `_index.md` with topic: %s for %s.",
                         topic,
                         repository_id,
                     )
             else:
-                self._generate_index_page(index_data_level_template, issues, repository_id)
+                self._generate_index_page(self._index_data_level_template, issues, repository_id)
                 logger.debug(
                     "Generated data level `_index.md` for %s",
                     repository_id,
