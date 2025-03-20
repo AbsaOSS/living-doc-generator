@@ -40,9 +40,9 @@ def sample_issue_linked_to_project():
 
 def test_export_real_execution_all_enabled(mdoc_exporter, sample_issues, mocker):
     # Arrange
-    mocker.patch("action_inputs.ActionInputs.get_is_project_state_mining_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=True)
 
     # Act
     result = mdoc_exporter.export(issues=sample_issues)
@@ -88,9 +88,9 @@ def test_export_real_execution_all_enabled(mdoc_exporter, sample_issues, mocker)
 
 def test_export_real_execution_no_project_mining(mdoc_exporter, sample_issues, mocker):
     # Arrange
-    mocker.patch("action_inputs.ActionInputs.get_is_project_state_mining_enabled", return_value=False)
-    mocker.patch("action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=False)
+    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=True)
 
     # Act
     result = mdoc_exporter.export(issues=sample_issues)
@@ -136,9 +136,9 @@ def test_export_real_execution_no_project_mining(mdoc_exporter, sample_issues, m
 
 def test_export_real_execution_structured_output_no_topics(mdoc_exporter, sample_issues, mocker):
     # Arrange
-    mocker.patch("action_inputs.ActionInputs.get_is_project_state_mining_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False)
+    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=False)
 
     # Act
     result = mdoc_exporter.export(issues=sample_issues)
@@ -170,9 +170,9 @@ def test_export_real_execution_structured_output_no_topics(mdoc_exporter, sample
 
 def test_export_real_execution_flat_with_topics(mdoc_exporter, sample_issues, mocker):
     # Arrange
-    mocker.patch("action_inputs.ActionInputs.get_is_project_state_mining_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False)
-    mocker.patch("action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=False)
+    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=True)
 
     # Act
     result = mdoc_exporter.export(issues=sample_issues)
@@ -204,9 +204,9 @@ def test_export_real_execution_flat_with_topics(mdoc_exporter, sample_issues, mo
 
 def test_export_real_execution_flat_no_topics(mdoc_exporter, sample_issues, mocker):
     # Arrange
-    mocker.patch("action_inputs.ActionInputs.get_is_project_state_mining_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.get_is_structured_output_enabled", return_value=False)
-    mocker.patch("action_inputs.ActionInputs.get_is_grouping_by_topics_enabled", return_value=False)
+    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=False)
+    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=False)
 
     # Act
     result = mdoc_exporter.export(issues=sample_issues)
@@ -236,7 +236,7 @@ def test_load_all_templates_failure(mocker):
 
 def test_generate_issue_summary_table_linked_to_project(mocker, sample_issue_linked_to_project):
     # Arrange
-    mocker.patch("action_inputs.ActionInputs.get_is_project_state_mining_enabled", return_value=True)
+    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
     exporter = MdocExporter('/mocked/output/path')
 
     # Act

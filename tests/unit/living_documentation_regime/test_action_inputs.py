@@ -28,7 +28,7 @@ def test_project_state_mining_default():
     os.environ.pop("INPUT_PROJECT_STATE_MINING", None)
 
     # Act
-    actual = ActionInputs.get_is_project_state_mining_enabled()
+    actual = ActionInputs.is_project_state_mining_enabled()
 
     # Assert
     assert not actual
@@ -55,7 +55,7 @@ def test_structured_output_default():
     os.environ.pop("INPUT_STRUCTURED_OUTPUT", None)
 
     # Act
-    actual = ActionInputs.get_is_structured_output_enabled()
+    actual = ActionInputs.is_structured_output_enabled()
 
     # Assert
     assert not actual
@@ -66,7 +66,7 @@ def test_group_output_by_topics_default():
     os.environ.pop("INPUT_GROUP_OUTPUT_BY_TOPICS", None)
 
     # Act
-    actual = ActionInputs.get_is_grouping_by_topics_enabled()
+    actual = ActionInputs.is_grouping_by_topics_enabled()
 
     # Assert
     assert not actual

@@ -215,7 +215,7 @@ def test_fetch_github_issues_repository_none(mocker, living_documentation_genera
 def test_fetch_github_project_issues_correct_behaviour(mocker, living_documentation_generator):
     # Arrange
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_is_project_state_mining_enabled",
+        "living_documentation_regime.living_documentation_generator.ActionInputs.is_project_state_mining_enabled",
         return_value=True,
     )
     mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
@@ -323,7 +323,7 @@ def test_fetch_github_project_issues_correct_behaviour(mocker, living_documentat
 def test_fetch_github_project_issues_project_mining_disabled(mocker, living_documentation_generator):
     # Arrange
     mock_get_project_mining_enabled = mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_is_project_state_mining_enabled",
+        "living_documentation_regime.living_documentation_generator.ActionInputs.is_project_state_mining_enabled",
         return_value=False,
     )
     mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
@@ -343,7 +343,7 @@ def test_fetch_github_project_issues_no_repositories(mocker, living_documentatio
     mock_get_repo.return_value = None
 
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_is_project_state_mining_enabled",
+        "living_documentation_regime.living_documentation_generator.ActionInputs.is_project_state_mining_enabled",
         return_value=True,
     )
     mocker.patch(
@@ -367,7 +367,7 @@ def test_fetch_github_project_issues_with_no_projects(mocker, living_documentati
     mock_get_repo.return_value = repo_a
 
     mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_is_project_state_mining_enabled",
+        "living_documentation_regime.living_documentation_generator.ActionInputs.is_project_state_mining_enabled",
         return_value=True,
     )
     mocker.patch(

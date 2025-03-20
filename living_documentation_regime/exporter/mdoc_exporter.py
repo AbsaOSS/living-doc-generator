@@ -73,7 +73,7 @@ class MdocExporter(Exporter):
         self._generate_output_structure(issues, topics)
 
         # Generate a report page
-        if ActionInputs.get_is_report_page_generation_enabled():
+        if ActionInputs.is_report_page_generation_enabled():
             self._generate_report_page()
 
         logger.info("MDoc page generation - finished.")
@@ -97,7 +97,7 @@ class MdocExporter(Exporter):
         topics: set[str] = set()
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(self._issue_page_detail_template, consolidated_issue)
-            if ActionInputs.get_is_report_page_generation_enabled() and consolidated_issue.errors:
+            if ActionInputs.is_report_page_generation_enabled() and consolidated_issue.errors:
                 repository_id: str = consolidated_issue.repository_id
                 number: int = consolidated_issue.number
                 html_url: str = consolidated_issue.html_url
@@ -116,7 +116,7 @@ class MdocExporter(Exporter):
 
     def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue], topics: set[str]) -> None:
         regime_output_path = make_absolute_path(self._output_path)
-        if ActionInputs.get_is_structured_output_enabled():
+        if ActionInputs.is_structured_output_enabled():
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
                 self._index_data_level_template,
@@ -127,7 +127,7 @@ class MdocExporter(Exporter):
             )
 
         # Generate an index page with a summary table about all issues grouped by topics
-        elif ActionInputs.get_is_grouping_by_topics_enabled():
+        elif ActionInputs.is_grouping_by_topics_enabled():
             issues: list[ConsolidatedIssue] = list(issues.values())
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
 
@@ -219,7 +219,7 @@ class MdocExporter(Exporter):
             )
 
             # Generate an index pages for the documentation based on the grouped issues by topics
-            if ActionInputs.get_is_grouping_by_topics_enabled():
+            if ActionInputs.is_grouping_by_topics_enabled():
                 self._generate_sub_level_index_page(index_repo_level_template, "repo", repository_id)
                 logger.debug(
                     "Generated repository level _index.md` for repository: %s.",
@@ -261,13 +261,13 @@ class MdocExporter(Exporter):
         # Initializing the issue table header based on the project mining state
         issue_table = (
             TABLE_HEADER_WITH_PROJECT_DATA
-            if ActionInputs.get_is_project_state_mining_enabled()
+            if ActionInputs.is_project_state_mining_enabled()
             else TABLE_HEADER_WITHOUT_PROJECT_DATA
         )
 
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues:
-            if ActionInputs.get_is_grouping_by_topics_enabled():
+            if ActionInputs.is_grouping_by_topics_enabled():
                 for topic in consolidated_issue.topics:
                     if grouping_topic == topic:
                         issue_table += self._generate_mdoc_line(consolidated_issue)
@@ -280,9 +280,9 @@ class MdocExporter(Exporter):
             "issue_overview_table": issue_table,
         }
 
-        if ActionInputs.get_is_grouping_by_topics_enabled():
+        if ActionInputs.is_grouping_by_topics_enabled():
             replacement["data_level_name"] = grouping_topic
-        elif ActionInputs.get_is_structured_output_enabled():
+        elif ActionInputs.is_structured_output_enabled():
             replacement["data_level_name"] = repository_id.split("/")[1]
 
         # Replace the issue placeholders in the index template
@@ -351,7 +351,7 @@ class MdocExporter(Exporter):
         status = ", ".join(status_list) if status_list else "---"
 
         # Change the bool values to more user-friendly characters
-        if ActionInputs.get_is_project_state_mining_enabled():
+        if ActionInputs.is_project_state_mining_enabled():
             if consolidated_issue.linked_to_project:
                 linked_to_project = LINKED_TO_PROJECT_TRUE
             else:
@@ -416,7 +416,7 @@ class MdocExporter(Exporter):
         ]
 
         # Update the summary table, based on the project data mining situation
-        if ActionInputs.get_is_project_state_mining_enabled():
+        if ActionInputs.is_project_state_mining_enabled():
             project_statuses = consolidated_issue.project_issue_statuses
 
             if consolidated_issue.linked_to_project:
@@ -464,11 +464,11 @@ class MdocExporter(Exporter):
         """
         output_path: str = make_absolute_path(self._output_path)
 
-        if ActionInputs.get_is_structured_output_enabled() and repository_id:
+        if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(output_path, organization_name, repository_name)
 
-        if ActionInputs.get_is_grouping_by_topics_enabled() and topic:
+        if ActionInputs.is_grouping_by_topics_enabled() and topic:
             output_path = os.path.join(output_path, topic)
 
         os.makedirs(output_path, exist_ok=True)
