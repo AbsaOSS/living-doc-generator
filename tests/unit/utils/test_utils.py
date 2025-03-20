@@ -203,8 +203,6 @@ def test_load_template(mocker):
     mock_open.assert_called_with(file_path, "r", encoding="utf-8")
     assert actual_content == expected_content
 
-import pytest
-import logging
 
 def test_load_template_error(mocker):
     # Arrange
