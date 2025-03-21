@@ -214,6 +214,11 @@ The report page is a summary of the errors found during the generation of living
     ```
 
 ---
+## Developer Guide
+
+See this [Developer Guide](DEVELOPER.md) for more technical a development related information.
+
+---
 ## How-to
 
 This section aims to help the user walk through different processes, such as:
