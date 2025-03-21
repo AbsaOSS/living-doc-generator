@@ -2,8 +2,7 @@
 
 - [Regime De/Activation](#regime-deactivation)
 - [Adding Living Documentation Regime to the Workflow](#adding-living-documentation-regime-to-the-workflow)
-- [Regime Configuration](#regime-configuration)
-  - [Regime Inputs](#regime-inputs)
+- [Regime Inputs](#regime-inputs)
 - [Expected Output](#expected-output)
   - [Index Page Example](#index-page-example)
   - [Issue Page Example](#issue-page-example)
@@ -88,7 +87,7 @@ See the full example of Living Documentation regime step definition (in example 
 ```
 
 ---
-## Regime Configuration
+## Regime Inputs
 
 Configure the Living Documentation regime by customizing the following parameters:
 
@@ -129,6 +128,9 @@ Configure the Living Documentation regime by customizing the following parameter
 
 The Living Documentation Generator in Living Documentation regime is designed to produce an Issue Summary page (index.md) along with multiple detailed single issue pages.
 The structure of pages is designed to work with the AbsaOSS [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer) solution.
+
+The regime's root output directory is named `liv-doc-regime`.
+
 
 ### Index Page Example
 
