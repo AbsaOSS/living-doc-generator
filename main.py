@@ -20,6 +20,7 @@ for the GH Action.
 """
 
 import logging
+import sys
 
 from action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
@@ -41,14 +42,17 @@ def run() -> None:
 
     ActionInputs().validate_user_configuration()
     output_path: str = make_absolute_path(OUTPUT_PATH)
+    all_regimes_success: bool = True
 
     if ActionInputs.is_living_doc_regime_enabled():
         logger.info("Living Documentation generator - Starting the `LivDoc` generation regime.")
 
         # Generate the Living documentation
-        LivingDocumentationGenerator(output_path).generate()
-
-        logger.info("Living Documentation generator - `LivDoc` generation regime completed.")
+        if LivingDocumentationGenerator(output_path).generate():
+            logger.info("Living Documentation generator - `LivDoc` generation regime completed successfully.")
+        else:
+            logger.info("Living Documentation generator - `LivDoc` generation regime failed.") ## todo error or info?
+            all_regimes_success = False
     else:
         logger.info("Living Documentation generator - `LivDoc` generation regime disabled.")
 
@@ -65,6 +69,9 @@ def run() -> None:
     logger.info("Living Documentation generator - root output path set to `%s`.", output_path)
 
     logger.info("Living Documentation generator - ending.")
+
+    if not all_regimes_success:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

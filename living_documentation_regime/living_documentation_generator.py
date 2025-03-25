@@ -61,11 +61,11 @@ class LivingDocumentationGenerator:
         self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
         self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
 
-    def generate(self) -> None:
+    def generate(self) -> bool:
         """
         Generate the Living Documentation Regime output.
 
-        @return: None
+        @return: true if generation is successful, false otherwise (error occurred).
         """
         self._clean_output_directory()
         logger.debug("Regime's 'LivDoc' output directory cleaned.")
@@ -90,7 +90,7 @@ class LivingDocumentationGenerator:
         logger.info("Issue and project data consolidation - finished.")
 
         # Generate markdown pages
-        self._generate_living_documents(consolidated_issues)
+        return self._generate_living_documents(consolidated_issues)
 
     def _clean_output_directory(self) -> None:
         """
@@ -260,12 +260,12 @@ class LivingDocumentationGenerator:
         )
         return consolidated_issues
 
-    def _generate_living_documents(self, issues: dict[str, ConsolidatedIssue]) -> None:
+    def _generate_living_documents(self, issues: dict[str, ConsolidatedIssue]) -> bool:
         """
         Generate the output in the required formats.
 
         @param issues: A dictionary containing all consolidated issues.
-        @return: None
+        @return: true if generation is successful, false otherwise (error occurred).
         """
         statuses: list[bool] = []
 
@@ -279,5 +279,7 @@ class LivingDocumentationGenerator:
 
         if all(statuses):
             logger.info("Living Documentation output generated successfully.")
+            return True
         else:
             logger.error("Living Documentation output generation failed.")
+            return False
