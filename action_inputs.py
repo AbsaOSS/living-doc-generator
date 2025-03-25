@@ -110,7 +110,8 @@ class ActionInputs:
     def get_repositories() -> list[ConfigRepository]:
         """
         Getter and parser of the Config Repositories.
-        @return: A list of Config Repositories.
+        @return: A list of Config Repositories
+        If getting repository was not successful it will return empty repository
         """
         repositories = []
         repositories_json = get_action_input(LIV_DOC_REPOSITORIES, "[]")
@@ -128,11 +129,11 @@ class ActionInputs:
 
         except json.JSONDecodeError as e:
             logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            sys.exit(1)
+            return list() # todo returning empy list is not the best solution
 
         except TypeError:
             logger.error("Type error parsing input JSON repositories: %s.", repositories_json)
-            sys.exit(1)
+            return list()
 
         return repositories
 
@@ -144,7 +145,9 @@ class ActionInputs:
         logger.debug("User configuration validation started")
 
         # validate repositories configuration
-        repositories: list[ConfigRepository] = self.get_repositories()
+        repositories = self.get_repositories()
+        if not repositories:
+            return False
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
 
@@ -198,7 +201,7 @@ class ActionInputs:
 
         # log liv-doc regime user inputs
         if ActionInputs.is_living_doc_regime_enabled():
-            logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
+            logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", repositories)
             logger.debug(
                 "Regime(LivDoc): `liv-doc-project-state-mining`: %s.",
                 ActionInputs.is_project_state_mining_enabled(),
