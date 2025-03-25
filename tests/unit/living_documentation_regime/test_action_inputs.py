@@ -218,16 +218,15 @@ def test_validate_repositories_configuration_correct_behaviour(mocker, config_re
     mocker.patch(
         "action_inputs.ActionInputs.is_living_doc_regime_enabled", return_value="true"
     )
-    mock_exit = mocker.patch("sys.exit")
     fake_correct_response = mocker.Mock()
     fake_correct_response.status_code = 200
     mocker.patch("action_inputs.requests.get", return_value=fake_correct_response)
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    mock_exit.assert_not_called()
+    assert return_value is True
     mock_log_debug.assert_has_calls(
         [
             mocker.call("User configuration validation started"),
@@ -253,21 +252,15 @@ def test_validate_user_configuration_wrong_repository_404(mocker, config_reposit
         "action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="fake-token")
-    mock_exit = mocker.patch("sys.exit")
     mock_error_response = mocker.Mock()
     mock_error_response.status_code = 404
     mocker.patch("action_inputs.requests.get", return_value=mock_error_response)
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    assert mock_exit.call_count == 2
-    mock_log_error.assert_any_call(
-        "Repository '%s/%s' could not be found on GitHub. Please verify that the repository exists and that your authorization token is correct.",
-        "test_org",
-        "test_repo",
-    )
+    assert return_value is False
 
 
 def test_validate_user_configuration_wrong_repository_non_200(mocker, config_repository):
@@ -278,7 +271,6 @@ def test_validate_user_configuration_wrong_repository_non_200(mocker, config_rep
         "action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="correct_token")
-    mock_exit = mocker.patch("sys.exit")
 
     mock_response_200 = mocker.Mock()
     mock_response_200.status_code = 200
@@ -287,10 +279,10 @@ def test_validate_user_configuration_wrong_repository_non_200(mocker, config_rep
     mocker.patch("requests.get", side_effect=[mock_response_200, mock_response_500])
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    mock_exit.assert_called_once_with(1)
+    assert return_value is False
     mock_log_error.assert_called_once_with(
         "An error occurred while validating the repository '%s/%s'. The response status code is %s. Response: %s",
         "test_org",
@@ -305,17 +297,16 @@ def test_validate_repositories_wrong_token(mocker, config_repository):
     mock_log_error = mocker.patch("action_inputs.logger.error")
 
     mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="")
-    mock_exit = mocker.patch("sys.exit")
 
     mocker.patch(
         "action_inputs.ActionInputs.get_repositories", return_value=list()
     )
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    mock_exit.assert_called_once_with(1)
+    assert return_value is False
     mock_log_error.assert_called_once_with(
         "Can not connect to GitHub. Possible cause: Invalid GitHub token. Status code: %s, Response: %s",
          401,

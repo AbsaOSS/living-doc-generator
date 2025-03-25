@@ -40,7 +40,10 @@ def run() -> None:
 
     logger.info("Living Documentation generator - starting.")
 
-    ActionInputs().validate_user_configuration()
+    if not ActionInputs().validate_user_configuration():
+        logger.info("Living Documentation generator - user configuration validation failed.")
+        sys.exit(1)
+
     output_path: str = make_absolute_path(OUTPUT_PATH)
     all_regimes_success: bool = True
 

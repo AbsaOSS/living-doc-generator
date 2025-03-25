@@ -145,10 +145,10 @@ class ActionInputs:
 
         return repositories
 
-    def validate_user_configuration(self) -> None:
+    def validate_user_configuration(self) -> bool:
         """
         Checks that all the user configurations defined are correct.
-        @return: None
+        @return: true if configuration is correct, false otherwise.
         """
         logger.debug("User configuration validation started")
 
@@ -165,7 +165,7 @@ class ActionInputs:
                 response.status_code,
                 response.text,
             )
-            sys.exit(1)
+            return False
 
         repository_error_count = 0
         for repository in repositories:
@@ -194,7 +194,7 @@ class ActionInputs:
                 )
                 repository_error_count += 1
         if repository_error_count > 0:
-            sys.exit(1)
+            return False
 
         # log user configuration
         logger.debug("User configuration validation successfully completed.")
@@ -220,3 +220,5 @@ class ActionInputs:
                 ActionInputs.is_grouping_by_topics_enabled(),
             )
             logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())
+
+        return True
