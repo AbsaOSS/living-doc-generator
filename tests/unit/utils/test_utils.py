@@ -22,7 +22,7 @@ from utils.utils import (
     validate_query_format,
     get_action_input,
     set_action_output,
-    set_action_failed, load_template, generate_root_level_index_page,
+    load_template, generate_root_level_index_page,
 )
 
 
@@ -155,17 +155,6 @@ def test_set_output_custom_path(mocker):
     handle.write.assert_any_call("custom-output=custom_value\n")
 
 
-# set_action_failed
-
-
-def test_set_failed(mocker):
-    mock_print = mocker.patch("builtins.print", return_value=None)
-    mock_exit = mocker.patch("sys.exit", return_value=None)
-
-    set_action_failed("failure message")
-
-    mock_print.assert_called_with("::error::failure message")
-    mock_exit.assert_called_with(1)
 
 
 # generate_root_level_index_page

@@ -148,12 +148,3 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
         f.write(f"{name}={value}\n")
 
 
-def set_action_failed(message: str) -> None:
-    """
-    Set the action as failed with the provided message.
-
-    @param message: The error message to display.
-    @return: None
-    """
-    print(f"::error::{message}")
-    sys.exit(1)
