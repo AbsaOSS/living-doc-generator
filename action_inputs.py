@@ -21,7 +21,6 @@ which are essential for running the GH action.
 
 import json
 import logging
-import sys
 import requests
 
 from living_documentation_regime.model.config_repository import ConfigRepository
@@ -131,11 +130,11 @@ class ActionInputs:
 
         except json.JSONDecodeError as e:
             logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            raise LivDocFetchRepositoriesException
+            raise LivDocFetchRepositoriesException from e
 
-        except TypeError:
+        except TypeError as e:
             logger.error("Type error parsing input JSON repositories: %s.", repositories_json)
-            raise LivDocFetchRepositoriesException
+            raise LivDocFetchRepositoriesException from e
 
         return repositories
 

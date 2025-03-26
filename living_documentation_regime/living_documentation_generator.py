@@ -33,6 +33,7 @@ from living_documentation_regime.model.github_project import GithubProject
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_regime.model.project_issue import ProjectIssue
 from utils.decorators import safe_call_decorator
+from utils.exceptions import LivDocInvalidQueryFormatError
 from utils.github_rate_limiter import GithubRateLimiter
 from utils.utils import make_issue_key
 from utils.constants import (
@@ -78,7 +79,11 @@ class LivingDocumentationGenerator:
 
         # Data mine GitHub project's issues
         logger.info("Fetching GitHub project data - started.")
-        project_issues: dict[str, list[ProjectIssue]] = self._fetch_github_project_issues()
+        try:
+            project_issues: dict[str, list[ProjectIssue]] = self._fetch_github_project_issues()
+        except LivDocInvalidQueryFormatError:
+            logger.info("Fetching GitHub project data - failed due to invalid query format.")
+            return False
         # Note: got dict of project issues with unique string key defying the issue
         logger.info("Fetching GitHub project data - finished.")
 
@@ -113,7 +118,8 @@ class LivingDocumentationGenerator:
         total_issues_number = 0
 
         # Run the fetching logic for every config repository
-        # Here is no need for catching exception, because get_repositories is static and it was handle when validating user configuration.
+        # Here is no need for catching exception, because get_repositories
+        # is static and it was handle when validating user configuration.
         for config_repository in ActionInputs.get_repositories():
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
@@ -173,7 +179,8 @@ class LivingDocumentationGenerator:
         # Mine project issues for every repository
         all_project_issues: dict[str, list[ProjectIssue]] = {}
 
-        # Here is no need for catching exception, because get_repositories is static and it was handle when validating user configuration.
+        # Here is no need for catching exception, because get_repositories
+        # is static and it was handle when validating user configuration.
         for config_repository in ActionInputs.get_repositories():
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
             projects_title_filter = config_repository.projects_title_filter
@@ -282,6 +289,6 @@ class LivingDocumentationGenerator:
         if all(statuses):
             logger.info("Living Documentation output generated successfully.")
             return True
-        else:
-            logger.error("Living Documentation output generation failed.")
-            return False
+
+        logger.error("Living Documentation output generation failed.")
+        return False

@@ -24,6 +24,8 @@ import sys
 import logging
 from typing import Optional
 
+from utils.exceptions import LivDocInvalidQueryFormatError
+
 logger = logging.getLogger(__name__)
 
 
@@ -88,7 +90,7 @@ def validate_query_format(query_string, expected_placeholders) -> None:
         missing_message = f"Missing placeholders: {missing}. " if missing else ""
         extra_message = f"Extra placeholders: {extra}." if extra else ""
         logger.error("%s%s\nFor the query: %s", missing_message, extra_message, query_string)
-        sys.exit(1)  # todo
+        raise LivDocInvalidQueryFormatError
 
 
 def generate_root_level_index_page(index_root_level_page: str, output_path: str) -> None:
