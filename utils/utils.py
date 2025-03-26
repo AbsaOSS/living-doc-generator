@@ -88,7 +88,7 @@ def validate_query_format(query_string, expected_placeholders) -> None:
         missing_message = f"Missing placeholders: {missing}. " if missing else ""
         extra_message = f"Extra placeholders: {extra}." if extra else ""
         logger.error("%s%s\nFor the query: %s", missing_message, extra_message, query_string)
-        sys.exit(1)
+        sys.exit(1)  # todo
 
 
 def generate_root_level_index_page(index_root_level_page: str, output_path: str) -> None:
@@ -146,5 +146,3 @@ def set_action_output(name: str, value: str, default_output_path: str = "default
     output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
     with open(output_file, "a", encoding="utf-8") as f:
         f.write(f"{name}={value}\n")
-
-

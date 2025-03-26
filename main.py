@@ -54,7 +54,7 @@ def run() -> None:
         if LivingDocumentationGenerator(output_path).generate():
             logger.info("Living Documentation generator - `LivDoc` generation regime completed successfully.")
         else:
-            logger.info("Living Documentation generator - `LivDoc` generation regime failed.") ## todo error or info?
+            logger.info("Living Documentation generator - `LivDoc` generation regime failed.")
             all_regimes_success = False
     else:
         logger.info("Living Documentation generator - `LivDoc` generation regime disabled.")

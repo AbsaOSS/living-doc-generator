@@ -18,10 +18,14 @@
 This module contains custom exceptions for this project
 """
 
+
 class LivDocException(Exception):
     """Base class for exceptions in this project."""
+
     pass
+
 
 class LivDocFetchRepositoriesException(LivDocException):
     """Raised when fetching repositories fails in get_repositories()."""
+
     pass

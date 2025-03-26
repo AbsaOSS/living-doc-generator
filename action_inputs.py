@@ -72,7 +72,6 @@ class ActionInputs:
         regime: str = Regime.LIV_DOC_REGIME.value
         return get_action_input(regime, "false").lower() == "true"
 
-
     @staticmethod
     def get_liv_doc_output_formats() -> list[str]:
         """
