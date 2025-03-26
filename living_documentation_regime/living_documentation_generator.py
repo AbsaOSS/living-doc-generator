@@ -113,6 +113,7 @@ class LivingDocumentationGenerator:
         total_issues_number = 0
 
         # Run the fetching logic for every config repository
+        # Here is no need for catching exception, because get_repositories is static and it was handle when validating user configuration.
         for config_repository in ActionInputs.get_repositories():
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
 
@@ -172,6 +173,7 @@ class LivingDocumentationGenerator:
         # Mine project issues for every repository
         all_project_issues: dict[str, list[ProjectIssue]] = {}
 
+        # Here is no need for catching exception, because get_repositories is static and it was handle when validating user configuration.
         for config_repository in ActionInputs.get_repositories():
             repository_id = f"{config_repository.organization_name}/{config_repository.repository_name}"
             projects_title_filter = config_repository.projects_title_filter

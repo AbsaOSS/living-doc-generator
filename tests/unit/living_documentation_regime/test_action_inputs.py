@@ -16,8 +16,11 @@
 import json
 import os
 
+import pytest
+
 from action_inputs import ActionInputs
 from living_documentation_regime.model.config_repository import ConfigRepository
+from utils.exceptions import LivDocFetchRepositoriesException
 
 
 # Check Action Inputs default values
@@ -116,14 +119,12 @@ def test_get_repositories_default_value_as_json(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="[]")
-    mock_exit = mocker.patch("sys.exit")
 
     # Act
     actual = ActionInputs.get_repositories()
 
     # Assert
     assert [] == actual
-    mock_exit.assert_not_called()
     mock_log_error.assert_not_called()
 
 
@@ -131,14 +132,12 @@ def test_get_repositories_empty_object_as_input(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="{}")
-    mock_exit = mocker.patch("sys.exit")
 
     # Act
     actual = ActionInputs.get_repositories()
 
     # Assert
     assert [] == actual
-    mock_exit.assert_not_called()
     mock_log_error.assert_not_called()
 
 
@@ -147,13 +146,11 @@ def test_get_repositories_error_with_loading_repository_json(mocker):
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="[{}]")
     mocker.patch.object(ConfigRepository, "load_from_json", return_value=False)
-    mock_exit = mocker.patch("sys.exit")
 
     # Act
     ActionInputs.get_repositories()
 
     # Assert
-    mock_exit.assert_not_called()
     mock_log_error.assert_called_once_with("Failed to load repository from JSON: %s.", {})
 
 
@@ -161,44 +158,36 @@ def test_get_repositories_number_instead_of_json(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value=1)
-    mock_exit = mocker.patch("sys.exit")
 
-    # Act
-    ActionInputs.get_repositories()
-
-    # Assert
-    mock_exit.assert_called_once_with(1)
-    mock_log_error.assert_called_once_with("Type error parsing input JSON repositories: %s.", mocker.ANY)
+    # Act & Assert
+    with pytest.raises(LivDocFetchRepositoriesException):
+        ActionInputs.get_repositories()
+        mock_log_error.assert_called_once_with("Type error parsing input JSON repositories: %s.", mocker.ANY)
 
 
 def test_get_repositories_empty_string_as_input(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="")
-    mock_exit = mocker.patch("sys.exit")
 
-    # Act
-    actual = ActionInputs.get_repositories()
+    # Act & Assert
+    with pytest.raises(LivDocFetchRepositoriesException):
+        actual = ActionInputs.get_repositories()
+        assert [] == actual
+        mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
 
-    # Assert
-    assert [] == actual
-    mock_exit.assert_called_once()
-    mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
 
 
 def test_get_repositories_invalid_string_as_input(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="not a JSON string")
-    mock_exit = mocker.patch("sys.exit")
 
-    # Act
-    actual = ActionInputs.get_repositories()
-
-    # Assert
-    assert [] == actual
-    mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
-    mock_exit.assert_called_once_with(1)
+    # Act & Assert
+    with pytest.raises(LivDocFetchRepositoriesException):
+        actual = ActionInputs.get_repositories()
+        assert [] == actual
+        mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
 
 
 # validate_repositories_configuration

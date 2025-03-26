@@ -25,6 +25,7 @@ import sys
 import requests
 
 from living_documentation_regime.model.config_repository import ConfigRepository
+from utils.exceptions import LivDocFetchRepositoriesException
 from utils.utils import get_action_input
 from utils.constants import (
     GITHUB_TOKEN,
@@ -102,6 +103,8 @@ class ActionInputs:
     def is_structured_output_enabled() -> bool:
         """
         Getter of the structured output switch.
+
+        throws raise LivDocFetchRepositoriesException when fetching failed (Json or Type error)
         @return: True if structured output is enabled, False otherwise.
         """
         return get_action_input(LIV_DOC_STRUCTURED_OUTPUT, "false").lower() == "true"
@@ -129,11 +132,11 @@ class ActionInputs:
 
         except json.JSONDecodeError as e:
             logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            return list() # todo returning empy list is not the best solution
+            raise LivDocFetchRepositoriesException
 
         except TypeError:
             logger.error("Type error parsing input JSON repositories: %s.", repositories_json)
-            return list()
+            raise LivDocFetchRepositoriesException
 
         return repositories
 
@@ -145,9 +148,11 @@ class ActionInputs:
         logger.debug("User configuration validation started")
 
         # validate repositories configuration
-        repositories = self.get_repositories()
-        if not repositories:
+        try:
+            repositories = self.get_repositories()
+        except LivDocFetchRepositoriesException:
             return False
+
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
 
