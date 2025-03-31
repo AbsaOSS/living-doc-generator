@@ -16,7 +16,7 @@
 
 import pytest
 
-from utils.exceptions import LivDocInvalidQueryFormatError
+from utils.exceptions import InvalidQueryFormatError
 from utils.utils import (
     make_issue_key,
     sanitize_filename,
@@ -101,7 +101,7 @@ def test_validate_query_format_missing_placeholder(mocker):
     # Test case where there are missing placeholders
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
     expected_placeholders = {"placeholder1", "placeholder2", "placeholder3"}
-    with pytest.raises(LivDocInvalidQueryFormatError):
+    with pytest.raises(InvalidQueryFormatError):
         validate_query_format(query_string, expected_placeholders)
         mock_log_error.assert_called_with(
             "%s%s\nFor the query: %s",
@@ -117,7 +117,7 @@ def test_validate_query_format_extra_placeholder(mocker):
     # Test case where there are extra placeholders
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
     expected_placeholders = {"placeholder1"}
-    with pytest.raises(LivDocInvalidQueryFormatError):
+    with pytest.raises(InvalidQueryFormatError):
         validate_query_format(query_string, expected_placeholders)
         mock_log_error.assert_called_with(
             "%s%s\nFor the query: %s",

@@ -17,7 +17,7 @@
 """
 This module contains methods for formating the GitHub GraphQL queries.
 """
-
+from utils.exceptions import InvalidQueryFormatError
 from utils.utils import validate_query_format
 from utils.constants import (
     PROJECTS_FROM_REPO_QUERY,
@@ -26,16 +26,26 @@ from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
 )
 
+def validate_query_formats() -> bool:
+    """
+    Validate the format of the queries
+    @return: True if the queries are in the correct format, False otherwise
+    """
+    try:
+        validate_query_format(PROJECTS_FROM_REPO_QUERY, {"organization_name", "repository_name"})
+        validate_query_format(ISSUES_FROM_PROJECT_QUERY, {"project_id", "issues_per_page", "after_argument"})
+        validate_query_format(PROJECT_FIELD_OPTIONS_QUERY, {"organization_name", "repository_name", "project_number"})
+    except InvalidQueryFormatError:
+        return False
+    return True
 
 def get_projects_from_repo_query(organization_name: str, repository_name: str) -> str:
     """Update the placeholder values and formate the graphQL query"""
-    validate_query_format(PROJECTS_FROM_REPO_QUERY, {"organization_name", "repository_name"})
     return PROJECTS_FROM_REPO_QUERY.format(organization_name=organization_name, repository_name=repository_name)
 
 
 def get_issues_from_project_query(project_id: str, after_argument: str) -> str:
     """Update the placeholder values and formate the graphQL query"""
-    validate_query_format(ISSUES_FROM_PROJECT_QUERY, {"project_id", "issues_per_page", "after_argument"})
     return ISSUES_FROM_PROJECT_QUERY.format(
         project_id=project_id, issues_per_page=ISSUES_PER_PAGE_LIMIT, after_argument=after_argument
     )
@@ -43,7 +53,6 @@ def get_issues_from_project_query(project_id: str, after_argument: str) -> str:
 
 def get_project_field_options_query(organization_name: str, repository_name: str, project_number: int) -> str:
     """Update the placeholder values and formate the graphQL query"""
-    validate_query_format(PROJECT_FIELD_OPTIONS_QUERY, {"organization_name", "repository_name", "project_number"})
     return PROJECT_FIELD_OPTIONS_QUERY.format(
         organization_name=organization_name, repository_name=repository_name, project_number=project_number
     )

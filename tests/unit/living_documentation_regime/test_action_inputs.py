@@ -20,7 +20,7 @@ import pytest
 
 from action_inputs import ActionInputs
 from living_documentation_regime.model.config_repository import ConfigRepository
-from utils.exceptions import LivDocFetchRepositoriesException
+from utils.exceptions import FetchRepositoriesException
 
 
 # Check Action Inputs default values
@@ -160,7 +160,7 @@ def test_get_repositories_number_instead_of_json(mocker):
     mocker.patch("action_inputs.get_action_input", return_value=1)
 
     # Act & Assert
-    with pytest.raises(LivDocFetchRepositoriesException):
+    with pytest.raises(FetchRepositoriesException):
         ActionInputs.get_repositories()
         mock_log_error.assert_called_once_with("Type error parsing input JSON repositories: %s.", mocker.ANY)
 
@@ -171,7 +171,7 @@ def test_get_repositories_empty_string_as_input(mocker):
     mocker.patch("action_inputs.get_action_input", return_value="")
 
     # Act & Assert
-    with pytest.raises(LivDocFetchRepositoriesException):
+    with pytest.raises(FetchRepositoriesException):
         actual = ActionInputs.get_repositories()
         assert [] == actual
         mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
@@ -184,7 +184,7 @@ def test_get_repositories_invalid_string_as_input(mocker):
     mocker.patch("action_inputs.get_action_input", return_value="not a JSON string")
 
     # Act & Assert
-    with pytest.raises(LivDocFetchRepositoriesException):
+    with pytest.raises(FetchRepositoriesException):
         actual = ActionInputs.get_repositories()
         assert [] == actual
         mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)

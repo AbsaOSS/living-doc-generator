@@ -24,7 +24,7 @@ import sys
 import logging
 from typing import Optional
 
-from utils.exceptions import LivDocInvalidQueryFormatError
+from utils.exceptions import InvalidQueryFormatError
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +82,7 @@ def validate_query_format(query_string, expected_placeholders) -> None:
     @param query_string: The query string to validate.
     @param expected_placeholders: The set of expected placeholders in the query.
     @return: None
+    @raise InvalidQueryFormatError: When some placeholders are missing in the query.
     """
     actual_placeholders = set(re.findall(r"\{(\w+)\}", query_string))
     missing = expected_placeholders - actual_placeholders
@@ -90,7 +91,7 @@ def validate_query_format(query_string, expected_placeholders) -> None:
         missing_message = f"Missing placeholders: {missing}. " if missing else ""
         extra_message = f"Extra placeholders: {extra}." if extra else ""
         logger.error("%s%s\nFor the query: %s", missing_message, extra_message, query_string)
-        raise LivDocInvalidQueryFormatError
+        raise InvalidQueryFormatError
 
 
 def generate_root_level_index_page(index_root_level_page: str, output_path: str) -> None:

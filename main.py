@@ -25,6 +25,7 @@ import sys
 from action_inputs import ActionInputs
 from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
 from utils.constants import OUTPUT_PATH
+from utils.github_project_queries import validate_query_formats
 from utils.utils import set_action_output, make_absolute_path
 from utils.logging_config import setup_logging
 
@@ -42,6 +43,10 @@ def run() -> None:
 
     if not ActionInputs().validate_user_configuration():
         logger.info("Living Documentation generator - user configuration validation failed.")
+        sys.exit(1)
+
+    if not validate_query_formats():
+        logger.info("Living Documentation generator - query format validation failed.")
         sys.exit(1)
 
     output_path: str = make_absolute_path(OUTPUT_PATH)

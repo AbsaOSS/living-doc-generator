@@ -24,7 +24,7 @@ import logging
 import requests
 
 from living_documentation_regime.model.config_repository import ConfigRepository
-from utils.exceptions import LivDocFetchRepositoriesException
+from utils.exceptions import FetchRepositoriesException
 from utils.utils import get_action_input
 from utils.constants import (
     GITHUB_TOKEN,
@@ -111,8 +111,9 @@ class ActionInputs:
     def get_repositories() -> list[ConfigRepository]:
         """
         Getter and parser of the Config Repositories.
+
         @return: A list of Config Repositories
-        If getting repository was not successful it will return empty repository
+        @raise FetchRepositoriesException: When parsing JSON string to dictionary fails.
         """
         repositories = []
         repositories_json = get_action_input(LIV_DOC_REPOSITORIES, "[]")
@@ -130,25 +131,25 @@ class ActionInputs:
 
         except json.JSONDecodeError as e:
             logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            raise LivDocFetchRepositoriesException from e
+            raise FetchRepositoriesException from e
 
         except TypeError as e:
             logger.error("Type error parsing input JSON repositories: %s.", repositories_json)
-            raise LivDocFetchRepositoriesException from e
+            raise FetchRepositoriesException from e
 
         return repositories
 
     def validate_user_configuration(self) -> bool:
         """
         Checks that all the user configurations defined are correct.
-        @return: true if configuration is correct, false otherwise.
+        @return: True if configuration is correct, False otherwise.
         """
         logger.debug("User configuration validation started")
 
         # validate repositories configuration
         try:
             repositories = self.get_repositories()
-        except LivDocFetchRepositoriesException:
+        except FetchRepositoriesException:
             return False
 
         github_token = self.get_github_token()

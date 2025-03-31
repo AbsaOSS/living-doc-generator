@@ -33,7 +33,6 @@ from living_documentation_regime.model.github_project import GithubProject
 from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
 from living_documentation_regime.model.project_issue import ProjectIssue
 from utils.decorators import safe_call_decorator
-from utils.exceptions import LivDocInvalidQueryFormatError
 from utils.github_rate_limiter import GithubRateLimiter
 from utils.utils import make_issue_key
 from utils.constants import (
@@ -66,7 +65,7 @@ class LivingDocumentationGenerator:
         """
         Generate the Living Documentation Regime output.
 
-        @return: true if generation is successful, false otherwise (error occurred).
+        @return: True if generation is successful, False otherwise (error occurred).
         """
         self._clean_output_directory()
         logger.debug("Regime's 'LivDoc' output directory cleaned.")
@@ -79,11 +78,7 @@ class LivingDocumentationGenerator:
 
         # Data mine GitHub project's issues
         logger.info("Fetching GitHub project data - started.")
-        try:
-            project_issues: dict[str, list[ProjectIssue]] = self._fetch_github_project_issues()
-        except LivDocInvalidQueryFormatError:
-            logger.info("Fetching GitHub project data - failed due to invalid query format.")
-            return False
+        project_issues: dict[str, list[ProjectIssue]] = self._fetch_github_project_issues()
         # Note: got dict of project issues with unique string key defying the issue
         logger.info("Fetching GitHub project data - finished.")
 
@@ -274,7 +269,7 @@ class LivingDocumentationGenerator:
         Generate the output in the required formats.
 
         @param issues: A dictionary containing all consolidated issues.
-        @return: true if generation is successful, false otherwise (error occurred).
+        @return: True if generation is successful, False otherwise (error occurred).
         """
         statuses: list[bool] = []
 
