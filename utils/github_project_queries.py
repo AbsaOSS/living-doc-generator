@@ -26,6 +26,7 @@ from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
 )
 
+
 def validate_query_formats() -> bool:
     """
     Validate the format of the queries
@@ -38,6 +39,7 @@ def validate_query_formats() -> bool:
     except InvalidQueryFormatError:
         return False
     return True
+
 
 def get_projects_from_repo_query(organization_name: str, repository_name: str) -> str:
     """Update the placeholder values and formate the graphQL query"""
