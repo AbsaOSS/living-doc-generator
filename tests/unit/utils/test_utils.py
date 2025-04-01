@@ -16,13 +16,14 @@
 
 import pytest
 
+from utils.exceptions import InvalidQueryFormatError
 from utils.utils import (
     make_issue_key,
     sanitize_filename,
     validate_query_format,
     get_action_input,
     set_action_output,
-    set_action_failed, load_template, generate_root_level_index_page,
+    load_template, generate_root_level_index_page,
 )
 
 
@@ -85,7 +86,6 @@ def test_get_input_without_hyphen(mocker):
 
 
 def test_validate_query_format_right_behaviour(mocker):
-    mock_exit = mocker.patch("sys.exit", return_value=None)
     mock_log_error = mocker.patch("utils.utils.logger.error")
 
     # Test case where there are no missing or extra placeholders
@@ -93,41 +93,38 @@ def test_validate_query_format_right_behaviour(mocker):
     expected_placeholders = {"placeholder1", "placeholder2"}
     validate_query_format(query_string, expected_placeholders)
     mock_log_error.assert_not_called()
-    mock_exit.assert_not_called()
 
 
 def test_validate_query_format_missing_placeholder(mocker):
-    mock_exit = mocker.patch("sys.exit", return_value=None)
     mock_log_error = mocker.patch("utils.utils.logger.error")
 
     # Test case where there are missing placeholders
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
     expected_placeholders = {"placeholder1", "placeholder2", "placeholder3"}
-    validate_query_format(query_string, expected_placeholders)
-    mock_log_error.assert_called_with(
-        "%s%s\nFor the query: %s",
-        "Missing placeholders: {'placeholder3'}. ",
-        "",
-        "This is a query with placeholders {placeholder1} and {placeholder2}",
-    )
-    mock_exit.assert_called_with(1)
+    with pytest.raises(InvalidQueryFormatError):
+        validate_query_format(query_string, expected_placeholders)
+        mock_log_error.assert_called_with(
+            "%s%s\nFor the query: %s",
+            "Missing placeholders: {'placeholder3'}. ",
+            "",
+            "This is a query with placeholders {placeholder1} and {placeholder2}",
+        )
 
 
 def test_validate_query_format_extra_placeholder(mocker):
-    mock_exit = mocker.patch("sys.exit", return_value=None)
     mock_log_error = mocker.patch("utils.utils.logger.error")
 
     # Test case where there are extra placeholders
     query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
     expected_placeholders = {"placeholder1"}
-    validate_query_format(query_string, expected_placeholders)
-    mock_log_error.assert_called_with(
-        "%s%s\nFor the query: %s",
-        "",
-        "Extra placeholders: {'placeholder2'}.",
-        "This is a query with placeholders {placeholder1} and {placeholder2}",
-    )
-    mock_exit.assert_called_with(1)
+    with pytest.raises(InvalidQueryFormatError):
+        validate_query_format(query_string, expected_placeholders)
+        mock_log_error.assert_called_with(
+            "%s%s\nFor the query: %s",
+            "",
+            "Extra placeholders: {'placeholder2'}.",
+            "This is a query with placeholders {placeholder1} and {placeholder2}",
+        )
 
 
 # set_action_output
@@ -155,17 +152,6 @@ def test_set_output_custom_path(mocker):
     handle.write.assert_any_call("custom-output=custom_value\n")
 
 
-# set_action_failed
-
-
-def test_set_failed(mocker):
-    mock_print = mocker.patch("builtins.print", return_value=None)
-    mock_exit = mocker.patch("sys.exit", return_value=None)
-
-    set_action_failed("failure message")
-
-    mock_print.assert_called_with("::error::failure message")
-    mock_exit.assert_called_with(1)
 
 
 # generate_root_level_index_page

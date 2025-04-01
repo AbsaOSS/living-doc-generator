@@ -21,10 +21,10 @@ which are essential for running the GH action.
 
 import json
 import logging
-import sys
 import requests
 
 from living_documentation_regime.model.config_repository import ConfigRepository
+from utils.exceptions import FetchRepositoriesException
 from utils.utils import get_action_input
 from utils.constants import (
     GITHUB_TOKEN,
@@ -82,16 +82,6 @@ class ActionInputs:
         return output_formats
 
     @staticmethod
-    def get_liv_doc_output_formats() -> list[str]:
-        """
-        Getter of the LivDoc regime output formats for generated documents.
-        @return: A list of LivDoc output formats.
-        """
-        output_formats_string = get_action_input(LIV_DOC_OUTPUT_FORMATS, "mdoc").strip().lower()
-        output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
-        return output_formats
-
-    @staticmethod
     def is_project_state_mining_enabled() -> bool:
         """
         Getter of the project state mining switch.
@@ -111,6 +101,8 @@ class ActionInputs:
     def is_structured_output_enabled() -> bool:
         """
         Getter of the structured output switch.
+
+        throws raise LivDocFetchRepositoriesException when fetching failed (Json or Type error)
         @return: True if structured output is enabled, False otherwise.
         """
         return get_action_input(LIV_DOC_STRUCTURED_OUTPUT, "false").lower() == "true"
@@ -119,7 +111,9 @@ class ActionInputs:
     def get_repositories() -> list[ConfigRepository]:
         """
         Getter and parser of the Config Repositories.
-        @return: A list of Config Repositories.
+
+        @return: A list of Config Repositories
+        @raise FetchRepositoriesException: When parsing JSON string to dictionary fails.
         """
         repositories = []
         repositories_json = get_action_input(LIV_DOC_REPOSITORIES, "[]")
@@ -137,23 +131,27 @@ class ActionInputs:
 
         except json.JSONDecodeError as e:
             logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            sys.exit(1)
+            raise FetchRepositoriesException from e
 
-        except TypeError:
+        except TypeError as e:
             logger.error("Type error parsing input JSON repositories: %s.", repositories_json)
-            sys.exit(1)
+            raise FetchRepositoriesException from e
 
         return repositories
 
-    def validate_user_configuration(self) -> None:
+    def validate_user_configuration(self) -> bool:
         """
         Checks that all the user configurations defined are correct.
-        @return: None
+        @return: True if configuration is correct, False otherwise.
         """
         logger.debug("User configuration validation started")
 
         # validate repositories configuration
-        repositories: list[ConfigRepository] = self.get_repositories()
+        try:
+            repositories = self.get_repositories()
+        except FetchRepositoriesException:
+            return False
+
         github_token = self.get_github_token()
         headers = {"Authorization": f"token {github_token}"}
 
@@ -165,7 +163,7 @@ class ActionInputs:
                 response.status_code,
                 response.text,
             )
-            sys.exit(1)
+            return False
 
         repository_error_count = 0
         for repository in repositories:
@@ -194,7 +192,7 @@ class ActionInputs:
                 )
                 repository_error_count += 1
         if repository_error_count > 0:
-            sys.exit(1)
+            return False
 
         # log user configuration
         logger.debug("User configuration validation successfully completed.")
@@ -207,7 +205,7 @@ class ActionInputs:
 
         # log liv-doc regime user inputs
         if ActionInputs.is_living_doc_regime_enabled():
-            logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", ActionInputs.get_repositories())
+            logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", repositories)
             logger.debug(
                 "Regime(LivDoc): `liv-doc-project-state-mining`: %s.",
                 ActionInputs.is_project_state_mining_enabled(),
@@ -220,3 +218,5 @@ class ActionInputs:
                 ActionInputs.is_grouping_by_topics_enabled(),
             )
             logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())
+
+        return True
