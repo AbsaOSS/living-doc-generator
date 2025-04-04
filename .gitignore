@@ -163,3 +163,4 @@ output-old_bcp/
 
 # Debugging script file
 run_me.sh
+output*

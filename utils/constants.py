@@ -30,7 +30,10 @@ LIV_DOC_STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
 LIV_DOC_OUTPUT_FORMATS = "LIV_DOC_OUTPUT_FORMATS"
 
 # Supported issue labels
-SUPPORTED_ISSUE_LABELS = ["DocumentedUserStory", "DocumentedFeature", "DocumentedFunctionality"]
+DOC_USER_STORY_LABEL = "DocumentedUserStory"
+DOC_FEATURE_LABEL = "DocumentedFeature"
+DOC_FUNCTIONALITY_LABEL = "DocumentedFunctionality"
+SUPPORTED_ISSUE_LABELS = [DOC_USER_STORY_LABEL, DOC_FEATURE_LABEL, DOC_FUNCTIONALITY_LABEL]
 
 # Mining regimes
 class Regime(Enum):
