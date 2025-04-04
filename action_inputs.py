@@ -31,7 +31,6 @@ from utils.constants import (
     LIV_DOC_OUTPUT_FORMATS,
     LIV_DOC_PROJECT_STATE_MINING,
     LIV_DOC_REPOSITORIES,
-    LIV_DOC_GROUP_OUTPUT_BY_TOPICS,
     LIV_DOC_STRUCTURED_OUTPUT,
     REPORT_PAGE,
     Regime,
@@ -82,30 +81,12 @@ class ActionInputs:
         return output_formats
 
     @staticmethod
-    def get_liv_doc_output_formats() -> list[str]:
-        """
-        Getter of the LivDoc regime output formats for generated documents.
-        @return: A list of LivDoc output formats.
-        """
-        output_formats_string = get_action_input(LIV_DOC_OUTPUT_FORMATS, "mdoc").strip().lower()
-        output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
-        return output_formats
-
-    @staticmethod
     def is_project_state_mining_enabled() -> bool:
         """
         Getter of the project state mining switch.
         @return: True if project state mining is enabled, False otherwise.
         """
         return get_action_input(LIV_DOC_PROJECT_STATE_MINING, "false").lower() == "true"
-
-    @staticmethod
-    def is_grouping_by_topics_enabled() -> bool:
-        """
-        Getter of the switch, that will group the tickets in the index.md file by topics.
-        @return: True if grouping by topics is enabled, False otherwise.
-        """
-        return get_action_input(LIV_DOC_GROUP_OUTPUT_BY_TOPICS, "false").lower() == "true"
 
     @staticmethod
     def is_structured_output_enabled() -> bool:
@@ -214,9 +195,5 @@ class ActionInputs:
             )
             logger.debug(
                 "Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.is_structured_output_enabled()
-            )
-            logger.debug(
-                "Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.",
-                ActionInputs.is_grouping_by_topics_enabled(),
             )
             logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())

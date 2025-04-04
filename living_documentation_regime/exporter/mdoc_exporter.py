@@ -66,11 +66,11 @@ class MdocExporter(Exporter):
         if not self._load_all_templates():
             return False
 
-        # Generate a MDoc page for every issue
-        topics = self._generate_page_per_issue(issues)
+        # Generate a MDoc page for every issue in expected path
+        self._generate_page_per_issue(issues)
 
         # Generate all structure of the index pages
-        self._generate_output_structure(issues, topics)
+        self._generate_output_structure(issues)
 
         # Generate a report page
         if ActionInputs.is_report_page_generation_enabled():
@@ -93,43 +93,20 @@ class MdocExporter(Exporter):
 
             logger.warning("MDoc page generation - Report page generated.")
 
-    def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> set[str]:
-        topics: set[str] = set()
+    def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> None:
         for consolidated_issue in issues.values():
             self._generate_md_issue_page(consolidated_issue)
-            if ActionInputs.is_report_page_generation_enabled() and consolidated_issue.errors:
-                repository_id: str = consolidated_issue.repository_id
-                number: int = consolidated_issue.number
-                html_url: str = consolidated_issue.html_url
-
-                for error_type, error_message in consolidated_issue.errors.items():
-                    self._report_page_content += (
-                        f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
-                    )
-
-            for topic in consolidated_issue.topics:
-                topics.add(topic)
+            self._update_error_page(consolidated_issue)
 
         logger.info("MDoc page generation - generated `%i` issue pages.", len(issues))
-        logger.info("Identified `%i` unique topics.", len(topics))
-        return topics
 
-    def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue], topics: set[str]) -> None:
+    def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue]) -> None:
         regime_output_path = make_absolute_path(self._output_path)
         if ActionInputs.is_structured_output_enabled():
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
             self._generate_structured_index_pages(
-                topics,
                 issues,
             )
-
-        # Generate an index page with a summary table about all issues grouped by topics
-        elif ActionInputs.is_grouping_by_topics_enabled():
-            issues: list[ConsolidatedIssue] = list(issues.values())
-            generate_root_level_index_page(self._index_root_level_page, regime_output_path)
-
-            for topic in topics:
-                self._generate_index_page(self._index_data_level_template, issues, grouping_topic=topic)
 
         # Generate an index page with a summary table about all issues
         else:
@@ -179,18 +156,13 @@ class MdocExporter(Exporter):
             logger.debug("Generated MDoc page: %s.", page_filename)
 
     # pylint: disable=too-many-arguments
-    def _generate_structured_index_pages(
-        self,
-        topics: set[str],
-        consolidated_issues: dict[str, ConsolidatedIssue],
-    ) -> None:
+    def _generate_structured_index_pages(self, consolidated_issues: dict[str, ConsolidatedIssue]) -> None:
         """
         Generates a set of index pages due to a structured output feature.
 
         @param index_data_level_template: The template string for generating the data level index MDoc page.
         @param index_repo_level_template: The template string for generating the repository level index MDoc page.
         @param index_org_level_template: The template string for generating the organization level index MDoc page.
-        @param topics: A set of topics used for grouping issues.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @return: None
         """
@@ -212,27 +184,11 @@ class MdocExporter(Exporter):
                 organization_name,
             )
 
-            # Generate an index pages for the documentation based on the grouped issues by topics
-            if ActionInputs.is_grouping_by_topics_enabled():
-                self._generate_sub_level_index_page(self._index_repo_page_template, "repo", repository_id)
-                logger.debug(
-                    "Generated repository level _index.md` for repository: %s.",
-                    repository_name,
-                )
-
-                for topic in topics:
-                    self._generate_index_page(self._index_data_level_template, issues, repository_id, topic)
-                    logger.debug(
-                        "Generated data level `_index.md` with topic: %s for %s.",
-                        topic,
-                        repository_id,
-                    )
-            else:
-                self._generate_index_page(self._index_data_level_template, issues, repository_id)
-                logger.debug(
-                    "Generated data level `_index.md` for %s",
-                    repository_id,
-                )
+            self._generate_index_page(self._index_data_level_template, issues, repository_id)
+            logger.debug(
+                "Generated data level `_index.md` for %s",
+                repository_id,
+            )
 
             logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
@@ -241,7 +197,6 @@ class MdocExporter(Exporter):
         issue_index_page_template: str,
         consolidated_issues: list[ConsolidatedIssue],
         repository_id: str = None,
-        grouping_topic: str = None,
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
@@ -249,7 +204,6 @@ class MdocExporter(Exporter):
         @param issue_index_page_template: The template string for generating the index mdoc page.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @param repository_id: The repository id used if the structured output is generated.
-        @param grouping_topic: The topic used if the grouping issues by topics is enabled.
         @return: None
         """
         # Initializing the issue table header based on the project mining state
@@ -261,12 +215,7 @@ class MdocExporter(Exporter):
 
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues:
-            if ActionInputs.is_grouping_by_topics_enabled():
-                for topic in consolidated_issue.topics:
-                    if grouping_topic == topic:
-                        issue_table += self._generate_mdoc_line(consolidated_issue)
-            else:
-                issue_table += self._generate_mdoc_line(consolidated_issue)
+            issue_table += self._generate_mdoc_line(consolidated_issue)
 
         # Prepare issues replacement for the index page
         replacement = {
@@ -274,9 +223,7 @@ class MdocExporter(Exporter):
             "issue_overview_table": issue_table,
         }
 
-        if ActionInputs.is_grouping_by_topics_enabled():
-            replacement["data_level_name"] = grouping_topic
-        elif ActionInputs.is_structured_output_enabled():
+        if ActionInputs.is_structured_output_enabled():
             replacement["data_level_name"] = repository_id.split("/")[1]
 
         # Replace the issue placeholders in the index template
@@ -284,7 +231,7 @@ class MdocExporter(Exporter):
 
         # Generate a directory structure path for the index page
         # Note: repository_id is used only, if the structured output is generated
-        index_directory_path: str = self._generate_index_directory_path(repository_id, grouping_topic)
+        index_directory_path: str = self._generate_index_directory_path(repository_id)
 
         # Create an index page file
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
@@ -448,12 +395,11 @@ class MdocExporter(Exporter):
 
         return issue_info
 
-    def _generate_index_directory_path(self, repository_id: Optional[str], topic: Optional[str]) -> str:
+    def _generate_index_directory_path(self, repository_id: Optional[str]) -> str:
         """
         Generates a directory path based on if structured output is required.
 
         @param repository_id: The repository id.
-        @param topic: The topic used for grouping issues.
         @return: The generated directory path.
         """
         output_path: str = make_absolute_path(self._output_path)
@@ -461,9 +407,6 @@ class MdocExporter(Exporter):
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(output_path, organization_name, repository_name)
-
-        if ActionInputs.is_grouping_by_topics_enabled() and topic:
-            output_path = os.path.join(output_path, topic)
 
         os.makedirs(output_path, exist_ok=True)
 
@@ -484,7 +427,7 @@ class MdocExporter(Exporter):
         index_root_level_template_file = os.path.join(templates_base_path, "_index_root_level_page_template.md")
         index_org_level_template_file = os.path.join(templates_base_path, "_index_org_level_page_template.md")
         index_data_level_template_file = os.path.join(templates_base_path, "_index_data_level_page_template.md")
-        index_topic_page_template_file = os.path.join(templates_base_path, "_index_repo_page_template.md")
+        # index_topic_page_template_file = os.path.join(templates_base_path, "_index_repo_page_template.md")
         report_page_template_file = os.path.join(templates_base_path, "report_page_template.md")
 
         self._issue_page_detail_template: Optional[str] = load_template(
@@ -503,10 +446,10 @@ class MdocExporter(Exporter):
             index_org_level_template_file,
             "Structured index page template file for organization level was not successfully loaded.",
         )
-        self._index_repo_page_template: Optional[str] = load_template(
-            index_topic_page_template_file,
-            "Structured index page template file for repository level was not successfully loaded.",
-        )
+        # self._index_repo_page_template: Optional[str] = load_template(
+        #     index_topic_page_template_file,
+        #     "Structured index page template file for repository level was not successfully loaded.",
+        # )
         self._index_data_level_template: Optional[str] = load_template(
             index_data_level_template_file,
             "Structured index page template file for data level was not successfully loaded.",
@@ -522,7 +465,7 @@ class MdocExporter(Exporter):
                 self._index_page_template,
                 self._index_root_level_page,
                 self._index_org_level_template,
-                self._index_repo_page_template,
+                # self._index_repo_page_template,
                 self._index_data_level_template,
                 self._report_page_template,
             ]
@@ -531,3 +474,14 @@ class MdocExporter(Exporter):
             return False
 
         return True
+
+    def _update_error_page(self, ci: ConsolidatedIssue) -> None:
+        if ActionInputs.is_report_page_generation_enabled() and ci.errors:
+            repository_id: str = ci.repository_id
+            number: int = ci.number
+            html_url: str = ci.html_url
+
+            for error_type, error_message in ci.errors.items():
+                self._report_page_content += (
+                    f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
+                )

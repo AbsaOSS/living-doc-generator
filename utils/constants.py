@@ -27,21 +27,20 @@ REPORT_PAGE = "REPORT_PAGE"
 LIV_DOC_PROJECT_STATE_MINING = "LIV_DOC_PROJECT_STATE_MINING"
 LIV_DOC_REPOSITORIES = "LIV_DOC_REPOSITORIES"
 LIV_DOC_STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
-LIV_DOC_GROUP_OUTPUT_BY_TOPICS = "LIV_DOC_GROUP_OUTPUT_BY_TOPICS"
 LIV_DOC_OUTPUT_FORMATS = "LIV_DOC_OUTPUT_FORMATS"
 
+# Supported issue labels
+SUPPORTED_ISSUE_LABELS = ["DocumentedUserStory", "DocumentedFeature", "DocumentedFunctionality"]
 
 # Mining regimes
 class Regime(Enum):
     LIV_DOC_REGIME = "LIV_DOC_REGIME"
     # CI_REGIME = "CI_REGIME"
 
-
 # Export formats
 class Format(Enum):
     MDOC = "mdoc"
     # PDF = "PDF"
-
 
 # Regime output paths
 OUTPUT_PATH = "./output"

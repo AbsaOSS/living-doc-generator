@@ -30,10 +30,6 @@ inputs:
     description: 'Enable or disable structured output.'
     required: false
     default: 'false'
-  liv-doc-group-output-by-topics:
-    description: 'Enable or disable grouping tickets by topics in the summary index.md file.'
-    required: false
-    default: 'false'
   liv-doc-output-formats:
     description: 'Comma-separated list of wanted output formats for Living Documentation Regime.'
     required: false
@@ -76,7 +72,6 @@ runs:
           echo "INPUT_LIV_DOC_REPOSITORIES=$(echo '${{ inputs.liv-doc-repositories }}' | jq -c .)" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_PROJECT_STATE_MINING=${{ inputs.liv-doc-project-state-mining }}" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_STRUCTURED_OUTPUT=${{ inputs.liv-doc-structured-output }}" >> $GITHUB_ENV
-          echo "INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS=${{ inputs.liv-doc-group-output-by-topics }}" >> $GITHUB_ENV
           echo "INPUT_LIV_DOC_OUTPUT_FORMATS=${{ inputs.liv-doc-output-formats }}" >> $GITHUB_ENV
         fi
       shell: bash
@@ -93,7 +88,6 @@ runs:
         INPUT_LIV_DOC_REPOSITORIES: ${{ env.INPUT_LIV_DOC_REPOSITORIES }}
         INPUT_LIV_DOC_PROJECT_STATE_MINING: ${{ env.INPUT_LIV_DOC_PROJECT_STATE_MINING }}
         INPUT_LIV_DOC_STRUCTURED_OUTPUT: ${{ env.INPUT_LIV_DOC_STRUCTURED_OUTPUT }}
-        INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS: ${{ env.INPUT_LIV_DOC_GROUP_OUTPUT_BY_TOPICS }}
         INPUT_LIV_DOC_OUTPUT_FORMATS: ${{ env.INPUT_LIV_DOC_OUTPUT_FORMATS }}
       run: |
         python ${{ github.action_path }}/main.py

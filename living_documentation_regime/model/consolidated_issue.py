@@ -181,29 +181,31 @@ class ConsolidatedIssue:
             organization_name, repository_name = self.repository_id.split("/")
             output_path = os.path.join(output_path, organization_name, repository_name)
 
+        # TODO - move this method to mdoc exported as it is closely related to the mdoc format generation
+
         # If grouping by topics is enabled, create a directory path based on the issue topic
-        if ActionInputs.is_grouping_by_topics_enabled():
-            topic_paths = []
-
-            # Extract labels from the issue table
-            labels = re.findall(r"\| Labels \| (.*?) \|", issue_table)
-            if labels:
-                labels = labels[0].split(", ")
-
-            documentation_labels = [label for label in labels if label.startswith("Documented")]
-            topic_labels = [label for label in labels if label.endswith("Topic")]
-
-            # Validate labels and get a fallback if there are no topic labels.
-            fallback_path: Optional[list[str]] = self.validate_labels(documentation_labels, topic_labels, output_path)
-            if fallback_path:
-                return fallback_path
-
-            # Generate a directory path for each topic label.
-            for topic_label in topic_labels:
-                self.__topics.append(topic_label)
-                topic_path = os.path.join(output_path, topic_label)
-                topic_paths.append(topic_path)
-            return topic_paths
+        # if ActionInputs.is_grouping_by_topics_enabled():
+        #     topic_paths = []
+        #
+        #     # Extract labels from the issue table
+        #     labels = re.findall(r"\| Labels \| (.*?) \|", issue_table)
+        #     if labels:
+        #         labels = labels[0].split(", ")
+        #
+        #     documentation_labels = [label for label in labels if label.startswith("Documented")]
+        #     topic_labels = [label for label in labels if label.endswith("Topic")]
+        #
+        #     # Validate labels and get a fallback if there are no topic labels.
+        #     fallback_path: Optional[list[str]] = self.validate_labels(documentation_labels, topic_labels, output_path)
+        #     if fallback_path:
+        #         return fallback_path
+        #
+        #     # Generate a directory path for each topic label.
+        #     for topic_label in topic_labels:
+        #         self.__topics.append(topic_label)
+        #         topic_path = os.path.join(output_path, topic_label)
+        #         topic_paths.append(topic_path)
+        #     return topic_paths
 
         return [output_path]
 

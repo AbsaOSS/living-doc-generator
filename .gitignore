@@ -159,7 +159,7 @@ cython_debug/
 /.idea/
 
 # Generated outputs
-output/
+output-old_bcp/
 
 # Debugging script file
 run_me.sh

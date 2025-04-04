@@ -26,9 +26,9 @@
 |---------------------------|-------------------------------------------------------------------------|-------------|----------|
 | Released v0.1.0 PoC       | Initial proof of concept release                                       | Done        | 10/2024  |
 | Report page               | Introduce report page, No Topic chapter, filtering, and detection code | Done        | 01/2025  |
-| Output generators         | Make the solution more general and support easy format switching       | In progress | 03/2025  |
-| User Story mining         | Mining of User Stories and integrating as a new output type            | Planned     | 2025     |
-| Requirements mining       | Mining of Requirements and integrating as a new output type            | Planned     | 2025     |
+| Output generators         | Make the solution more general and support easy format switching       | In progress | 04/2025  |
+| User Story mining         | Mining of User Stories and integrating as a new output type            | In progress     | 04/2025  |
+| Requirements mining       | Mining of Requirements and integrating as a new output type            | In progress     | 04/2025  |
 | Support of test headers mining | Define test header formats, mine data, and enhance coverage matrix | Planned     | TBD      |
 | Support of coverage matrix | Connect test headers with documented types and integrate as output    | Planned     | TBD      |
 | Release notes mining      | Mine repositories release information and integrate as output type     | Planned     | TBD      |
@@ -99,19 +99,16 @@ See the full example of action step definition (in example are used non-default 
           {
             "organization-name": "fin-services",
             "repository-name": "investment-app",
-            "query-labels": ["feature", "enhancement"],
             "projects-title-filter": []
           },
           {
             "organization-name": "health-analytics",
             "repository-name": "patient-data-analysis",
-            "query-labels": ["functionality"],
             "projects-title-filter": ["Health Data Analysis Project"]
           },
           {
             "organization-name": "open-source-initiative",
             "repository-name": "community-driven-project",
-            "query-labels": ["improvement"],
             "projects-title-filter": ["Community Outreach Initiatives", "CDD Project"] 
           }
         ]
