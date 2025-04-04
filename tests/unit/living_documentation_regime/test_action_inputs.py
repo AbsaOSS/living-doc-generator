@@ -16,8 +16,11 @@
 import json
 import os
 
+import pytest
+
 from action_inputs import ActionInputs
 from living_documentation_regime.model.config_repository import ConfigRepository
+from utils.exceptions import FetchRepositoriesException
 
 
 # Check Action Inputs default values
@@ -116,14 +119,12 @@ def test_get_repositories_default_value_as_json(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="[]")
-    mock_exit = mocker.patch("sys.exit")
 
     # Act
     actual = ActionInputs.get_repositories()
 
     # Assert
     assert [] == actual
-    mock_exit.assert_not_called()
     mock_log_error.assert_not_called()
 
 
@@ -131,14 +132,12 @@ def test_get_repositories_empty_object_as_input(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="{}")
-    mock_exit = mocker.patch("sys.exit")
 
     # Act
     actual = ActionInputs.get_repositories()
 
     # Assert
     assert [] == actual
-    mock_exit.assert_not_called()
     mock_log_error.assert_not_called()
 
 
@@ -147,13 +146,11 @@ def test_get_repositories_error_with_loading_repository_json(mocker):
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="[{}]")
     mocker.patch.object(ConfigRepository, "load_from_json", return_value=False)
-    mock_exit = mocker.patch("sys.exit")
 
     # Act
     ActionInputs.get_repositories()
 
     # Assert
-    mock_exit.assert_not_called()
     mock_log_error.assert_called_once_with("Failed to load repository from JSON: %s.", {})
 
 
@@ -161,44 +158,36 @@ def test_get_repositories_number_instead_of_json(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value=1)
-    mock_exit = mocker.patch("sys.exit")
 
-    # Act
-    ActionInputs.get_repositories()
-
-    # Assert
-    mock_exit.assert_called_once_with(1)
-    mock_log_error.assert_called_once_with("Type error parsing input JSON repositories: %s.", mocker.ANY)
+    # Act & Assert
+    with pytest.raises(FetchRepositoriesException):
+        ActionInputs.get_repositories()
+        mock_log_error.assert_called_once_with("Type error parsing input JSON repositories: %s.", mocker.ANY)
 
 
 def test_get_repositories_empty_string_as_input(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="")
-    mock_exit = mocker.patch("sys.exit")
 
-    # Act
-    actual = ActionInputs.get_repositories()
+    # Act & Assert
+    with pytest.raises(FetchRepositoriesException):
+        actual = ActionInputs.get_repositories()
+        assert [] == actual
+        mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
 
-    # Assert
-    assert [] == actual
-    mock_exit.assert_called_once()
-    mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
 
 
 def test_get_repositories_invalid_string_as_input(mocker):
     # Arrange
     mock_log_error = mocker.patch("action_inputs.logger.error")
     mocker.patch("action_inputs.get_action_input", return_value="not a JSON string")
-    mock_exit = mocker.patch("sys.exit")
 
-    # Act
-    actual = ActionInputs.get_repositories()
-
-    # Assert
-    assert [] == actual
-    mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
-    mock_exit.assert_called_once_with(1)
+    # Act & Assert
+    with pytest.raises(FetchRepositoriesException):
+        actual = ActionInputs.get_repositories()
+        assert [] == actual
+        mock_log_error.assert_called_once_with("Error parsing JSON repositories: %s.", mocker.ANY, exc_info=True)
 
 
 # validate_repositories_configuration
@@ -218,16 +207,15 @@ def test_validate_repositories_configuration_correct_behaviour(mocker, config_re
     mocker.patch(
         "action_inputs.ActionInputs.is_living_doc_regime_enabled", return_value="true"
     )
-    mock_exit = mocker.patch("sys.exit")
     fake_correct_response = mocker.Mock()
     fake_correct_response.status_code = 200
     mocker.patch("action_inputs.requests.get", return_value=fake_correct_response)
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    mock_exit.assert_not_called()
+    assert return_value is True
     mock_log_debug.assert_has_calls(
         [
             mocker.call("User configuration validation started"),
@@ -253,21 +241,15 @@ def test_validate_user_configuration_wrong_repository_404(mocker, config_reposit
         "action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="fake-token")
-    mock_exit = mocker.patch("sys.exit")
     mock_error_response = mocker.Mock()
     mock_error_response.status_code = 404
     mocker.patch("action_inputs.requests.get", return_value=mock_error_response)
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    assert mock_exit.call_count == 2
-    mock_log_error.assert_any_call(
-        "Repository '%s/%s' could not be found on GitHub. Please verify that the repository exists and that your authorization token is correct.",
-        "test_org",
-        "test_repo",
-    )
+    assert return_value is False
 
 
 def test_validate_user_configuration_wrong_repository_non_200(mocker, config_repository):
@@ -278,7 +260,6 @@ def test_validate_user_configuration_wrong_repository_non_200(mocker, config_rep
         "action_inputs.ActionInputs.get_repositories", return_value=[config_repository]
     )
     mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="correct_token")
-    mock_exit = mocker.patch("sys.exit")
 
     mock_response_200 = mocker.Mock()
     mock_response_200.status_code = 200
@@ -287,10 +268,10 @@ def test_validate_user_configuration_wrong_repository_non_200(mocker, config_rep
     mocker.patch("requests.get", side_effect=[mock_response_200, mock_response_500])
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    mock_exit.assert_called_once_with(1)
+    assert return_value is False
     mock_log_error.assert_called_once_with(
         "An error occurred while validating the repository '%s/%s'. The response status code is %s. Response: %s",
         "test_org",
@@ -305,17 +286,16 @@ def test_validate_repositories_wrong_token(mocker, config_repository):
     mock_log_error = mocker.patch("action_inputs.logger.error")
 
     mocker.patch("action_inputs.ActionInputs.get_github_token", return_value="")
-    mock_exit = mocker.patch("sys.exit")
 
     mocker.patch(
         "action_inputs.ActionInputs.get_repositories", return_value=list()
     )
 
     # Act
-    ActionInputs().validate_user_configuration()
+    return_value = ActionInputs().validate_user_configuration()
 
     # Assert
-    mock_exit.assert_called_once_with(1)
+    assert return_value is False
     mock_log_error.assert_called_once_with(
         "Can not connect to GitHub. Possible cause: Invalid GitHub token. Status code: %s, Response: %s",
          401,
