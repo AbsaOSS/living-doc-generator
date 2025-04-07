@@ -35,15 +35,18 @@ DOC_FEATURE_LABEL = "DocumentedFeature"
 DOC_FUNCTIONALITY_LABEL = "DocumentedFunctionality"
 SUPPORTED_ISSUE_LABELS = [DOC_USER_STORY_LABEL, DOC_FEATURE_LABEL, DOC_FUNCTIONALITY_LABEL]
 
+
 # Mining regimes
 class Regime(Enum):
     LIV_DOC_REGIME = "LIV_DOC_REGIME"
     # CI_REGIME = "CI_REGIME"
 
+
 # Export formats
 class Format(Enum):
     MDOC = "mdoc"
     # PDF = "PDF"
+
 
 # Regime output paths
 OUTPUT_PATH = "./output"

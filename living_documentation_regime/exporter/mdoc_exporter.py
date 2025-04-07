@@ -34,7 +34,11 @@ from utils.constants import (
     TABLE_HEADER_WITH_PROJECT_DATA,
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LINKED_TO_PROJECT_TRUE,
-    LINKED_TO_PROJECT_FALSE, DOC_USER_STORY_LABEL, LIV_DOC_OUTPUT_PATH, DOC_FEATURE_LABEL, DOC_FUNCTIONALITY_LABEL,
+    LINKED_TO_PROJECT_FALSE,
+    DOC_USER_STORY_LABEL,
+    LIV_DOC_OUTPUT_PATH,
+    DOC_FEATURE_LABEL,
+    DOC_FUNCTIONALITY_LABEL,
 )
 
 logger = logging.getLogger(__name__)
@@ -43,6 +47,12 @@ logger = logging.getLogger(__name__)
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
 class MdocExporter(Exporter):
     """A class representing the MDoc format generation exporter."""
+
+    REPORT_PAGE_US_GROUP = "User Story"
+    REPORT_PAGE_FEAT_GROUP = "Feature"
+
+    PARENT_PATH_US = "user_stories"
+    PARENT_PATH_FEAT = "features"
 
     def __init__(self, output_path: str):
         self._output_path = output_path
@@ -55,19 +65,11 @@ class MdocExporter(Exporter):
         self._us_index_no_struct_template_file: Optional[str] = None
         self._feat_issue_index_template: Optional[str] = None
 
-        self._us_index_root_level_page: Optional[str] = None
-        self._feat_index_root_level_page: Optional[str] = None
-
-        # old templates
-        self._issue_page_detail_template: Optional[str] = None
-        self._index_page_template: Optional[str] = None
-        self._index_root_level_page: Optional[str] = None
+        self._us_index_root_level_template_page: Optional[str] = None
+        self._feat_index_root_level_template_page: Optional[str] = None
         self._index_org_level_template: Optional[str] = None
-        self._index_repo_page_template: Optional[str] = None
-        self._index_data_level_template: Optional[str] = None
-        self._report_page_template: Optional[str] = None
 
-        self._report_page_content = REPORT_PAGE_HEADER
+        self._report_page_content: dict[str, str] = {}
 
     def export(self, **kwargs) -> bool:
         logger.info("MDoc page generation - started.")
@@ -93,18 +95,27 @@ class MdocExporter(Exporter):
         return True
 
     def _generate_report_page(self):
-        header, divider, *error_rows = self._report_page_content.strip().split("\n")
-        if error_rows:
-            report_page_content = "\n".join([header, divider] + error_rows)
-            report_page = self._report_page_template.format(
-                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
-            )
-            with open(
-                os.path.join(make_absolute_path(self._output_path), "report_page.md"), "w", encoding="utf-8"
-            ) as f:
-                f.write(report_page)
+        def write_report_page(group: str, parent_dir: str, content: str) -> None:
+            header, divider, *error_rows = content.strip().split("\n")
+            if error_rows:
+                report_page_content = "\n".join([header, divider] + error_rows)
+                report_page = self._report_page_template.format(
+                    date=datetime.now().strftime("%Y-%m-%d"),
+                    livdoc_report_page_content=report_page_content,
+                    group=group,
+                )
+                with open(
+                    os.path.join(make_absolute_path(self._output_path), parent_dir, "report_page.md"),
+                    "w",
+                    encoding="utf-8",
+                ) as f:
+                    f.write(report_page)
 
-            logger.warning("MDoc page generation - Report page generated.")
+            logger.warning("MDoc page generation - Report page '%s' generated.".format(group))
+
+        for group, content in self._report_page_content.items():
+            parent_dir = self.PARENT_PATH_US if group == self.REPORT_PAGE_US_GROUP else self.PARENT_PATH_FEAT
+            write_report_page(group, parent_dir, content)
 
     def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> None:
         logger.info("Generating MDoc pages for User Stories ...")
@@ -112,13 +123,13 @@ class MdocExporter(Exporter):
             # self._generate_md_issue_page(consolidated_issue)
             if DOC_USER_STORY_LABEL in consolidated_issue.labels:
                 self._generate_md_issue_page_for_us(consolidated_issue)
-                self._update_error_page(consolidated_issue) # TODO - refactor this to report and errors - see rest of TODOs
+                self._update_error_page(consolidated_issue, self.REPORT_PAGE_US_GROUP)
 
         logger.info("Generating MDoc pages for Features ...")
         for consolidated_issue in issues.values():
             if DOC_FEATURE_LABEL in consolidated_issue.labels:
                 self._generate_md_issue_page_for_feat(consolidated_issue)
-                self._update_error_page(consolidated_issue)
+                self._update_error_page(consolidated_issue, self.REPORT_PAGE_FEAT_GROUP)
 
         logger.info("Generating MDoc pages for Functionalities ...")
         for key, consolidated_issue in issues.items():
@@ -130,7 +141,7 @@ class MdocExporter(Exporter):
                     feature_key = f"{consolidated_issue.repository_id}/{feature_id}"
 
                 self._generate_md_issue_page_for_func(consolidated_issue, issues[feature_key] if feature_key else None)
-                self._update_error_page(consolidated_issue)
+                self._update_error_page(consolidated_issue, self.REPORT_PAGE_FEAT_GROUP)
 
         logger.info("MDoc page generation - generated `%i` issue pages.", len(issues))
 
@@ -139,21 +150,21 @@ class MdocExporter(Exporter):
             regime_output_path = make_absolute_path(self._output_path)
 
             # User Story
-            generate_root_level_index_page(self._us_index_root_level_page, os.path.join(regime_output_path, "user_stories"))
-            self._generate_structured_index_pages(
-                issues,
-                "user_stories"
+            generate_root_level_index_page(
+                self._us_index_root_level_template_page, os.path.join(regime_output_path, "user_stories")
             )
+            self._generate_structured_index_pages(issues, "user_stories")
 
             # Features
-            generate_root_level_index_page(self._feat_index_root_level_page, os.path.join(regime_output_path, "features"))
-            self._generate_structured_index_pages(
-                issues,
-                "features"
+            generate_root_level_index_page(
+                self._feat_index_root_level_template_page, os.path.join(regime_output_path, "features")
             )
+            self._generate_structured_index_pages(issues, "features")
 
         # Generate an index page with a summary table about all User Stories
-        us_issues: list[ConsolidatedIssue] = [issue for issue in issues.values() if DOC_USER_STORY_LABEL in issue.labels]
+        us_issues: list[ConsolidatedIssue] = [
+            issue for issue in issues.values() if DOC_USER_STORY_LABEL in issue.labels
+        ]
         self._generate_index_page(self._us_index_no_struct_template_file, "user_stories", us_issues)
         logger.info("MDoc page generation - generated User Stories `_index.md`.")
 
@@ -170,11 +181,11 @@ class MdocExporter(Exporter):
         @return: None
         """
         # Initialize dictionary with replacements
-        # TODO - add support for GH State badge
-        # TODO - add support for GH Project State badge
-        # TODO - add support for Priority
-        # TODO - add support GH Icon link
-
+        # TODO - add support for - planned in Issue https://github.com/AbsaOSS/living-doc-generator/issues/111
+        #   - GH State badge
+        #   - GH Project State badge
+        #   - GH Priority
+        #   - GH Icon link
         replacements = {
             "title": consolidated_issue.title,
             "date": datetime.now().strftime("%Y-%m-%d"),
@@ -185,17 +196,22 @@ class MdocExporter(Exporter):
         issue_md_page_content = self._us_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        # TODO - one issue on more locations is wrong
-        page_directory_paths: list[str] = self._generate_directory_path_us("user_stories", consolidated_issue.repository_id)
-        for page_directory_path in page_directory_paths:
-            os.makedirs(page_directory_path, exist_ok=True)
+        page_directory_path: str = self._generate_directory_path_us(
+            self.PARENT_PATH_US, consolidated_issue.repository_id
+        )
+        os.makedirs(page_directory_path, exist_ok=True)
 
-            # Save the single issue MDoc page
-            page_filename = consolidated_issue.generate_page_filename()
-            with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
-                f.write(issue_md_page_content)
+        # Save the single issue MDoc page
+        page_filename = consolidated_issue.generate_page_filename()
+        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+            f.write(issue_md_page_content)
 
-            logger.debug("Generated MDoc page: %s.", page_filename)
+        # for debug only
+        consolidated_issue.errors["TestError"] = "This is test error from issue '%d':'%s'".format(
+            consolidated_issue.number, consolidated_issue.title
+        )
+
+        logger.debug("Generated MDoc page: %s.", page_filename)
 
     def _generate_md_issue_page_for_feat(self, consolidated_issue: ConsolidatedIssue) -> None:
         """
@@ -205,10 +221,11 @@ class MdocExporter(Exporter):
         @return: None
         """
         # Initialize dictionary with replacements
-        # TODO - add support for GH State badge
-        # TODO - add support for GH Project State badge
-        # TODO - add support for Priority
-        # TODO - add support GH Icon link
+        # TODO - add support for - planned in Issue https://github.com/AbsaOSS/living-doc-generator/issues/111
+        #   - GH State badge
+        #   - GH Project State badge
+        #   - GH Priority
+        #   - GH Icon link
 
         replacements = {
             "title": consolidated_issue.title,
@@ -220,19 +237,21 @@ class MdocExporter(Exporter):
         issue_md_page_content = self._feat_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        # TODO - one issue on more locations is wrong
-        page_directory_paths: list[str] = self._generate_directory_path_feat("features", consolidated_issue.repository_id, consolidated_issue.title, )
-        for page_directory_path in page_directory_paths:
-            os.makedirs(page_directory_path, exist_ok=True)
+        page_directory_path: str = self._generate_directory_path_feat(
+            self.PARENT_PATH_FEAT, consolidated_issue.repository_id, consolidated_issue.title
+        )
+        os.makedirs(page_directory_path, exist_ok=True)
 
-            # Save the single issue MDoc page
-            page_filename = consolidated_issue.generate_page_filename()
-            with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
-                f.write(issue_md_page_content)
+        # Save the single issue MDoc page
+        page_filename = consolidated_issue.generate_page_filename()
+        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+            f.write(issue_md_page_content)
 
-            logger.debug("Generated MDoc page: %s.", page_filename)
+        logger.debug("Generated MDoc page: %s.", page_filename)
 
-    def _generate_md_issue_page_for_func(self, consolidated_issue: ConsolidatedIssue, feature_consolidated_issue: Optional[ConsolidatedIssue] = None) -> None:
+    def _generate_md_issue_page_for_func(
+        self, consolidated_issue: ConsolidatedIssue, feature_consolidated_issue: Optional[ConsolidatedIssue] = None
+    ) -> None:
         """
         Generates a MDoc page for Functionality ticket/GH issue from a template and save to the output directory.
 
@@ -240,10 +259,11 @@ class MdocExporter(Exporter):
         @return: None
         """
         # Initialize dictionary with replacements
-        # TODO - add support for GH State badge
-        # TODO - add support for GH Project State badge
-        # TODO - add support for Priority
-        # TODO - add support GH Icon link
+        # TODO - add support for - planned in Issue https://github.com/AbsaOSS/living-doc-generator/issues/111
+        #   - GH State badge
+        #   - GH Project State badge
+        #   - GH Priority
+        #   - GH Icon link
 
         title = consolidated_issue.title
         feature_title = "no_feature"
@@ -260,22 +280,22 @@ class MdocExporter(Exporter):
         issue_md_page_content = self._func_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        # TODO - one issue on more locations is wrong
-        page_directory_paths: list[str] = self._generate_directory_path_func("features", consolidated_issue.repository_id, feature_title)
-        for page_directory_path in page_directory_paths:
-            os.makedirs(page_directory_path, exist_ok=True)
+        page_directory_path: str = self._generate_directory_path_func(
+            self.PARENT_PATH_FEAT, consolidated_issue.repository_id, feature_title
+        )
+        os.makedirs(page_directory_path, exist_ok=True)
 
-            # Save the single issue MDoc page
-            page_filename = consolidated_issue.generate_page_filename()
-            with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
-                f.write(issue_md_page_content)
+        # Save the single issue MDoc page
+        page_filename = consolidated_issue.generate_page_filename()
+        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+            f.write(issue_md_page_content)
 
-            logger.debug("Generated MDoc page: %s.", page_filename)
-
-    # TODO - doc - mdocexported - all issues are in one repository (Associated links !!! are by #13)
+        logger.debug("Generated MDoc page: %s.", page_filename)
 
     # pylint: disable=too-many-arguments
-    def _generate_structured_index_pages(self, consolidated_issues: dict[str, ConsolidatedIssue], group_name: str) -> None:
+    def _generate_structured_index_pages(
+        self, consolidated_issues: dict[str, ConsolidatedIssue], group_name: str
+    ) -> None:
         """
         Generates a set of index pages due to a structured output feature.
 
@@ -297,7 +317,8 @@ class MdocExporter(Exporter):
             self._generate_sub_level_index_page(self._index_org_level_template, repository_id, group_name)
             logger.debug(
                 "Generated '%s' organization level `_index.md` for %s.",
-                group_name, organization_name,
+                group_name,
+                organization_name,
             )
 
             # self._generate_index_page(self._index_data_level_template, issues, repository_id)
@@ -309,10 +330,7 @@ class MdocExporter(Exporter):
             logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
     def _generate_index_page(
-        self,
-        issue_index_page_template: str,
-        group_name: str,
-        consolidated_issues: list[ConsolidatedIssue]
+        self, issue_index_page_template: str, group_name: str, consolidated_issues: list[ConsolidatedIssue]
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
@@ -539,21 +557,12 @@ class MdocExporter(Exporter):
         feat_index_no_struct_template_file = os.path.join(templates_base_path, "_feat_index_no_struct_page_template.md")
 
         us_index_root_level_template_file = os.path.join(templates_base_path, "_us_index_root_level_page_template.md")
-        feat_index_root_level_template_file = os.path.join(templates_base_path, "_feat_index_root_level_page_template.md")
+        feat_index_root_level_template_file = os.path.join(
+            templates_base_path, "_feat_index_root_level_page_template.md"
+        )
         index_org_level_template_file = os.path.join(templates_base_path, "_index_org_level_page_template.md")
 
-
-
-
-        # old templates
-        issue_page_template_file = os.path.join(templates_base_path, "issue_detail_page_template.md")
-        index_no_struct_template_file = os.path.join(templates_base_path, "_index_no_struct_page_template.md")
-        index_root_level_template_file = os.path.join(templates_base_path, "_index_root_level_page_template.md")
-        index_data_level_template_file = os.path.join(templates_base_path, "_index_data_level_page_template.md")
-        # index_topic_page_template_file = os.path.join(templates_base_path, "_index_repo_page_template.md")
         report_page_template_file = os.path.join(templates_base_path, "report_page_template.md")
-
-
 
         self._us_issue_page_detail_template: Optional[str] = load_template(
             us_issue_detail_page_template,
@@ -576,11 +585,11 @@ class MdocExporter(Exporter):
             feat_index_no_struct_template_file,
             "Feature index page template file was not successfully loaded.",
         )
-        self._us_index_root_level_page: Optional[str] = load_template(
+        self._us_index_root_level_template_page: Optional[str] = load_template(
             us_index_root_level_template_file,
             "Structured User Story index page template file for root level was not successfully loaded.",
         )
-        self._feat_index_root_level_page: Optional[str] = load_template(
+        self._feat_index_root_level_template_page: Optional[str] = load_template(
             feat_index_root_level_template_file,
             "Structured Feature index page template file for root level was not successfully loaded.",
         )
@@ -589,29 +598,6 @@ class MdocExporter(Exporter):
             "Structured index page template file for organization level was not successfully loaded.",
         )
 
-
-
-        # old code
-        self._issue_page_detail_template: Optional[str] = load_template(
-            issue_page_template_file,
-            "Issue page template file was not successfully loaded.",
-        )
-        self._index_page_template: Optional[str] = load_template(
-            index_no_struct_template_file,
-            "Index page template file was not successfully loaded.",
-        )
-        self._index_root_level_page: Optional[str] = load_template(
-            index_root_level_template_file,
-            "Structured index page template file for root level was not successfully loaded.",
-        )
-        # self._index_repo_page_template: Optional[str] = load_template(
-        #     index_topic_page_template_file,
-        #     "Structured index page template file for repository level was not successfully loaded.",
-        # )
-        self._index_data_level_template: Optional[str] = load_template(
-            index_data_level_template_file,
-            "Structured index page template file for data level was not successfully loaded.",
-        )
         self._report_page_template: Optional[str] = load_template(
             report_page_template_file,
             "Report page template file was not successfully loaded.",
@@ -619,12 +605,14 @@ class MdocExporter(Exporter):
 
         if not all(
             [
-                self._issue_page_detail_template,
-                self._index_page_template,
-                self._index_root_level_page,
+                self._us_issue_page_detail_template,
+                self._feat_issue_page_detail_template,
+                self._func_issue_page_detail_template,
+                self._us_index_no_struct_template_file,
+                self._feat_index_no_struct_template_file,
+                self._us_index_root_level_template_page,
+                self._feat_index_root_level_template_page,
                 self._index_org_level_template,
-                # self._index_repo_page_template,
-                self._index_data_level_template,
                 self._report_page_template,
             ]
         ):
@@ -633,19 +621,22 @@ class MdocExporter(Exporter):
 
         return True
 
-    def _update_error_page(self, ci: ConsolidatedIssue) -> None:
+    def _update_error_page(self, ci: ConsolidatedIssue, group: str) -> None:
         if ActionInputs.is_report_page_generation_enabled() and ci.errors:
+            if group not in self._report_page_content.keys():
+                self._report_page_content[group] = REPORT_PAGE_HEADER
+
             repository_id: str = ci.repository_id
             number: int = ci.number
             html_url: str = ci.html_url
 
             for error_type, error_message in ci.errors.items():
-                self._report_page_content += (
-                    f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
-                )
+                self._report_page_content[
+                    group
+                ] += f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
 
     @staticmethod
-    def _generate_directory_path_us(parent_path: str, repository_id: str) -> list[str]:
+    def _generate_directory_path_us(parent_path: str, repository_id: str) -> str:
         """
         Generate a list of directory paths based on enabled features.
 
@@ -661,10 +652,10 @@ class MdocExporter(Exporter):
             # If structured output is not enabled, create a directory path based on the parent path
             output_path = os.path.join(output_path, parent_path)
 
-        return [output_path]
+        return output_path
 
     @staticmethod
-    def _generate_directory_path_feat(parent_path: str, repository_id: str, feature_title: str) -> list[str]:
+    def _generate_directory_path_feat(parent_path: str, repository_id: str, feature_title: str) -> str:
         """
         Generate a list of directory paths based on enabled features.
 
@@ -680,10 +671,10 @@ class MdocExporter(Exporter):
             # If structured output is not enabled, create a directory path based on the parent path
             output_path = os.path.join(output_path, parent_path, feature_title)
 
-        return [output_path]
+        return output_path
 
     @staticmethod
-    def _generate_directory_path_func(parent_path: str, repository_id: str, feature_title: str) -> list[str]:
+    def _generate_directory_path_func(parent_path: str, repository_id: str, feature_title: str) -> str:
         """
         Generate a list of directory paths based on enabled features.
 
@@ -699,4 +690,4 @@ class MdocExporter(Exporter):
             # If structured output is not enabled, create a directory path based on the parent path
             output_path = os.path.join(output_path, parent_path, feature_title)
 
-        return [output_path]
+        return output_path

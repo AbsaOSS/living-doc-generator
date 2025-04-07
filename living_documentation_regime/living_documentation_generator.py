@@ -38,7 +38,8 @@ from utils.utils import make_issue_key
 from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
     ISSUE_STATE_ALL,
-    Regime, SUPPORTED_ISSUE_LABELS,
+    Regime,
+    SUPPORTED_ISSUE_LABELS,
 )
 
 logger = logging.getLogger(__name__)

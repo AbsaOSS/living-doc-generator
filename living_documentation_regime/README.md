@@ -30,6 +30,16 @@ This regime is designed to data-mine GitHub repositories for [documentation tick
       liv-doc-regime: true
     ```
     
+## GitHub Repository Structure Requirements
+
+- Is recommended to use only one dedicated repository for documentation tickets.
+- User Story **can** point to multiple Features
+- Feature **can** point to multiple Functionalities
+- Functionality **should** point to one Feature
+  - Why one only?
+    - To avoid confusion and ensure clarity in the documentation.
+    - Functionality implements a specific aspect of a feature, and linking it to multiple features can create ambiguity.
+
 ---
 ## Adding Living Documentation Regime to the Workflow
 
