@@ -127,7 +127,6 @@ def config_repository(mocker):
     config_repository = mocker.Mock(spec=ConfigRepository)
     config_repository.organization_name = "test_org"
     config_repository.repository_name = "test_repo"
-    config_repository.labels = []
     config_repository.projects_title_filter = []
 
     return config_repository

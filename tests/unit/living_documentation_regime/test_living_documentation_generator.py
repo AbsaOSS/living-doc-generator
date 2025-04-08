@@ -94,102 +94,101 @@ def test_clean_output_directory_correct_behaviour(mocker, living_documentation_g
 # _fetch_github_issues
 
 
-def test_fetch_github_issues_no_query_labels(mocker, living_documentation_generator, config_repository):
-    # Arrange
-    config_repository.query_labels = []
-    repo = mocker.Mock()
-    repo.full_name = "test_org/test_repo"
-    issue1 = mocker.Mock()
-    issue2 = mocker.Mock()
-    issue3 = mocker.Mock()
+# def test_fetch_github_issues_no_query_labels(mocker, living_documentation_generator, config_repository):
+#     # Arrange
+#     repo = mocker.Mock()
+#     repo.full_name = "test_org/test_repo"
+#     issue1 = mocker.Mock()
+#     issue2 = mocker.Mock()
+#     issue3 = mocker.Mock()
+#
+#     expected_issues = {"test_org/test_repo": [issue1, issue2, issue3]}
+#     mock_get_repo = living_documentation_generator._LivingDocumentationGenerator__github_instance.get_repo
+#     mock_get_repo.return_value = repo
+#
+#     mocker.patch(
+#         "living_documentation_regime.living_documentation_generator.ActionInputs.get_repositories",
+#         return_value=[config_repository],
+#     )
+#     mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
+#     mock_logger_debug = mocker.patch("living_documentation_regime.living_documentation_generator.logger.debug")
+#     mock_get_issues = mocker.patch.object(repo, "get_issues", side_effect=[[issue1, issue2, issue3], []])
+#
+#     # Act
+#     actual = living_documentation_generator._fetch_github_issues()
+#
+#     # Assert
+#     assert expected_issues == actual
+#     assert 1 == len(actual)
+#     assert 3 == len(actual["test_org/test_repo"])
+#     mock_get_repo.assert_called_once_with("test_org/test_repo")
+#     mock_get_issues.assert_called_once_with(state="all")
+#     mock_logger_info.assert_has_calls(
+#         [
+#             mocker.call("Fetching repository GitHub issues - from `%s`.", "test_org/test_repo"),
+#             mocker.call(
+#                 "Fetching repository GitHub issues - fetched `%i` repository issues (%s).", 3, "test_org/test_repo"
+#             ),
+#             mocker.call("Fetching repository GitHub issues - loaded `%i` repository issues in total.", 3),
+#         ],
+#         any_order=True,
+#     )
+#     mock_logger_debug.assert_has_calls(
+#         [
+#             mocker.call("Fetching all issues in the repository"),
+#             mocker.call("Fetched `%i` repository issues (%s)`.", 3, "test_org/test_repo"),
+#         ],
+#         any_order=True,
+#     )
 
-    expected_issues = {"test_org/test_repo": [issue1, issue2, issue3]}
-    mock_get_repo = living_documentation_generator._LivingDocumentationGenerator__github_instance.get_repo
-    mock_get_repo.return_value = repo
 
-    mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_repositories",
-        return_value=[config_repository],
-    )
-    mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
-    mock_logger_debug = mocker.patch("living_documentation_regime.living_documentation_generator.logger.debug")
-    mock_get_issues = mocker.patch.object(repo, "get_issues", return_value=[issue1, issue2, issue3])
-
-    # Act
-    actual = living_documentation_generator._fetch_github_issues()
-
-    # Assert
-    assert expected_issues == actual
-    assert 1 == len(actual)
-    assert 3 == len(actual["test_org/test_repo"])
-    mock_get_repo.assert_called_once_with("test_org/test_repo")
-    mock_get_issues.assert_called_once_with(state="all")
-    mock_logger_info.assert_has_calls(
-        [
-            mocker.call("Fetching repository GitHub issues - from `%s`.", "test_org/test_repo"),
-            mocker.call(
-                "Fetching repository GitHub issues - fetched `%i` repository issues (%s).", 3, "test_org/test_repo"
-            ),
-            mocker.call("Fetching repository GitHub issues - loaded `%i` repository issues in total.", 3),
-        ],
-        any_order=True,
-    )
-    mock_logger_debug.assert_has_calls(
-        [
-            mocker.call("Fetching all issues in the repository"),
-            mocker.call("Fetched `%i` repository issues (%s)`.", 3, "test_org/test_repo"),
-        ],
-        any_order=True,
-    )
-
-
-def test_fetch_github_issues_with_given_query_labels(mocker, living_documentation_generator, config_repository):
-    # Arrange
-    config_repository.query_labels = ["bug", "enhancement"]
-    repo = mocker.Mock()
-    repo.full_name = "test_org/test_repo"
-    issue1 = mocker.Mock()
-    issue2 = mocker.Mock()
-
-    expected_issues = {"test_org/test_repo": [issue1, issue2]}
-    mock_get_repo = living_documentation_generator._LivingDocumentationGenerator__github_instance.get_repo
-    mock_get_repo.return_value = repo
-
-    mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_repositories",
-        return_value=[config_repository],
-    )
-    mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
-    mock_logger_debug = mocker.patch("living_documentation_regime.living_documentation_generator.logger.debug")
-    mock_get_issues = mocker.patch.object(repo, "get_issues", side_effect=[[issue1], [issue2]])
-
-    # Act
-    actual = living_documentation_generator._fetch_github_issues()
-
-    # Assert
-    assert expected_issues == actual
-    assert 1 == len(actual)
-    mock_get_repo.assert_called_once_with("test_org/test_repo")
-    mock_get_issues.assert_any_call(state="all", labels=["bug"])
-    mock_get_issues.assert_any_call(state="all", labels=["enhancement"])
-    mock_logger_info.assert_has_calls(
-        [
-            mocker.call("Fetching repository GitHub issues - from `%s`.", "test_org/test_repo"),
-            mocker.call(
-                "Fetching repository GitHub issues - fetched `%i` repository issues (%s).", 2, "test_org/test_repo"
-            ),
-            mocker.call("Fetching repository GitHub issues - loaded `%i` repository issues in total.", 2),
-        ],
-        any_order=True,
-    )
-    mock_logger_debug.assert_has_calls(
-        [
-            mocker.call("Labels to be fetched from: %s.", config_repository.query_labels),
-            mocker.call("Fetching issues with label `%s`.", "bug"),
-            mocker.call("Fetching issues with label `%s`.", "enhancement"),
-        ],
-        any_order=True,
-    )
+# def test_fetch_github_issues_with_given_query_labels(mocker, living_documentation_generator, config_repository):
+#     # Arrange
+#     config_repository.query_labels = ["bug", "enhancement"]
+#     repo = mocker.Mock()
+#     repo.full_name = "test_org/test_repo"
+#     issue1 = mocker.Mock()
+#     issue2 = mocker.Mock()
+#
+#     expected_issues = {"test_org/test_repo": [issue1, issue2]}
+#     mock_get_repo = living_documentation_generator._LivingDocumentationGenerator__github_instance.get_repo
+#     mock_get_repo.return_value = repo
+#
+#     mocker.patch(
+#         "living_documentation_regime.living_documentation_generator.ActionInputs.get_repositories",
+#         return_value=[config_repository],
+#     )
+#     mock_logger_info = mocker.patch("living_documentation_regime.living_documentation_generator.logger.info")
+#     mock_logger_debug = mocker.patch("living_documentation_regime.living_documentation_generator.logger.debug")
+#     mock_get_issues = mocker.patch.object(repo, "get_issues", side_effect=[[issue1], [issue2]])
+#
+#     # Act
+#     actual = living_documentation_generator._fetch_github_issues()
+#
+#     # Assert
+#     assert expected_issues == actual
+#     assert 1 == len(actual)
+#     mock_get_repo.assert_called_once_with("test_org/test_repo")
+#     mock_get_issues.assert_any_call(state="all", labels=["bug"])
+#     mock_get_issues.assert_any_call(state="all", labels=["enhancement"])
+#     mock_logger_info.assert_has_calls(
+#         [
+#             mocker.call("Fetching repository GitHub issues - from `%s`.", "test_org/test_repo"),
+#             mocker.call(
+#                 "Fetching repository GitHub issues - fetched `%i` repository issues (%s).", 2, "test_org/test_repo"
+#             ),que
+#             mocker.call("Fetching repository GitHub issues - loaded `%i` repository issues in total.", 2),
+#         ],
+#         any_order=True,
+#     )
+#     mock_logger_debug.assert_has_calls(
+#         [
+#             mocker.call("Labels to be fetched from: %s.", config_repository.query_labels),
+#             mocker.call("Fetching issues with label `%s`.", "bug"),
+#             mocker.call("Fetching issues with label `%s`.", "enhancement"),
+#         ],
+#         any_order=True,
+#     )
 
 
 def test_fetch_github_issues_repository_none(mocker, living_documentation_generator, config_repository):

@@ -161,7 +161,10 @@ def test_generate_root_level_index_page(mocker):
     # Arrange
     index_root_level_page = "Root Level Template Content"
     output_path = "/base/output"
-    mock_open = mocker.patch("builtins.open", mocker.mock_open())
+
+    mocker.patch("os.path.exists", return_value=False)  # Pretend the directory doesn't exist
+    mocker.patch("os.makedirs")  # Prevent actual directory creation
+    mock_open = mocker.patch("builtins.open", mocker.mock_open())   # Mock file open/write
 
     # Act
     generate_root_level_index_page(index_root_level_page, output_path)

@@ -1,4 +1,5 @@
 import os.path
+import types
 from pathlib import Path
 
 import pytest
@@ -16,12 +17,28 @@ def mdoc_exporter(tmp_path, mocker):
     return MdocExporter(output_dir)
 
 @pytest.fixture
-def sample_issues():
-    """Creates a set of sample issues for testing."""
-    issue_1 = ConsolidatedIssue(repository_id="org/repo")
-    issue_2 = ConsolidatedIssue(repository_id="org/repo")
+def sample_issues(mocker):
+    class IssueWithCustomLabels(ConsolidatedIssue):
+        def __init__(self, labels: list[str], **kwargs):
+            super().__init__(**kwargs)
+            self._custom_labels = labels
+
+        @property
+        def labels(self) -> list[str]:
+            return self._custom_labels
+
+    issue_1 = IssueWithCustomLabels(labels=["DocumentedUserStory"], repository_id="org/repo")
+    issue_2 = IssueWithCustomLabels(labels=["DocumentedFeature"], repository_id="org/repo")
 
     return {"ISSUE-1": issue_1, "ISSUE-2": issue_2}
+
+
+@pytest.fixture
+def sample_issues_with_errors(sample_issues, mocker):
+    sample_issues["ISSUE-1"].errors.update({"SomeError": "Fake some error."})
+    sample_issues["ISSUE-2"].errors.update({"AnotherError": "Another fake error."})
+
+    return sample_issues
 
 
 @pytest.fixture
@@ -38,193 +55,169 @@ def sample_issue_linked_to_project():
     return issue
 
 
-def test_export_real_execution_all_enabled(mdoc_exporter, sample_issues, mocker):
+def test_export_real_execution_all_enabled(mdoc_exporter, sample_issues_with_errors, mocker):
     # Arrange
     mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
     mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=True)
 
     # Act
-    result = mdoc_exporter.export(issues=sample_issues)
+    result = mdoc_exporter.export(issues=sample_issues_with_errors)
 
     # Assert
     assert result is True
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "repo", "NoTopic", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "repo", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "report_page.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "repo", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "org", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "org", "repo", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "report_page.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "report_page.md"))
 
-    with open(os.path.join(mdoc_exporter._output_path, "org", "repo", "NoTopic", "_index.md"), 'r') as file:
+    # "user_stories", "_index.md"
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "NoTopic"', "| org | repo | [#0 - ](features#) | 🔴 | --- |<a href='' target='_blank'>GitHub link</a> |"]
+    expected = ['title: User Stories', 'toolbar_title: User Stories', 'description_title: User Stories',
+                "The comprehensive list of AqueDuct Project's User Stories."]
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "org", "repo", "_index.md"), 'r') as file:
+    # "user_stories", "org", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "repo"', "This section displays the living documentation for all topics within the repository: **repo** in a structured output."]
+    expected = ['title: "org"', 'weight: 0']
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "org", "_index.md"), 'r') as file:
+    # "user_stories", "org", "repo", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "repo", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "org"', "This section displays the living documentation for all repositories within the organization: **org** in a structured output."]
+    expected = ['title: User Stories', "| org | repo | [#0 - ](features#) | 🔴 | --- |<a href='' target='_blank'>GitHub link</a> |"]
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "_index.md"), 'r') as file:
+    # "features", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['toolbar_title: Features', 'description_title: Living Documentation']
+    expected = ['title: Features', 'toolbar_title: Features', 'description_title: Features and Functionalities',
+                "The comprehensive list of AqueDuct Project's Features and Functiona"]
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "report_page.md"), 'r') as file:
+    # "features", "org", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "org", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "Report page"', '<h3>Report page</h3>', "| TopicError | [org/repo#0]() | No Topic label found. |"]
+    expected = ['title: "org"', 'weight: 0']
+    for item in expected:
+        assert item in content, f"Expected string '{item}' not found in file content."
+
+    # "features", "org", "repo", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "org", "repo", "_index.md"), 'r') as file:
+        content = file.read()
+    expected = ['title: Features', "| org | repo | [#0 - ](features#) | 🔴 | --- |<a href='' target='_blank'>GitHub link</a> |"]
+    for item in expected:
+        assert item in content, f"Expected string '{item}' not found in file content."
+
+    # "user_stories", "report_page.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "report_page.md"), 'r') as file:
+        content = file.read()
+    expected = ['title: "!!! Report !!!"', 'Summary of the errors found during the generation of living documents - User Story',
+                '| SomeError | [org/repo#0]() | Fake some error. |']
+    for item in expected:
+        assert item in content, f"Expected string '{item}' not found in file content."
+
+    # "features", "report_page.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "report_page.md"), 'r') as file:
+        content = file.read()
+    expected = ['title: "!!! Report !!!"', 'Summary of the errors found during the generation of living documents - Feature',
+                '| AnotherError | [org/repo#0]() | Another fake error. |']
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
 
-def test_export_real_execution_no_project_mining(mdoc_exporter, sample_issues, mocker):
+def test_export_real_execution_no_project_mining(mdoc_exporter, sample_issues_with_errors, mocker):
     # Arrange
     mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=False)
     mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=True)
 
     # Act
-    result = mdoc_exporter.export(issues=sample_issues)
+    result = mdoc_exporter.export(issues=sample_issues_with_errors)
 
     # Assert
     assert result is True
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "repo", "NoTopic", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "repo", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "report_page.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "repo", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "org", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "org", "repo", "_index.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "user_stories", "report_page.md"))
+    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "features", "report_page.md"))
 
-    with open(os.path.join(mdoc_exporter._output_path, "org", "repo", "NoTopic", "_index.md"), 'r') as file:
+    # "user_stories", "_index.md"
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "NoTopic"', "| org | repo | [#0 - ](features#) |  |<a href='' target='_blank'>GitHub link</a> |"]
+    expected = ['title: User Stories', 'toolbar_title: User Stories', 'description_title: User Stories',
+                "The comprehensive list of AqueDuct Project's User Stories."]
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "org", "repo", "_index.md"), 'r') as file:
+    # "user_stories", "org", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "repo"', "This section displays the living documentation for all topics within the repository: **repo** in a structured output."]
+    expected = ['title: "org"', 'weight: 0']
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "org", "_index.md"), 'r') as file:
+    # "user_stories", "org", "repo", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "org", "repo", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "org"', "This section displays the living documentation for all repositories within the organization: **org** in a structured output."]
+    expected = ['title: User Stories', "| org | repo | [#0 - ](features#) |  |<a href=\'\' target=\'_blank\'>GitHub link</a> |"]
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "_index.md"), 'r') as file:
+    # "features", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['toolbar_title: Features', 'description_title: Living Documentation']
+    expected = ['title: Features', 'toolbar_title: Features', 'description_title: Features and Functionalities',
+                "The comprehensive list of AqueDuct Project's Features and Functiona"]
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "report_page.md"), 'r') as file:
+    # "features", "org", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "org", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "Report page"', '<h3>Report page</h3>', "| TopicError | [org/repo#0]() | No Topic label found. |"]
+    expected = ['title: "org"', 'weight: 0']
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-
-def test_export_real_execution_structured_output_no_topics(mdoc_exporter, sample_issues, mocker):
-    # Arrange
-    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=False)
-
-    # Act
-    result = mdoc_exporter.export(issues=sample_issues)
-
-    # Assert
-    assert result is True
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "repo", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "org", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "_index.md"))
-
-    with open(os.path.join(mdoc_exporter._output_path, "org", "repo", "_index.md"), 'r') as file:
+    # "features", "org", "repo", "_index.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "org", "repo", "_index.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "repo"', "This section displays all the information about mined features for **repo**.", "| org | repo | [#0 - ](features#) | 🔴 | --- |<a href='' target='_blank'>GitHub link</a> |"]
+    expected = ['title: Features', "| org | repo | [#0 - ](features#) |  |<a href=\'\' target=\'_blank\'>GitHub link</a> |"]
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "org", "_index.md"), 'r') as file:
+    # "user_stories", "report_page.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "user_stories", "report_page.md"), 'r') as file:
         content = file.read()
-    expected = ['title: "org"', "This section displays the living documentation for all repositories within the organization: **org** in a structured output."]
+    expected = ['title: "!!! Report !!!"', 'Summary of the errors found during the generation of living documents - User Story',
+                '| SomeError | [org/repo#0]() | Fake some error. |']
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
-    with open(os.path.join(mdoc_exporter._output_path, "_index.md"), 'r') as file:
+    # "features", "report_page.md"))
+    with open(os.path.join(mdoc_exporter._output_path, "features", "report_page.md"), 'r') as file:
         content = file.read()
-    expected = ['toolbar_title: Features', 'description_title: Living Documentation']
-    for item in expected:
-        assert item in content, f"Expected string '{item}' not found in file content."
-
-
-def test_export_real_execution_flat_with_topics(mdoc_exporter, sample_issues, mocker):
-    # Arrange
-    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=False)
-    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=True)
-
-    # Act
-    result = mdoc_exporter.export(issues=sample_issues)
-
-    # Assert
-    assert result is True
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "NoTopic", "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "_index.md"))
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "report_page.md"))
-
-    with open(os.path.join(mdoc_exporter._output_path, "NoTopic", "_index.md"), 'r') as file:
-        content = file.read()
-    expected = ['title: "NoTopic"', "| org | repo | [#0 - ](features#) | 🔴 | --- |<a href='' target='_blank'>GitHub link</a> |"]
-    for item in expected:
-        assert item in content, f"Expected string '{item}' not found in file content."
-
-    with open(os.path.join(mdoc_exporter._output_path, "_index.md"), 'r') as file:
-        content = file.read()
-    expected = ['toolbar_title: Features', 'description_title: Living Documentation']
-    for item in expected:
-        assert item in content, f"Expected string '{item}' not found in file content."
-
-    with open(os.path.join(mdoc_exporter._output_path, "report_page.md"), 'r') as file:
-        content = file.read()
-    expected = ['title: "Report page"', '<h3>Report page</h3>', "| TopicError | [org/repo#0]() | No Topic label found. |"]
-    for item in expected:
-        assert item in content, f"Expected string '{item}' not found in file content."
-
-
-def test_export_real_execution_flat_no_topics(mdoc_exporter, sample_issues, mocker):
-    # Arrange
-    mocker.patch("action_inputs.ActionInputs.is_project_state_mining_enabled", return_value=True)
-    mocker.patch("action_inputs.ActionInputs.is_structured_output_enabled", return_value=False)
-    mocker.patch("action_inputs.ActionInputs.is_grouping_by_topics_enabled", return_value=False)
-
-    # Act
-    result = mdoc_exporter.export(issues=sample_issues)
-
-    # Assert
-    assert result is True
-    assert os.path.exists(os.path.join(mdoc_exporter._output_path, "_index.md"))
-
-    with open(os.path.join(mdoc_exporter._output_path, "_index.md"), 'r') as file:
-        content = file.read()
-    expected = ['toolbar_title: Features', "| org | repo | [#0 - ](features#) | 🔴 | --- |<a href='' target='_blank'>GitHub link</a> |"]
+    expected = ['title: "!!! Report !!!"', 'Summary of the errors found during the generation of living documents - Feature',
+                '| AnotherError | [org/repo#0]() | Another fake error. |']
     for item in expected:
         assert item in content, f"Expected string '{item}' not found in file content."
 
 
 def test_load_all_templates_failure(mocker):
     # Arrange
-    mocker.patch('living_documentation_regime.exporter.mdoc_exporter.load_template', side_effect=[None, 'template', 'template', 'template', 'template', 'template', 'template'])
+    mocker.patch('living_documentation_regime.exporter.mdoc_exporter.load_template', side_effect=[None, 'template', 'template', 'template', 'template', 'template', 'template', 'template', 'template', 'template'])
     exporter = MdocExporter('/mocked/output/path')
 
     # Act

@@ -63,11 +63,13 @@ class MdocExporter(Exporter):
         self._func_issue_page_detail_template: Optional[str] = None
 
         self._us_index_no_struct_template_file: Optional[str] = None
-        self._feat_issue_index_template: Optional[str] = None
+        self._feat_index_no_struct_template_file: Optional[str] = None
 
         self._us_index_root_level_template_page: Optional[str] = None
         self._feat_index_root_level_template_page: Optional[str] = None
         self._index_org_level_template: Optional[str] = None
+
+        self._report_page_template: Optional[str] = None
 
         self._report_page_content: dict[str, str] = {}
 
@@ -111,7 +113,7 @@ class MdocExporter(Exporter):
                 ) as f:
                     f.write(report_page)
 
-            logger.warning("MDoc page generation - Report page '%s' generated.".format(group))
+            logger.warning("MDoc page generation - Report page '%s' generated.", group)
 
         for group, content in self._report_page_content.items():
             parent_dir = self.PARENT_PATH_US if group == self.REPORT_PAGE_US_GROUP else self.PARENT_PATH_FEAT
@@ -132,7 +134,7 @@ class MdocExporter(Exporter):
                 self._update_error_page(consolidated_issue, self.REPORT_PAGE_FEAT_GROUP)
 
         logger.info("Generating MDoc pages for Functionalities ...")
-        for key, consolidated_issue in issues.items():
+        for consolidated_issue in issues.values():
             if DOC_FUNCTIONALITY_LABEL in consolidated_issue.labels:
                 # get associated feature ID
                 feature_key = None
@@ -205,11 +207,6 @@ class MdocExporter(Exporter):
         page_filename = consolidated_issue.generate_page_filename()
         with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
             f.write(issue_md_page_content)
-
-        # for debug only
-        consolidated_issue.errors["TestError"] = "This is test error from issue '%d':'%s'".format(
-            consolidated_issue.number, consolidated_issue.title
-        )
 
         logger.debug("Generated MDoc page: %s.", page_filename)
 
@@ -311,21 +308,14 @@ class MdocExporter(Exporter):
             issues_by_repository[repository_id].append(consolidated_issue)
 
         # Generate an index page for each repository
-        for repository_id, issues in issues_by_repository.items():
-            organization_name, repository_name = repository_id.split("/")
-
+        repository_ids = issues_by_repository.keys()
+        for repository_id in repository_ids:
             self._generate_sub_level_index_page(self._index_org_level_template, repository_id, group_name)
             logger.debug(
                 "Generated '%s' organization level `_index.md` for %s.",
                 group_name,
-                organization_name,
+                repository_id.split("/")[0],
             )
-
-            # self._generate_index_page(self._index_data_level_template, issues, repository_id)
-            # logger.debug(
-            #     "Generated data level `_index.md` for %s",
-            #     repository_id,
-            # )
 
             logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
@@ -357,7 +347,11 @@ class MdocExporter(Exporter):
             "issue_overview_table": issue_table,
         }
 
-        repository_id = consolidated_issues[0].repository_id
+        if len(consolidated_issues) > 0:
+            repository_id = consolidated_issues[0].repository_id
+        else:
+            logger.info("No consolidated issues found for group: %s.", group_name)
+            return
 
         if ActionInputs.is_structured_output_enabled():
             replacement["data_level_name"] = repository_id.split("/")[1]
@@ -623,7 +617,8 @@ class MdocExporter(Exporter):
 
     def _update_error_page(self, ci: ConsolidatedIssue, group: str) -> None:
         if ActionInputs.is_report_page_generation_enabled() and ci.errors:
-            if group not in self._report_page_content.keys():
+            keys = self._report_page_content.keys()
+            if group not in keys:
                 self._report_page_content[group] = REPORT_PAGE_HEADER
 
             repository_id: str = ci.repository_id
