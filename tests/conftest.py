@@ -150,6 +150,15 @@ def consolidated_issue(mocker):
     consolidated_issue.linked_to_project = False
     consolidated_issue.topics = ["documentationTopic"]
     consolidated_issue.errors = {}
+    consolidated_issue.project_issue_statuses = [
+        mocker.Mock(
+            project_title="Project A",
+            status="In Progress",
+            priority="High",
+            size="Large",
+            moscow="Must Have",
+        )
+    ]
 
     return consolidated_issue
 
