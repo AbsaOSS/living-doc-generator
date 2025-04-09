@@ -184,7 +184,7 @@ M_P0_IN_PROGRESS = '''
 | Size | M |
 | MoSCoW | --- |'''
 def count_files_in_directory(directory):
-    return len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
+    return sum(len(files) for _, _, files in os.walk(directory))
 
 def validate_issue(path, issue):
     with open(path, 'r') as f:
@@ -199,21 +199,21 @@ def validate_issue(path, issue):
 
 def test_validate_for_test_without_project_mining():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 4 + 1
+    assert count_files_in_directory(directory_path) == 6
     assert validate_issue(issue88_path, issue88_header + issue88_content)
     assert validate_issue(issue89_path, issue89_header + issue89_content)
     assert validate_issue(issue90_path, issue90_header + issue90_content)
     assert validate_issue(issue91_path, issue91_header + issue91_content)
 
-def test_validate_for_test_whit_project_mining():
+def test_validate_for_test_with_project_mining():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 4 + 1
+    assert count_files_in_directory(directory_path) == 6
     assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
     assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
     assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
     assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
 
-def test_validate_for_test_whit_project_mining_and_excluded_project():
+def test_validate_for_test_with_project_mining_and_excluded_project():
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
     assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
