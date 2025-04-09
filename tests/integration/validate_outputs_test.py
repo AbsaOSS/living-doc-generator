@@ -2,10 +2,10 @@ import os
 
 output_folder = "output"
 directory_path = f"{output_folder}/liv-doc-regime"
-issue88_path = f"{directory_path}/88_test_documented_feature_.md"
-issue89_path = f"{directory_path}/89_test_user_story_in_project.md"
-issue90_path = f"{directory_path}/90_test_documented_feature_in_project.md"
-issue91_path = f"{directory_path}/91_test_user_story.md"
+issue88_path = f"{directory_path}/features/TEST: Documented feature /_index.md"
+issue89_path = f"{directory_path}/user_stories/89_test_user_story_in_project.md"
+issue90_path = f"{directory_path}/features/TEST: Documented feature  in project/_index.md"
+issue91_path = f"{directory_path}/user_stories/91_test_user_story.md"
 
 issue88_header = '''
 | Attribute | Content |
@@ -202,6 +202,8 @@ def test_validate_for_test_without_project_mining():
     for dirpath, _, filenames in os.walk(output_folder):
         for filename in filenames:
             print("XXX - " + os.path.join(dirpath, filename))
+
+
 
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 6
