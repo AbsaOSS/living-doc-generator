@@ -188,7 +188,9 @@ def count_files_in_directory(directory):
 
 def validate_issue(path, issue):
 
-    print("XXX - " + path)
+    print("XXX Expected - issue: " + issue)
+    print("XXX - Actual - path: " + path)
+    print("XXX - Actual - issue: ")
 
     with open(path, 'r') as f:
         markdown_string = f.read()
