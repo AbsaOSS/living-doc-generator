@@ -198,6 +198,11 @@ def validate_issue(path, issue):
 
 
 def test_validate_for_test_without_project_mining():
+
+    for dirpath, _, filenames in os.walk(output_folder):
+        for filename in filenames:
+            print("XXX - " + os.path.join(dirpath, filename))
+
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 6
     assert validate_issue(issue88_path, issue88_header + issue88_content)
@@ -206,6 +211,11 @@ def test_validate_for_test_without_project_mining():
     assert validate_issue(issue91_path, issue91_header + issue91_content)
 
 def test_validate_for_test_with_project_mining():
+
+    for dirpath, _, filenames in os.walk(output_folder):
+        for filename in filenames:
+            print("YYY - " + os.path.join(dirpath, filename))
+
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 6
     assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
@@ -214,6 +224,11 @@ def test_validate_for_test_with_project_mining():
     assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
 
 def test_validate_for_test_with_project_mining_and_excluded_project():
+
+    for dirpath, _, filenames in os.walk(output_folder):
+        for filename in filenames:
+            print("ZZZ - " + os.path.join(dirpath, filename))
+
     assert os.path.exists(output_folder)
     assert count_files_in_directory(directory_path) == 4 + 1
     assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
