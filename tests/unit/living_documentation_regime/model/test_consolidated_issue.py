@@ -21,11 +21,23 @@ from living_documentation_regime.model.consolidated_issue import ConsolidatedIss
 # generate_page_filename
 
 
+def test_generate_page_filename_inherited_class_attribute_error():
+    # Arrange
+    class TestConsolidatedIssue(ConsolidatedIssue):
+        @property
+        def labels(self):
+            raise AttributeError("Mocked AttributeError")
 
+    test_issue = TestConsolidatedIssue("test_org/test_repo")
 
-# generate_directory_path
+    # Act
+    result = test_issue.generate_page_filename()
 
-
+    # Assert
+    assert result == "0.md"
+    assert test_issue.errors == {
+        "AttributeError": "Issue page filename generation failed (issue does not have a title)."
+    }
 
 
 # validate_labels

@@ -80,6 +80,7 @@ def repository_setup(mocker):
     repository.owner.login = "test_owner"
     repository.name = "test_repo"
     repository.full_name = "test_owner/test_repo"
+    repository.get_issues.return_value = []
 
     return repository
 
@@ -128,6 +129,7 @@ def config_repository(mocker):
     config_repository.organization_name = "test_org"
     config_repository.repository_name = "test_repo"
     config_repository.projects_title_filter = []
+    config_repository.full_name = "test_org/test_repo"
 
     return config_repository
 
