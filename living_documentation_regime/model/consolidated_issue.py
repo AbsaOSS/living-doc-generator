@@ -18,7 +18,6 @@
 This module contains a data container for Consolidated Issue, which holds all the essential logic.
 """
 import logging
-import os
 import re
 from typing import Optional
 
@@ -43,7 +42,6 @@ class ConsolidatedIssue:
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
         self.__repository_id: str = repository_id
-        # self.__topics: list[str] = []
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
@@ -73,11 +71,6 @@ class ConsolidatedIssue:
         """Getter of the repository name where the issue was fetched from."""
         parts = self.__repository_id.split("/")
         return parts[1] if len(parts) == 2 else ""
-
-    @property
-    def topics(self) -> list:
-        """Getter of the issue topics."""
-        return self.__topics
 
     @property
     def title(self) -> str:
@@ -168,38 +161,6 @@ class ConsolidatedIssue:
             return f"{self.number}.md"
 
         return page_filename
-
-    def validate_labels(
-        self, documentation_labels: list[str], topic_labels: list[str], output_path: str
-    ) -> Optional[list[str]]:
-        """
-        Validate the topic and documentation labels, update errors accordingly,
-        and return a fallback directory path if no topic label is found.
-
-        @param documentation_labels: List of documentation labels.
-        @param topic_labels: List of topic labels.
-        @param output_path: Base output path to construct a fallback directory.
-        @return: A list containing the fallback directory path if no topic label is found,
-                 otherwise None.
-        """
-        # Fallback if there are no topic labels
-        if not topic_labels:
-            self.__topics = ["NoTopic"]
-            self.__errors.update({"TopicError": "No Topic label found."})
-            no_topic_path = os.path.join(output_path, "NoTopic")
-            return [no_topic_path]
-
-        if len(documentation_labels) > 1:
-            self.__errors.update({"DocumentationError": "More than one Documentation label found."})
-
-        if len(topic_labels) > 1:
-            self.__errors.update({"TopicError": "More than one Topic label found."})
-
-        # If a topic label exists without any documentation label, update the error
-        if not documentation_labels:
-            self.__errors.update({"DocumentationError": "Topic label found without Documentation one."})
-
-        return None
 
     def get_feature_id(self) -> Optional[str]:
         """

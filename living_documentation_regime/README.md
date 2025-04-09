@@ -14,7 +14,6 @@
   - [Data Mining from GitHub Projects](#data-mining-from-github-projects)
   - [Living Documentation Page Generation](#living-documentation-page-generation)
     - [Structured Output](#structured-output)
-    - [Output Grouped by Topics](#output-grouped-by-topics)
     - [Output Formats](#output-formats)
 
 This regime is designed to data-mine GitHub repositories for [documentation tickets](#documentation-ticket-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in a format compatible with an [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer), providing detailed feature overview pages and in-depth feature descriptions.
@@ -250,7 +249,7 @@ Using a dedicated repository solely for documentation tickets provides multiple 
 This is a build-in feature, that allows you to define which repositories should be included in the living documentation process. This essential process can not be deactivated inside of regime scope. By specifying repositories, you can focus on the most relevant projects for your documentation needs.
 
 - **Activation**: This is a built-in feature, so it is always activated.
-- **Default Behavior**: By default, the action will include all repositories defined in the repositories input parameter. Each repository is defined with its organization name, repository name, and query labels.
+- **Default Behavior**: By default, the action will include all repositories defined in the repositories input parameter. Each repository is defined with its organization name, and repository name.
 
 ### Data Mining from GitHub Projects
 
@@ -265,7 +264,6 @@ This feature allows you to define which projects should be included in the livin
         {
           "organization-name": "absa-group",
           "repository-name": "living-doc-example-project",
-          "query-labels": ["feature", "bug"],
           "projects-title-filter": ["Community Outreach Initiatives", "Health Data Analysis"]
          }
       ```

@@ -22,19 +22,19 @@
 
 ## Planning
 
-| Task                      | Description                                                             | Status      | Due Date |
-|---------------------------|-------------------------------------------------------------------------|-------------|----------|
-| Released v0.1.0 PoC       | Initial proof of concept release                                       | Done        | 10/2024  |
-| Report page               | Introduce report page, No Topic chapter, filtering, and detection code | Done        | 01/2025  |
-| Output generators         | Make the solution more general and support easy format switching       | In progress | 04/2025  |
-| User Story mining         | Mining of User Stories and integrating as a new output type            | In progress     | 04/2025  |
-| Requirements mining       | Mining of Requirements and integrating as a new output type            | In progress     | 04/2025  |
-| Support of test headers mining | Define test header formats, mine data, and enhance coverage matrix | Planned     | TBD      |
-| Support of coverage matrix | Connect test headers with documented types and integrate as output    | Planned     | TBD      |
-| Release notes mining      | Mine repositories release information and integrate as output type     | Planned     | TBD      |
-| CI jobs mining            | Mine GH workflow files, analyze, and integrate as output type         | Planned     | TBD      |
-| Incidents mining          | Mine registered incidents and integrate as a new output type          | Planned     | TBD      |
-| User Guide generation     | Generate a User Guide based on User Stories and integrate as output   | Planned     | TBD      |
+| Task                      | Description                                                             | Status  | Due Date |
+|---------------------------|-------------------------------------------------------------------------|---------|----------|
+| Released v0.1.0 PoC       | Initial proof of concept release                                       | Done    | 10/2024  |
+| Report page               | Introduce report page, No Topic chapter, filtering, and detection code | Done    | 01/2025  |
+| Output generators         | Make the solution more general and support easy format switching       | Done    | 04/2025  |
+| User Story mining         | Mining of User Stories and integrating as a new output type            | Done    | 04/2025  |
+| Requirements mining       | Mining of Requirements and integrating as a new output type            | Done    | 04/2025  |
+| Support of test headers mining | Define test header formats, mine data, and enhance coverage matrix | Planned | TBD      |
+| Support of coverage matrix | Connect test headers with documented types and integrate as output    | Planned | TBD      |
+| Release notes mining      | Mine repositories release information and integrate as output type     | Planned | TBD      |
+| CI jobs mining            | Mine GH workflow files, analyze, and integrate as output type         | Planned | TBD      |
+| Incidents mining          | Mine registered incidents and integrate as a new output type          | Planned | TBD      |
+| User Guide generation     | Generate a User Guide based on User Stories and integrate as output   | Planned | TBD      |
 
 ## Motivation
 
@@ -114,7 +114,6 @@ See the full example of action step definition (in example are used non-default 
         ]
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
-    liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
     liv-doc-output-formats: "mdoc"         # output formats selection, supported: mdoc
 ```
 
@@ -206,8 +205,7 @@ The report page is a summary of the errors found during the generation of living
     
     | Error Type     | Issue                                     | Message                          |
     | -------------- | ----------------------------------------- | -------------------------------- |
-    | TopicError     | absa-group/living-doc-example-project#89  | No Topic label found.            |
-    | TopicError     | absa-group/living-doc-example-project#19  | More than one Topic label found. |
+    | LabelError     | absa-group/living-doc-example-project#19  | More than one Documentation label found. |
     ```
 
 ---

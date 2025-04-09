@@ -150,7 +150,6 @@ def consolidated_issue(mocker):
     consolidated_issue.labels = ["bug", "urgent"]
     consolidated_issue.body = "This is the issue content."
     consolidated_issue.linked_to_project = False
-    consolidated_issue.topics = ["documentationTopic"]
     consolidated_issue.errors = {}
     consolidated_issue.project_issue_statuses = [
         mocker.Mock(
