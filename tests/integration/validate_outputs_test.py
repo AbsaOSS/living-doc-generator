@@ -147,18 +147,21 @@ date: 2025-04-10
 weight: 1
 ---'''
 issue91_content_header_wopm = '''
+
 ![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
 ![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
 ![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
 <a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
 '''
 issue91_content_header_wpm = '''
+
 ![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
 ![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
 ![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
 <a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
 '''
 issue91_content_header_wpmep = '''
+
 ![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
 ![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
 ![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
