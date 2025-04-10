@@ -189,8 +189,8 @@ def test_validate_for_test_without_project_mining():
     assert count_files_in_directory(directory_path) == 6
     assert validate_issue(issue88_path, issue88_header + issue88_content)
     assert validate_issue(issue89_path, issue89_header + issue89_content)
-    validate_issue(issue90_path, issue90_header + issue90_content)
-    validate_issue(issue91_path, issue91_header + issue91_content)
+    assert validate_issue(issue90_path, issue90_header + issue90_content)
+    assert validate_issue(issue91_path, issue91_header + issue91_content)
 
 def test_validate_for_test_with_project_mining():
     assert os.path.exists(output_folder)
