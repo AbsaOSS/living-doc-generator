@@ -204,9 +204,9 @@ def validate_issue(path, issue):
     with open(path, 'r') as f:
         markdown_string = f.read()
         if issue not in markdown_string:
-            print(issue)
+            print("Expected:\n" + issue)
             print("\n=====================-\n")
-            print(markdown_string)
+            print("Actual:\n" + markdown_string)
             return False
         return True
 
