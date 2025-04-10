@@ -140,8 +140,7 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue91_header = '''
----
+issue91_header = '''---
 title: "TEST: User story"
 date: 2025-04-10
 weight: 1
