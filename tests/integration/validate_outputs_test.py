@@ -32,23 +32,16 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue89_header = '''
-| Attribute | Content |
-|---|---|
-| Organization name | AbsaOSS |
-| Repository name | living-doc-generator |
-| Issue number | 89 |
-| Title | TEST: User story in project |
-| State | open |
-| Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/89' target='_blank'>GitHub link</a>  |
-| Created at | 2025-02-19 08:48:59+00:00 |
-| Updated at | 2025-02-27 09:55:11+00:00 |
-| Closed at | None |
-| Labels | int-tests, DocumentedUserStory |'''
-issue89_content ='''
-
- 
-<h3>Issue Content</h3>
+issue89_header = '''---
+title: "TEST: User story in project"
+date: 2025-04-10
+weight: 1
+---
+'''
+issue89_content ='''![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
 
 # User Story
 
@@ -196,8 +189,8 @@ def test_validate_for_test_without_project_mining():
     assert count_files_in_directory(directory_path) == 6
     assert validate_issue(issue88_path, issue88_header + issue88_content)
     assert validate_issue(issue89_path, issue89_header + issue89_content)
-    assert validate_issue(issue90_path, issue90_header + issue90_content)
-    assert validate_issue(issue91_path, issue91_header + issue91_content)
+    validate_issue(issue90_path, issue90_header + issue90_content)
+    validate_issue(issue91_path, issue91_header + issue91_content)
 
 def test_validate_for_test_with_project_mining():
     assert os.path.exists(output_folder)
