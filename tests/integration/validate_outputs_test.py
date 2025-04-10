@@ -7,23 +7,17 @@ issue89_path = f"{directory_path}/user_stories/89_test_user_story_in_project.md"
 issue90_path = f"{directory_path}/features/TEST: Documented feature  in project/_index.md"
 issue91_path = f"{directory_path}/user_stories/91_test_user_story.md"
 
-issue88_header = '''
-| Attribute | Content |
-|---|---|
-| Organization name | AbsaOSS |
-| Repository name | living-doc-generator |
-| Issue number | 88 |
-| Title | TEST: Documented feature  |
-| State | open |
-| Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/88' target='_blank'>GitHub link</a>  |
-| Created at | 2025-02-19 08:45:06+00:00 |
-| Updated at | 2025-02-27 09:55:11+00:00 |
-| Closed at | None |
-| Labels | int-tests, DocumentedFeature |'''
+issue88_header = '''---
+title: "TEST: Documented feature "
+date: 2025-04-10
+weight: 1
+---
+'''
 issue88_content ='''
-
- 
-<h3>Issue Content</h3>
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
 
 # Feature
 
@@ -187,13 +181,8 @@ def count_files_in_directory(directory):
     return sum(len(files) for _, _, files in os.walk(directory))
 
 def validate_issue(path, issue):
-
-    print("XXX Expected - issue: " + issue)
-    print("XXX - Actual - path: " + path)
-
     with open(path, 'r') as f:
         markdown_string = f.read()
-        print("XXX - Actual - issue: " + markdown_string)
         if issue not in markdown_string:
             print(issue)
             print("\n=====================-\n")
