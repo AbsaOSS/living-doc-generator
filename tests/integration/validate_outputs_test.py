@@ -50,7 +50,6 @@ Feature description
 issue89_header = f'''---
 title: "TEST: User story in project"
 date: {date.today().strftime("%Y-%m-%d")}
-
 weight: 1
 ---
 '''
@@ -108,7 +107,6 @@ Some user story description
 issue90_header = f'''---
 title: "TEST: Documented feature  in project"
 date: {date.today().strftime("%Y-%m-%d")}
-
 weight: 1
 ---
 '''
