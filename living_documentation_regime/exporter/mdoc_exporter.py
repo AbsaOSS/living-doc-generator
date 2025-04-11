@@ -100,10 +100,9 @@ class MdocExporter(Exporter):
         def write_report_page(group: str, parent_dir: str, content: str) -> None:
             header, divider, *error_rows = content.strip().split("\n")
             if error_rows:
-                report_page_content = "\n".join([header, divider] + error_rows)
                 report_page = self._report_page_template.format(
                     date=datetime.now().strftime("%Y-%m-%d"),
-                    livdoc_report_page_content=report_page_content,
+                    livdoc_report_page_content=content,
                     group=group,
                 )
                 with open(
