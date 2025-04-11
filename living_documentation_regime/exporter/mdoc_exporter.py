@@ -150,7 +150,7 @@ class MdocExporter(Exporter):
                 self._us_index_root_level_template_page, os.path.join(regime_output_path, "user_stories")
             )
             self._generate_structured_index_pages(issues, "user_stories")
-            
+
             # Features
             generate_root_level_index_page(
                 self._feat_index_root_level_template_page, os.path.join(regime_output_path, "features")
@@ -294,7 +294,7 @@ class MdocExporter(Exporter):
         @return: None
         """
         # Group issues by repository for structured index page content
-        issues_by_repository: dict[str,list[ConsolidatedIssue]] = {}
+        issues_by_repository: dict[str, list[ConsolidatedIssue]] = {}
         for consolidated_issue in consolidated_issues.values():
             repository_id = consolidated_issue.repository_id
             if repository_id not in issues_by_repository:
@@ -592,15 +592,15 @@ class MdocExporter(Exporter):
         )
 
         if (
-                _us_issue_page_detail_template is None
-                or _feat_issue_page_detail_template is None
-                or _func_issue_page_detail_template is None
-                or _us_index_no_struct_template_file is None
-                or _feat_index_no_struct_template_file is None
-                or _us_index_root_level_template_page is None
-                or _feat_index_root_level_template_page is None
-                or _index_org_level_template is None
-                or _report_page_template is None
+            _us_issue_page_detail_template is None
+            or _feat_issue_page_detail_template is None
+            or _func_issue_page_detail_template is None
+            or _us_index_no_struct_template_file is None
+            or _feat_index_no_struct_template_file is None
+            or _us_index_root_level_template_page is None
+            or _feat_index_root_level_template_page is None
+            or _index_org_level_template is None
+            or _report_page_template is None
         ):
             logger.error("MDoc page generation - failed to load all templates.")
             return False

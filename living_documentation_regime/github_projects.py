@@ -74,7 +74,7 @@ class GithubProjects:
                 self.__initialize_request_session()
 
             # Fetch the response from the API, in this line session will be always initialized
-            response = self.__session.post("https://api.github.com/graphql", json={"query": query}) # type: ignore
+            response = self.__session.post("https://api.github.com/graphql", json={"query": query})  # type: ignore
             # Check if the request was successful
             if "errors" in response.json():
                 logger.error("An error occurred: %s.", response.json()["errors"], exc_info=True)
@@ -138,7 +138,7 @@ class GithubProjects:
                     field_option_response = self._send_graphql_query(project_field_options_query)
 
                     # Create the GitHub project instance and add it to the output list
-                    project = GithubProject().loads(project_json, repository, field_option_response) # type: ignore
+                    project = GithubProject().loads(project_json, repository, field_option_response)  # type: ignore
                     if project not in projects:
                         projects.append(project)
                 else:
