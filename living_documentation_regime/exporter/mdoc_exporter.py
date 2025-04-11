@@ -599,7 +599,7 @@ class MdocExporter(Exporter):
             or _feat_index_no_struct_template_file is None
             or _us_index_root_level_template_page is None
             or _feat_index_root_level_template_page is None
-            or _index_org_level_template is None
+            or _index_org_level_template_file is None
             or _report_page_template is None
         ):
             logger.error("MDoc page generation - failed to load all templates.")
@@ -612,7 +612,7 @@ class MdocExporter(Exporter):
         self._feat_index_no_struct_template_file = _feat_index_no_struct_template_file
         self._us_index_root_level_template_page = _us_index_root_level_template_page
         self._feat_index_root_level_template_page = _feat_index_root_level_template_page
-        self._index_org_level_template = _index_org_level_template
+        self._index_org_level_template = _index_org_level_template_file
         self._report_page_template = _report_page_template
 
         return True

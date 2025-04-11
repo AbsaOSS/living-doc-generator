@@ -110,7 +110,7 @@ class LivingDocumentationGenerator:
 
         @return: A dictionary containing repository issue objects with unique key.
         """
-        issues = {}
+        issues: dict[str, list[Issue]] = {}
         total_issues_number = 0
 
         # Run the fetching logic for every config repository
