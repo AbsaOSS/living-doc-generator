@@ -1,5 +1,7 @@
 import os
 
+from datetime import date
+
 output_folder = "output"
 directory_path = f"{output_folder}/liv-doc-regime"
 issue88_path = f"{directory_path}/features/TEST: Documented feature /_index.md"
@@ -7,9 +9,9 @@ issue89_path = f"{directory_path}/user_stories/89_test_user_story_in_project.md"
 issue90_path = f"{directory_path}/features/TEST: Documented feature  in project/_index.md"
 issue91_path = f"{directory_path}/user_stories/91_test_user_story.md"
 
-issue88_header = '''---
+issue88_header = f'''---
 title: "TEST: Documented feature "
-date: 2025-04-10
+date: {date.today().strftime("%Y-%m-%d")}
 weight: 1
 ---
 '''
@@ -45,9 +47,10 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue89_header = '''---
+issue89_header = f'''---
 title: "TEST: User story in project"
-date: 2025-04-10
+date: {date.today().strftime("%Y-%m-%d")}
+
 weight: 1
 ---
 '''
@@ -102,9 +105,10 @@ Some user story description
     - Step 1: [Instruction]
     - Step 2: [Instruction]
 '''
-issue90_header = '''---
+issue90_header = f'''---
 title: "TEST: Documented feature  in project"
-date: 2025-04-10
+date: {date.today().strftime("%Y-%m-%d")}
+
 weight: 1
 ---
 '''
@@ -140,9 +144,9 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue91_header = '''---
+issue91_header = f'''---
 title: "TEST: User story"
-date: 2025-04-10
+date: {date.today().strftime("%Y-%m-%d")}
 weight: 1
 ---'''
 issue91_content_header_wopm = '''
@@ -205,6 +209,8 @@ def count_files_in_directory(directory):
 def validate_issue(path, issue):
     with open(path, 'r') as f:
         markdown_string = f.read()
+
+
         if issue not in markdown_string:
             print(f"Expected:\n'{issue}'")
             print("\n=====================-\n")
