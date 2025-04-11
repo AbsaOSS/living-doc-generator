@@ -47,12 +47,12 @@ class ConfigRepository:
         return self.__repository_name
 
     @property
-    def query_labels(self) -> list[str]:
+    def query_labels(self) -> list[Optional[str]]:
         """Getter of the query labels."""
         return self.__query_labels
 
     @property
-    def projects_title_filter(self) -> list[str]:
+    def projects_title_filter(self) -> list[Optional[str]]:
         """Getter of the project title filter."""
         return self.__projects_title_filter
 

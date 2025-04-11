@@ -116,10 +116,9 @@ class ActionInputs:
         @raise FetchRepositoriesException: When parsing JSON string to dictionary fails.
         """
         repositories = []
-        repositories_json = get_action_input(LIV_DOC_REPOSITORIES, "[]")
         try:
             # Parse repositories json string into json dictionary format
-            repositories_json = json.loads(repositories_json)
+            repositories_json = json.loads(get_action_input(LIV_DOC_REPOSITORIES, "[]"))
 
             # Load repositories into ConfigRepository object from JSON
             for repository_json in repositories_json:

@@ -46,13 +46,13 @@ class MdocExporter(Exporter):
 
     def __init__(self, output_path: str):
         self._output_path = output_path
-        self._issue_page_detail_template: Optional[str] = None
-        self._index_page_template: Optional[str] = None
-        self._index_root_level_page: Optional[str] = None
-        self._index_org_level_template: Optional[str] = None
-        self._index_repo_page_template: Optional[str] = None
-        self._index_data_level_template: Optional[str] = None
-        self._report_page_template: Optional[str] = None
+        self._issue_page_detail_template: str = ""
+        self._index_page_template: str = ""
+        self._index_root_level_page: str = ""
+        self._index_org_level_template: str = ""
+        self._index_repo_page_template: str = ""
+        self._index_data_level_template: str = ""
+        self._report_page_template: str = ""
 
         self._report_page_content = REPORT_PAGE_HEADER
 
@@ -125,16 +125,16 @@ class MdocExporter(Exporter):
 
         # Generate an index page with a summary table about all issues grouped by topics
         elif ActionInputs.is_grouping_by_topics_enabled():
-            issues: list[ConsolidatedIssue] = list(issues.values())
+            issues_extracted = list(issues.values())
             generate_root_level_index_page(self._index_root_level_page, regime_output_path)
 
             for topic in topics:
-                self._generate_index_page(self._index_data_level_template, issues, grouping_topic=topic)
+                self._generate_index_page(self._index_data_level_template, issues_extracted, repository_id="", grouping_topic=topic)
 
         # Generate an index page with a summary table about all issues
         else:
-            issues: list[ConsolidatedIssue] = list(issues.values())
-            self._generate_index_page(self._index_page_template, issues)
+            issues_extracted = list(issues.values())
+            self._generate_index_page(self._index_page_template, issues_extracted, repository_id="", grouping_topic="")
             logger.info("MDoc page generation - generated `_index.md`.")
 
     def _generate_md_issue_page(self, consolidated_issue: ConsolidatedIssue) -> None:
@@ -195,7 +195,7 @@ class MdocExporter(Exporter):
         @return: None
         """
         # Group issues by repository for structured index page content
-        issues_by_repository = {}
+        issues_by_repository: dict[str,list[ConsolidatedIssue]] = {}
         for consolidated_issue in consolidated_issues.values():
             repository_id = consolidated_issue.repository_id
             if repository_id not in issues_by_repository:
@@ -228,7 +228,7 @@ class MdocExporter(Exporter):
                         repository_id,
                     )
             else:
-                self._generate_index_page(self._index_data_level_template, issues, repository_id)
+                self._generate_index_page(self._index_data_level_template, issues, repository_id, grouping_topic="")
                 logger.debug(
                     "Generated data level `_index.md` for %s",
                     repository_id,
@@ -240,8 +240,8 @@ class MdocExporter(Exporter):
         self,
         issue_index_page_template: str,
         consolidated_issues: list[ConsolidatedIssue],
-        repository_id: str = None,
-        grouping_topic: str = None,
+        repository_id: str,
+        grouping_topic: str,
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
@@ -374,12 +374,12 @@ class MdocExporter(Exporter):
         @return: The string representation of the issue info in a table format.
         """
         # Join issue labels into one string
-        labels = consolidated_issue.labels
-        labels = ", ".join(labels) if labels else None
+        issue_labels = consolidated_issue.labels
+        labels = ", ".join(issue_labels) if issue_labels else None
 
         # Format issue URL as a MDoc link
-        issue_url = consolidated_issue.html_url
-        issue_url = f"<a href='{issue_url}' target='_blank'>GitHub link</a> " if issue_url else None
+        issue_url_ = consolidated_issue.html_url
+        issue_url = f"<a href='{issue_url_}' target='_blank'>GitHub link</a> " if issue_url_ else None
 
         # Define the header for the issue summary table
         headers = [
@@ -487,47 +487,53 @@ class MdocExporter(Exporter):
         index_topic_page_template_file = os.path.join(templates_base_path, "_index_repo_page_template.md")
         report_page_template_file = os.path.join(templates_base_path, "report_page_template.md")
 
-        self._issue_page_detail_template: Optional[str] = load_template(
+        issue_page_detail_template = load_template(
             issue_page_template_file,
             "Issue page template file was not successfully loaded.",
         )
-        self._index_page_template: Optional[str] = load_template(
+        index_page_template = load_template(
             index_no_struct_template_file,
             "Index page template file was not successfully loaded.",
         )
-        self._index_root_level_page: Optional[str] = load_template(
+        index_root_level_page = load_template(
             index_root_level_template_file,
             "Structured index page template file for root level was not successfully loaded.",
         )
-        self._index_org_level_template: Optional[str] = load_template(
+        index_org_level_template = load_template(
             index_org_level_template_file,
             "Structured index page template file for organization level was not successfully loaded.",
         )
-        self._index_repo_page_template: Optional[str] = load_template(
+        index_repo_page_template = load_template(
             index_topic_page_template_file,
             "Structured index page template file for repository level was not successfully loaded.",
         )
-        self._index_data_level_template: Optional[str] = load_template(
+        index_data_level_template = load_template(
             index_data_level_template_file,
             "Structured index page template file for data level was not successfully loaded.",
         )
-        self._report_page_template: Optional[str] = load_template(
+        report_page_template = load_template(
             report_page_template_file,
             "Report page template file was not successfully loaded.",
         )
 
-        if not all(
-            [
-                self._issue_page_detail_template,
-                self._index_page_template,
-                self._index_root_level_page,
-                self._index_org_level_template,
-                self._index_repo_page_template,
-                self._index_data_level_template,
-                self._report_page_template,
-            ]
+        if (
+                issue_page_detail_template is None
+                or index_page_template is None
+                or index_root_level_page is None
+                or index_org_level_template is None
+                or index_repo_page_template is None
+                or index_data_level_template is None
+                or report_page_template is None
         ):
             logger.error("MDoc page generation - failed to load all templates.")
             return False
+
+        self._issue_page_detail_template = issue_page_detail_template
+        self._index_page_template = index_page_template
+        self._index_root_level_page = index_root_level_page
+        self._index_org_level_template = index_org_level_template
+        self._index_repo_page_template = index_repo_page_template
+        self._index_data_level_template = index_data_level_template
+        self._report_page_template = report_page_template
 
         return True

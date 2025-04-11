@@ -39,10 +39,10 @@ class ConsolidatedIssue:
     along with properties to access consolidated issue details.
     """
 
-    def __init__(self, repository_id: str, repository_issue: Issue = None):
+    def __init__(self, repository_id: str, repository_issue: Optional[Issue] = None):
         # save issue from repository (got from GitHub library & keep connection to repository for lazy loading)
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
-        self.__issue: Issue = repository_issue
+        self.__issue: Optional[Issue] = repository_issue
         self.__repository_id: str = repository_id
         self.__topics: list[str] = []
 
@@ -93,17 +93,17 @@ class ConsolidatedIssue:
     @property
     def created_at(self) -> str:
         """Getter of the info when issue was created."""
-        return self.__issue.created_at if self.__issue else ""
+        return str(self.__issue.created_at) if self.__issue else ""
 
     @property
     def updated_at(self) -> str:
         """Getter of the info when issue was updated"""
-        return self.__issue.updated_at if self.__issue else ""
+        return str(self.__issue.updated_at) if self.__issue else ""
 
     @property
     def closed_at(self) -> str:
         """Getter of the info when issue was closed."""
-        return self.__issue.closed_at if self.__issue else ""
+        return str(self.__issue.closed_at) if self.__issue else ""
 
     @property
     def html_url(self) -> str:

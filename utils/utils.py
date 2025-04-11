@@ -131,7 +131,7 @@ def get_action_input(name: str, default: Optional[str] = None) -> str:
     @param default: The default value to return if the environment variable is not set.
     @return: The value of the specified input parameter, or an empty string
     """
-    return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default)
+    return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default if default else "")
 
 
 def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:

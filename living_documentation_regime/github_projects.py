@@ -43,7 +43,7 @@ class GithubProjects:
 
     def __init__(self, token: str):
         self.__token = token
-        self.__session = None
+        self.__session: Optional[requests.Session] = None
 
     def __initialize_request_session(self) -> requests.Session:
         """
@@ -73,8 +73,8 @@ class GithubProjects:
             if self.__session is None:
                 self.__initialize_request_session()
 
-            # Fetch the response from the API
-            response = self.__session.post("https://api.github.com/graphql", json={"query": query})
+            # Fetch the response from the API, in this line session will be always initialized
+            response = self.__session.post("https://api.github.com/graphql", json={"query": query}) # type: ignore
             # Check if the request was successful
             if "errors" in response.json():
                 logger.error("An error occurred: %s.", response.json()["errors"], exc_info=True)
@@ -96,7 +96,7 @@ class GithubProjects:
         @param projects_title_filter: The list of project titles to filter for.
         @return: A list of GitHub project instances.
         """
-        projects = []
+        projects: list[GithubProject] = []
 
         # Fetch the project response from the GraphQL API
         projects_from_repo_query = get_projects_from_repo_query(
@@ -138,7 +138,7 @@ class GithubProjects:
                     field_option_response = self._send_graphql_query(project_field_options_query)
 
                     # Create the GitHub project instance and add it to the output list
-                    project = GithubProject().loads(project_json, repository, field_option_response)
+                    project = GithubProject().loads(project_json, repository, field_option_response) # type: ignore
                     if project not in projects:
                         projects.append(project)
                 else:
