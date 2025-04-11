@@ -80,6 +80,7 @@ def repository_setup(mocker):
     repository.owner.login = "test_owner"
     repository.name = "test_repo"
     repository.full_name = "test_owner/test_repo"
+    repository.get_issues.return_value = []
 
     return repository
 
@@ -127,8 +128,8 @@ def config_repository(mocker):
     config_repository = mocker.Mock(spec=ConfigRepository)
     config_repository.organization_name = "test_org"
     config_repository.repository_name = "test_repo"
-    config_repository.labels = []
     config_repository.projects_title_filter = []
+    config_repository.full_name = "test_org/test_repo"
 
     return config_repository
 
@@ -149,8 +150,16 @@ def consolidated_issue(mocker):
     consolidated_issue.labels = ["bug", "urgent"]
     consolidated_issue.body = "This is the issue content."
     consolidated_issue.linked_to_project = False
-    consolidated_issue.topics = ["documentationTopic"]
     consolidated_issue.errors = {}
+    consolidated_issue.project_issue_statuses = [
+        mocker.Mock(
+            project_title="Project A",
+            status="In Progress",
+            priority="High",
+            size="Large",
+            moscow="Must Have",
+        )
+    ]
 
     return consolidated_issue
 

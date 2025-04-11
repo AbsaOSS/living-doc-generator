@@ -104,10 +104,6 @@ A consistent structure helps standardize documentation across different types:
   - **Dependencies:**
     - No direct linkage to development tickets or PRs is required.
 - **Labels:**
-  - **Topic:**
-    - Requirements do not need a topic.
-    - For Features, each issue should focus on a single topic (as a label).
-    - User Stories are broader in scope.
   - **Type:**
     - DocumentedUserStory, DocumentedFeature, DocumentedRequirement
   - **State:**
@@ -120,7 +116,6 @@ This structure is intended to ensure consistency, clarity, and easy navigation a
 Mined information, not needed to repeat in body of the issue:
 - **Unique-ID**: AbsaOSS/any-project-docs/4
 - **Type:** DocumentedUserStory, DocumentedFeature, DocumentedRequirement (from label)
-- **Topic:** SearchingTopic (from label)
 - **State:** Upcoming, Implemented, Deprecated (from label)
 
 ### DocumentedUserStory GH Issue

@@ -18,16 +18,14 @@
 This module contains a data container for Consolidated Issue, which holds all the essential logic.
 """
 import logging
-import os
 import re
 from typing import Optional
 
 from github.Issue import Issue
 
-from action_inputs import ActionInputs
 from living_documentation_regime.model.project_status import ProjectStatus
-from utils.constants import LIV_DOC_OUTPUT_PATH
-from utils.utils import sanitize_filename, make_absolute_path
+from utils.constants import DOC_USER_STORY_LABEL, DOC_FUNCTIONALITY_LABEL
+from utils.utils import sanitize_filename
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +42,6 @@ class ConsolidatedIssue:
         # Warning: several issue properties requires additional API calls - use wisely to keep low API usage
         self.__issue: Issue = repository_issue
         self.__repository_id: str = repository_id
-        self.__topics: list[str] = []
 
         # Extra project data (optionally provided from GithubProjects class)
         self.__linked_to_project: bool = False
@@ -74,11 +71,6 @@ class ConsolidatedIssue:
         """Getter of the repository name where the issue was fetched from."""
         parts = self.__repository_id.split("/")
         return parts[1] if len(parts) == 2 else ""
-
-    @property
-    def topics(self) -> list:
-        """Getter of the issue topics."""
-        return self.__topics
 
     @property
     def title(self) -> str:
@@ -156,8 +148,12 @@ class ConsolidatedIssue:
         @return: The generated page filename.
         """
         try:
-            md_filename_base = f"{self.number}_{self.title.lower()}.md"
-            page_filename = sanitize_filename(md_filename_base)
+            if DOC_USER_STORY_LABEL in self.labels or DOC_FUNCTIONALITY_LABEL in self.labels:
+                md_filename_base = f"{self.number}_{self.title.lower()}.md"
+                page_filename = sanitize_filename(md_filename_base)
+            else:
+                # covers the case of DOC_FEATURE_LABEL
+                page_filename = "_index.md"
         except AttributeError:
             self.__errors.update(
                 {"AttributeError": "Issue page filename generation failed (issue does not have a title)."}
@@ -166,75 +162,14 @@ class ConsolidatedIssue:
 
         return page_filename
 
-    def generate_directory_path(self, issue_table: str) -> list[str]:
+    def get_feature_id(self) -> Optional[str]:
         """
-        Generate a list of directory paths based on enabled features.
-        An issue can be placed in multiple directories if it is associated with more than one topic.
+        Get the feature ID from the issue body.
 
-        @param issue_table: The consolidated issue summary table.
-        @return: The list of generated directory paths.
+        @return: The feature ID if found, otherwise None.
         """
-        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
-
-        # If structured output is enabled, create a directory path based on the repository
-        if ActionInputs.is_structured_output_enabled() and self.repository_id:
-            organization_name, repository_name = self.repository_id.split("/")
-            output_path = os.path.join(output_path, organization_name, repository_name)
-
-        # If grouping by topics is enabled, create a directory path based on the issue topic
-        if ActionInputs.is_grouping_by_topics_enabled():
-            topic_paths = []
-
-            # Extract labels from the issue table
-            labels = re.findall(r"\| Labels \| (.*?) \|", issue_table)
-            if labels:
-                labels = labels[0].split(", ")
-
-            documentation_labels = [label for label in labels if label.startswith("Documented")]
-            topic_labels = [label for label in labels if label.endswith("Topic")]
-
-            # Validate labels and get a fallback if there are no topic labels.
-            fallback_path: Optional[list[str]] = self.validate_labels(documentation_labels, topic_labels, output_path)
-            if fallback_path:
-                return fallback_path
-
-            # Generate a directory path for each topic label.
-            for topic_label in topic_labels:
-                self.__topics.append(topic_label)
-                topic_path = os.path.join(output_path, topic_label)
-                topic_paths.append(topic_path)
-            return topic_paths
-
-        return [output_path]
-
-    def validate_labels(
-        self, documentation_labels: list[str], topic_labels: list[str], output_path: str
-    ) -> Optional[list[str]]:
-        """
-        Validate the topic and documentation labels, update errors accordingly,
-        and return a fallback directory path if no topic label is found.
-
-        @param documentation_labels: List of documentation labels.
-        @param topic_labels: List of topic labels.
-        @param output_path: Base output path to construct a fallback directory.
-        @return: A list containing the fallback directory path if no topic label is found,
-                 otherwise None.
-        """
-        # Fallback if there are no topic labels
-        if not topic_labels:
-            self.__topics = ["NoTopic"]
-            self.__errors.update({"TopicError": "No Topic label found."})
-            no_topic_path = os.path.join(output_path, "NoTopic")
-            return [no_topic_path]
-
-        if len(documentation_labels) > 1:
-            self.__errors.update({"DocumentationError": "More than one Documentation label found."})
-
-        if len(topic_labels) > 1:
-            self.__errors.update({"TopicError": "More than one Topic label found."})
-
-        # If a topic label exists without any documentation label, update the error
-        if not documentation_labels:
-            self.__errors.update({"DocumentationError": "Topic label found without Documentation one."})
-
+        if self.body:
+            match = re.search(r"(?<=### Associated Feature\n- #)\d+", self.body)
+            if match:
+                return match.group(0)
         return None

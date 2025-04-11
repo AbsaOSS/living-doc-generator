@@ -22,10 +22,11 @@ from utils.constants import (
     PROJECT_FIELD_OPTIONS_QUERY,
     ISSUES_PER_PAGE_LIMIT,
 )
+from utils.exceptions import InvalidQueryFormatError
 from utils.github_project_queries import (
     get_projects_from_repo_query,
     get_issues_from_project_query,
-    get_project_field_options_query,
+    get_project_field_options_query, validate_query_formats,
 )
 
 
@@ -79,3 +80,14 @@ def test_get_project_field_options_query():
     leftover_placeholders = re.findall(r"\{\w+\}", actual_query)
     assert expected_query == actual_query
     assert not leftover_placeholders
+
+
+def test_validate_query_formats_invalid_format(mocker):
+    # Arrange
+    mocker.patch("utils.github_project_queries.validate_query_format", side_effect=InvalidQueryFormatError)
+
+    # Act
+    result = validate_query_formats()
+
+    # Assert
+    assert result is False

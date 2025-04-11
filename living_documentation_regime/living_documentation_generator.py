@@ -39,6 +39,7 @@ from utils.constants import (
     ISSUES_PER_PAGE_LIMIT,
     ISSUE_STATE_ALL,
     Regime,
+    SUPPORTED_ISSUE_LABELS,
 )
 
 logger = logging.getLogger(__name__)
@@ -124,26 +125,13 @@ class LivingDocumentationGenerator:
 
             logger.info("Fetching repository GitHub issues - from `%s`.", repository.full_name)
 
-            # If the query labels are not defined, fetch all issues from the repository
-            if not config_repository.query_labels:
-                logger.debug("Fetching all issues in the repository")
-                issues[repository_id] = self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL)
-                amount_of_issues_per_repo = len(list(issues[repository_id]))
-                logger.debug(
-                    "Fetched `%i` repository issues (%s)`.",
-                    amount_of_issues_per_repo,
-                    repository.full_name,
+            issues[repository_id] = []
+            for label in SUPPORTED_ISSUE_LABELS:
+                logger.debug("Fetching issues with label `%s`.", label)
+                issues[repository_id].extend(
+                    self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
                 )
-            else:
-                # Fetch only issues with required labels from configuration
-                issues[repository_id] = []
-                logger.debug("Labels to be fetched from: %s.", config_repository.query_labels)
-                for label in config_repository.query_labels:
-                    logger.debug("Fetching issues with label `%s`.", label)
-                    issues[repository_id].extend(
-                        self.__safe_call(repository.get_issues)(state=ISSUE_STATE_ALL, labels=[label])
-                    )
-                amount_of_issues_per_repo = len(issues[repository_id])
+            amount_of_issues_per_repo = len(issues[repository_id])
 
             # Accumulate the count of issues
             total_issues_number += amount_of_issues_per_repo

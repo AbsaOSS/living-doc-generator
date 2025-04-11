@@ -20,7 +20,6 @@ This module contains utility functions used across the project.
 
 import os
 import re
-import sys
 import logging
 from typing import Optional
 
@@ -102,6 +101,9 @@ def generate_root_level_index_page(index_root_level_page: str, output_path: str)
     @param output_path: The path to the output directory.
     @return: None
     """
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
     with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
         f.write(index_root_level_page)
 

@@ -59,7 +59,6 @@ export INPUT_LIV_DOC_REPOSITORIES='[
             {
               "organization-name": "Organization Name",
               "repository-name": "example-project",
-              "query-labels": ["feature", "bug"],
               "projects-title-filter": ["Project Title 1"]
             }
           ]'
@@ -90,7 +89,6 @@ export INPUT_LIV_DOC_REPOSITORIES='[
             {
               "organization-name": "Organization Name",
               "repository-name": "example-project",
-              "query-labels": ["feature", "bug"],
               "projects-title-filter": ["Project Title 1"]
             }
           ]'
