@@ -1,30 +1,39 @@
 import os
 
+from datetime import date
+
 output_folder = "output"
 directory_path = f"{output_folder}/liv-doc-regime"
-issue88_path = f"{directory_path}/88_test_documented_feature_.md"
-issue89_path = f"{directory_path}/89_test_user_story_in_project.md"
-issue90_path = f"{directory_path}/90_test_documented_feature_in_project.md"
-issue91_path = f"{directory_path}/91_test_user_story.md"
+issue88_path = f"{directory_path}/features/TEST: Documented feature /_index.md"
+issue89_path = f"{directory_path}/user_stories/89_test_user_story_in_project.md"
+issue90_path = f"{directory_path}/features/TEST: Documented feature  in project/_index.md"
+issue91_path = f"{directory_path}/user_stories/91_test_user_story.md"
 
-issue88_header = '''
-| Attribute | Content |
-|---|---|
-| Organization name | AbsaOSS |
-| Repository name | living-doc-generator |
-| Issue number | 88 |
-| Title | TEST: Documented feature  |
-| State | open |
-| Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/88' target='_blank'>GitHub link</a>  |
-| Created at | 2025-02-19 08:45:06+00:00 |
-| Updated at | 2025-02-27 09:55:11+00:00 |
-| Closed at | None |
-| Labels | int-tests, DocumentedFeature |'''
-issue88_content ='''
-
- 
-<h3>Issue Content</h3>
-
+issue88_header = f'''---
+title: "TEST: Documented feature "
+date: {date.today().strftime("%Y-%m-%d")}
+weight: 1
+---
+'''
+issue88_content_header_wopm = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue88_content_header_wpm = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue88_content_header_wpmep = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue88_content = '''
 # Feature
 
 This is a documented feature created for integration testing 
@@ -38,24 +47,31 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue89_header = '''
-| Attribute | Content |
-|---|---|
-| Organization name | AbsaOSS |
-| Repository name | living-doc-generator |
-| Issue number | 89 |
-| Title | TEST: User story in project |
-| State | open |
-| Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/89' target='_blank'>GitHub link</a>  |
-| Created at | 2025-02-19 08:48:59+00:00 |
-| Updated at | 2025-02-27 09:55:11+00:00 |
-| Closed at | None |
-| Labels | int-tests, DocumentedUserStory |'''
+issue89_header = f'''---
+title: "TEST: User story in project"
+date: {date.today().strftime("%Y-%m-%d")}
+weight: 1
+---
+'''
+issue89_content_header_wopm = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue89_content_header_wpm = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue89_content_header_wpmep = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
 issue89_content ='''
-
- 
-<h3>Issue Content</h3>
-
 # User Story
 
 > This is a user story created for integration testing
@@ -88,24 +104,31 @@ Some user story description
     - Step 1: [Instruction]
     - Step 2: [Instruction]
 '''
-issue90_header = '''
-| Attribute | Content |
-|---|---|
-| Organization name | AbsaOSS |
-| Repository name | living-doc-generator |
-| Issue number | 90 |
-| Title | TEST: Documented feature  in project |
-| State | open |
-| Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/90' target='_blank'>GitHub link</a>  |
-| Created at | 2025-02-19 08:55:41+00:00 |
-| Updated at | 2025-02-27 09:55:12+00:00 |
-| Closed at | None |
-| Labels | int-tests, DocumentedFeature |'''
+issue90_header = f'''---
+title: "TEST: Documented feature  in project"
+date: {date.today().strftime("%Y-%m-%d")}
+weight: 1
+---
+'''
+issue90_content_header_wopm = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue90_content_header_wpm = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue90_content_header_wpmep = '''
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
 issue90_content ='''
-
- 
-<h3>Issue Content</h3>
-
 # Feature
 
 This is a documented feature created for integration testing 
@@ -119,24 +142,33 @@ Feature description
 - [ ] subtask 1
 - [ ] subtask 2
 '''
-issue91_header = '''
-| Attribute | Content |
-|---|---|
-| Organization name | AbsaOSS |
-| Repository name | living-doc-generator |
-| Issue number | 91 |
-| Title | TEST: User story |
-| State | open |
-| Issue URL | <a href='https://github.com/AbsaOSS/living-doc-generator/issues/91' target='_blank'>GitHub link</a>  |
-| Created at | 2025-02-19 08:58:08+00:00 |
-| Updated at | 2025-02-27 09:55:12+00:00 |
-| Closed at | None |
-| Labels | int-tests, DocumentedUserStory |'''
+issue91_header = f'''---
+title: "TEST: User story"
+date: {date.today().strftime("%Y-%m-%d")}
+weight: 1
+---'''
+issue91_content_header_wopm = '''
+
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue91_content_header_wpm = '''
+
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
+issue91_content_header_wpmep = '''
+
+![GitHub State:Open](https://img.shields.io/badge/GitHub_State-Open-brightgreen)
+![Project State:Open](https://img.shields.io/badge/Project_State-Open-brightgreen)
+![Priority:Low](https://img.shields.io/badge/Priority-Low-blue)
+<a href='https://github.com/absa-group/aqueduct-living-documentation/issues/5' target='_blank'>GitHub icon</a>
+'''
 issue91_content = '''
-
- 
-<h3>Issue Content</h3>
-
 # User Story
 
 > This is a user story created for integration testing
@@ -168,55 +200,43 @@ Some user story description
 - **Steps**:
     - Step 1: [Instruction]
     - Step 2: [Instruction]'''
-link_to_project_false = '''
-| Linked to project | 🔴 |'''
-S_P1_TODO = '''
-| Project title | integration-tests-for-living-doc-generator |
-| Status | Todo |
-| Priority | P1 |
-| Size | S |
-| MoSCoW | --- |'''
 
-M_P0_IN_PROGRESS = '''
-| Project title | integration-tests-for-living-doc-generator |
-| Status | In Progress |
-| Priority | P0 |
-| Size | M |
-| MoSCoW | --- |'''
 def count_files_in_directory(directory):
-    return len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
+    return sum(len(files) for _, _, files in os.walk(directory))
 
 def validate_issue(path, issue):
     with open(path, 'r') as f:
         markdown_string = f.read()
+
+
         if issue not in markdown_string:
-            print(issue)
+            print(f"Expected:\n'{issue}'")
             print("\n=====================-\n")
-            print(markdown_string)
+            print(f"Actual:\n'{markdown_string}'")
             return False
         return True
 
 
 def test_validate_for_test_without_project_mining():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 4 + 1
-    assert validate_issue(issue88_path, issue88_header + issue88_content)
-    assert validate_issue(issue89_path, issue89_header + issue89_content)
-    assert validate_issue(issue90_path, issue90_header + issue90_content)
-    assert validate_issue(issue91_path, issue91_header + issue91_content)
+    assert count_files_in_directory(directory_path) == 6
+    assert validate_issue(issue88_path, issue88_header + issue88_content_header_wopm + issue88_content)
+    assert validate_issue(issue89_path, issue89_header + issue89_content_header_wopm + issue89_content)
+    assert validate_issue(issue90_path, issue90_header + issue90_content_header_wopm + issue90_content)
+    assert validate_issue(issue91_path, issue91_header + issue91_content_header_wopm + issue91_content)
 
-def test_validate_for_test_whit_project_mining():
+def test_validate_for_test_with_project_mining():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 4 + 1
-    assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
-    assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
-    assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
-    assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
+    assert count_files_in_directory(directory_path) == 6
+    assert validate_issue(issue88_path, issue88_header + issue88_content_header_wpm + issue88_content)
+    assert validate_issue(issue89_path, issue89_header + issue89_content_header_wpm + issue89_content)
+    assert validate_issue(issue90_path, issue90_header + issue90_content_header_wpm + issue90_content)
+    assert validate_issue(issue91_path, issue91_header + issue91_content_header_wpm + issue91_content)
 
-def test_validate_for_test_whit_project_mining_and_excluded_project():
+def test_validate_for_test_with_project_mining_and_excluded_project():
     assert os.path.exists(output_folder)
-    assert count_files_in_directory(directory_path) == 4 + 1
-    assert validate_issue(issue88_path, issue88_header + link_to_project_false + issue88_content)
-    assert validate_issue(issue89_path, issue89_header + S_P1_TODO + issue89_content)
-    assert validate_issue(issue90_path, issue90_header + M_P0_IN_PROGRESS + issue90_content)
-    assert validate_issue(issue91_path, issue91_header + link_to_project_false + issue91_content)
+    assert count_files_in_directory(directory_path) == 6
+    assert validate_issue(issue88_path, issue88_header + issue88_content_header_wpmep + issue88_content)
+    assert validate_issue(issue89_path, issue89_header + issue89_content_header_wpmep + issue89_content)
+    assert validate_issue(issue90_path, issue90_header + issue90_content_header_wpmep + issue90_content)
+    assert validate_issue(issue91_path, issue91_header + issue91_content_header_wpmep + issue91_content)

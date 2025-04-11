@@ -64,17 +64,6 @@ def test_structured_output_default():
     assert not actual
 
 
-def test_group_output_by_topics_default():
-    # Arrange
-    os.environ.pop("INPUT_GROUP_OUTPUT_BY_TOPICS", None)
-
-    # Act
-    actual = ActionInputs.is_grouping_by_topics_enabled()
-
-    # Assert
-    assert not actual
-
-
 # get_repositories
 
 
@@ -84,13 +73,11 @@ def test_get_repositories_correct_behaviour(mocker):
         {
             "organization-name": "organizationABC",
             "repository-name": "repositoryABC",
-            "query-labels": ["feature"],
             "projects-title-filter": [],
         },
         {
             "organization-name": "organizationXYZ",
             "repository-name": "repositoryXYZ",
-            "query-labels": ["bug"],
             "projects-title-filter": ["wanted_project"],
         },
     ]
@@ -106,12 +93,10 @@ def test_get_repositories_correct_behaviour(mocker):
     assert isinstance(actual[0], ConfigRepository)
     assert "organizationABC" == actual[0].organization_name
     assert "repositoryABC" == actual[0].repository_name
-    assert ["feature"] == actual[0].query_labels
     assert [] == actual[0].projects_title_filter
     assert isinstance(actual[1], ConfigRepository)
     assert "organizationXYZ" == actual[1].organization_name
     assert "repositoryXYZ" == actual[1].repository_name
-    assert ["bug"] == actual[1].query_labels
     assert ["wanted_project"] == actual[1].projects_title_filter
 
 
@@ -225,7 +210,6 @@ def test_validate_repositories_configuration_correct_behaviour(mocker, config_re
             mocker.call('Regime(LivDoc): `liv-doc-repositories`: %s.', mocker.ANY),
             mocker.call('Regime(LivDoc): `liv-doc-project-state-mining`: %s.', False),
             mocker.call('Regime(LivDoc): `liv-doc-structured-output`: %s.', False),
-            mocker.call('Regime(LivDoc): `liv-doc-group-output-by-topics`: %s.', False),
             mocker.call('Regime(LivDoc): `liv-doc-output-formats`: %s.', ['mdoc']),
     ],
         any_order=False,

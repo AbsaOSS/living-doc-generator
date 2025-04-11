@@ -35,6 +35,10 @@ from utils.constants import (
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LINKED_TO_PROJECT_TRUE,
     LINKED_TO_PROJECT_FALSE,
+    DOC_USER_STORY_LABEL,
+    LIV_DOC_OUTPUT_PATH,
+    DOC_FEATURE_LABEL,
+    DOC_FUNCTIONALITY_LABEL,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,17 +48,25 @@ logger = logging.getLogger(__name__)
 class MdocExporter(Exporter):
     """A class representing the MDoc format generation exporter."""
 
+    REPORT_PAGE_US_GROUP = "User Story"
+    REPORT_PAGE_FEAT_GROUP = "Feature"
+
+    PARENT_PATH_US = "user_stories"
+    PARENT_PATH_FEAT = "features"
+
     def __init__(self, output_path: str):
         self._output_path = output_path
-        self._issue_page_detail_template: str = ""
-        self._index_page_template: str = ""
-        self._index_root_level_page: str = ""
+        # templates
+        self._us_issue_page_detail_template: str = ""
+        self._feat_issue_page_detail_template: str = ""
+        self._func_issue_page_detail_template: str = ""
+        self._us_index_root_level_template_page: str = ""
+        self._feat_index_root_level_template_page: str = ""
         self._index_org_level_template: str = ""
-        self._index_repo_page_template: str = ""
-        self._index_data_level_template: str = ""
         self._report_page_template: str = ""
-
-        self._report_page_content = REPORT_PAGE_HEADER
+        self._us_index_no_struct_template_file: str = ""
+        self._feat_index_no_struct_template_file: str = ""
+        self._report_page_content: dict[str, str] = {}
 
     def export(self, **kwargs) -> bool:
         logger.info("MDoc page generation - started.")
@@ -66,11 +78,11 @@ class MdocExporter(Exporter):
         if not self._load_all_templates():
             return False
 
-        # Generate a MDoc page for every issue
-        topics = self._generate_page_per_issue(issues)
+        # Generate a MDoc page for every issue in expected path
+        self._generate_page_per_issue(issues)
 
         # Generate all structure of the index pages
-        self._generate_output_structure(issues, topics)
+        self._generate_output_structure(issues)
 
         # Generate a report page
         if ActionInputs.is_report_page_generation_enabled():
@@ -80,117 +92,204 @@ class MdocExporter(Exporter):
         return True
 
     def _generate_report_page(self):
-        header, divider, *error_rows = self._report_page_content.strip().split("\n")
-        if error_rows:
-            report_page_content = "\n".join([header, divider] + error_rows)
-            report_page = self._report_page_template.format(
-                date=datetime.now().strftime("%Y-%m-%d"), livdoc_report_page_content=report_page_content
-            )
-            with open(
-                os.path.join(make_absolute_path(self._output_path), "report_page.md"), "w", encoding="utf-8"
-            ) as f:
-                f.write(report_page)
+        def write_report_page(group: str, parent_dir: str, content: str) -> None:
+            header, divider, *error_rows = content.strip().split("\n")
+            if error_rows:
+                report_page = self._report_page_template.format(
+                    date=datetime.now().strftime("%Y-%m-%d"),
+                    livdoc_report_page_content=content,
+                    group=group,
+                )
+                with open(
+                    os.path.join(make_absolute_path(self._output_path), parent_dir, "report_page.md"),
+                    "w",
+                    encoding="utf-8",
+                ) as f:
+                    f.write(report_page)
 
-            logger.warning("MDoc page generation - Report page generated.")
+            logger.warning("MDoc page generation - Report page '%s' generated.", group)
 
-    def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> set[str]:
-        topics: set[str] = set()
+        for group, content in self._report_page_content.items():
+            parent_dir = self.PARENT_PATH_US if group == self.REPORT_PAGE_US_GROUP else self.PARENT_PATH_FEAT
+            write_report_page(group, parent_dir, content)
+
+    def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> None:
+        logger.info("Generating MDoc pages for User Stories ...")
         for consolidated_issue in issues.values():
-            self._generate_md_issue_page(consolidated_issue)
-            if ActionInputs.is_report_page_generation_enabled() and consolidated_issue.errors:
-                repository_id: str = consolidated_issue.repository_id
-                number: int = consolidated_issue.number
-                html_url: str = consolidated_issue.html_url
+            # self._generate_md_issue_page(consolidated_issue)
+            if DOC_USER_STORY_LABEL in consolidated_issue.labels:
+                self._generate_md_issue_page_for_us(consolidated_issue)
+                self._update_error_page(consolidated_issue, self.REPORT_PAGE_US_GROUP)
 
-                for error_type, error_message in consolidated_issue.errors.items():
-                    self._report_page_content += (
-                        f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
-                    )
+        logger.info("Generating MDoc pages for Features ...")
+        for consolidated_issue in issues.values():
+            if DOC_FEATURE_LABEL in consolidated_issue.labels:
+                self._generate_md_issue_page_for_feat(consolidated_issue)
+                self._update_error_page(consolidated_issue, self.REPORT_PAGE_FEAT_GROUP)
 
-            for topic in consolidated_issue.topics:
-                topics.add(topic)
+        logger.info("Generating MDoc pages for Functionalities ...")
+        for consolidated_issue in issues.values():
+            if DOC_FUNCTIONALITY_LABEL in consolidated_issue.labels:
+                # get associated feature ID
+                feature_key = None
+                feature_id = consolidated_issue.get_feature_id()
+                if feature_id is not None:
+                    feature_key = f"{consolidated_issue.repository_id}/{feature_id}"
+
+                self._generate_md_issue_page_for_func(consolidated_issue, issues[feature_key] if feature_key else None)
+                self._update_error_page(consolidated_issue, self.REPORT_PAGE_FEAT_GROUP)
 
         logger.info("MDoc page generation - generated `%i` issue pages.", len(issues))
-        logger.info("Identified `%i` unique topics.", len(topics))
-        return topics
 
-    def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue], topics: set[str]) -> None:
-        regime_output_path = make_absolute_path(self._output_path)
+    def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue]) -> None:
         if ActionInputs.is_structured_output_enabled():
-            generate_root_level_index_page(self._index_root_level_page, regime_output_path)
-            self._generate_structured_index_pages(
-                topics,
-                issues,
+            regime_output_path = make_absolute_path(self._output_path)
+
+            # User Story
+            generate_root_level_index_page(
+                self._us_index_root_level_template_page, os.path.join(regime_output_path, "user_stories")
             )
+            self._generate_structured_index_pages(issues, "user_stories")
+            
+            # Features
+            generate_root_level_index_page(
+                self._feat_index_root_level_template_page, os.path.join(regime_output_path, "features")
+            )
+            self._generate_structured_index_pages(issues, "features")
 
-        # Generate an index page with a summary table about all issues grouped by topics
-        elif ActionInputs.is_grouping_by_topics_enabled():
-            issues_extracted = list(issues.values())
-            generate_root_level_index_page(self._index_root_level_page, regime_output_path)
+        # Generate an index page with a summary table about all User Stories
+        us_issues: list[ConsolidatedIssue] = [
+            issue for issue in issues.values() if DOC_USER_STORY_LABEL in issue.labels
+        ]
+        self._generate_index_page(self._us_index_no_struct_template_file, "user_stories", us_issues)
+        logger.info("MDoc page generation - generated User Stories `_index.md`.")
 
-            for topic in topics:
-                self._generate_index_page(self._index_data_level_template, issues_extracted, repository_id="", grouping_topic=topic)
+        # Generate an index page with a summary table about all Features
+        feat_issues: list[ConsolidatedIssue] = [issue for issue in issues.values() if DOC_FEATURE_LABEL in issue.labels]
+        self._generate_index_page(self._feat_index_no_struct_template_file, "features", feat_issues)
+        logger.info("MDoc page generation - generated Features `_index.md`.")
 
-        # Generate an index page with a summary table about all issues
-        else:
-            issues_extracted = list(issues.values())
-            self._generate_index_page(self._index_page_template, issues_extracted, repository_id="", grouping_topic="")
-            logger.info("MDoc page generation - generated `_index.md`.")
-
-    def _generate_md_issue_page(self, consolidated_issue: ConsolidatedIssue) -> None:
+    def _generate_md_issue_page_for_us(self, consolidated_issue: ConsolidatedIssue) -> None:
         """
-        Generates a single issue MDoc page from a template and save to the output directory.
+        Generates a MDoc page for User Story ticket/GH issue from a template and save to the output directory.
 
-        @param issue_page_template: The template string for generating the single MDoc issue page.
         @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
         @return: None
         """
-
-        # Get all replacements for generating single issue page from a template
-        title = consolidated_issue.title
-        date = datetime.now().strftime("%Y-%m-%d")
-        issue_content = consolidated_issue.body
-
-        # Generate a summary table for the issue
-        issue_table = self._generate_issue_summary_table(consolidated_issue)
-
         # Initialize dictionary with replacements
+        # TODO - add support for - planned in Issue https://github.com/AbsaOSS/living-doc-generator/issues/111
+        #   - GH State badge
+        #   - GH Project State badge
+        #   - GH Priority
+        #   - GH Icon link
         replacements = {
-            "title": title,
-            "date": date,
-            "page_issue_title": title,
-            "issue_summary_table": issue_table,
-            "issue_content": issue_content,
+            "title": consolidated_issue.title,
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "issue_content": consolidated_issue.body,
         }
 
         # Run through all replacements and update template keys with adequate content
-        issue_md_page_content = self._issue_page_detail_template.format(**replacements)
+        issue_md_page_content = self._us_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        page_directory_paths: list[str] = consolidated_issue.generate_directory_path(issue_table)
-        for page_directory_path in page_directory_paths:
-            os.makedirs(page_directory_path, exist_ok=True)
+        page_directory_path: str = self._generate_directory_path_us(
+            self.PARENT_PATH_US, consolidated_issue.repository_id
+        )
+        os.makedirs(page_directory_path, exist_ok=True)
 
-            # Save the single issue MDoc page
-            page_filename = consolidated_issue.generate_page_filename()
-            with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
-                f.write(issue_md_page_content)
+        # Save the single issue MDoc page
+        page_filename = consolidated_issue.generate_page_filename()
+        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+            f.write(issue_md_page_content)
 
-            logger.debug("Generated MDoc page: %s.", page_filename)
+        logger.debug("Generated MDoc page: %s.", page_filename)
+
+    def _generate_md_issue_page_for_feat(self, consolidated_issue: ConsolidatedIssue) -> None:
+        """
+        Generates a MDoc page for Feature ticket/GH issue from a template and save to the output directory.
+
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: None
+        """
+        # Initialize dictionary with replacements
+        # TODO - add support for - planned in Issue https://github.com/AbsaOSS/living-doc-generator/issues/111
+        #   - GH State badge
+        #   - GH Project State badge
+        #   - GH Priority
+        #   - GH Icon link
+
+        replacements = {
+            "title": consolidated_issue.title,
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "issue_content": consolidated_issue.body,
+        }
+
+        # Run through all replacements and update template keys with adequate content
+        issue_md_page_content = self._feat_issue_page_detail_template.format(**replacements)
+
+        # Create a directory structure path for the issue page
+        page_directory_path: str = self._generate_directory_path_feat(
+            self.PARENT_PATH_FEAT, consolidated_issue.repository_id, consolidated_issue.title
+        )
+        os.makedirs(page_directory_path, exist_ok=True)
+
+        # Save the single issue MDoc page
+        page_filename = consolidated_issue.generate_page_filename()
+        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+            f.write(issue_md_page_content)
+
+        logger.debug("Generated MDoc page: %s.", page_filename)
+
+    def _generate_md_issue_page_for_func(
+        self, consolidated_issue: ConsolidatedIssue, feature_consolidated_issue: Optional[ConsolidatedIssue] = None
+    ) -> None:
+        """
+        Generates a MDoc page for Functionality ticket/GH issue from a template and save to the output directory.
+
+        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @return: None
+        """
+        # Initialize dictionary with replacements
+        # TODO - add support for - planned in Issue https://github.com/AbsaOSS/living-doc-generator/issues/111
+        #   - GH State badge
+        #   - GH Project State badge
+        #   - GH Priority
+        #   - GH Icon link
+
+        title = consolidated_issue.title
+        feature_title = "no_feature"
+        if feature_consolidated_issue is not None:
+            feature_title = feature_consolidated_issue.title
+
+        replacements = {
+            "title": title,
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "issue_content": consolidated_issue.body,
+        }
+
+        # Run through all replacements and update template keys with adequate content
+        issue_md_page_content = self._func_issue_page_detail_template.format(**replacements)
+
+        # Create a directory structure path for the issue page
+        page_directory_path: str = self._generate_directory_path_func(
+            self.PARENT_PATH_FEAT, consolidated_issue.repository_id, feature_title
+        )
+        os.makedirs(page_directory_path, exist_ok=True)
+
+        # Save the single issue MDoc page
+        page_filename = consolidated_issue.generate_page_filename()
+        with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
+            f.write(issue_md_page_content)
+
+        logger.debug("Generated MDoc page: %s.", page_filename)
 
     # pylint: disable=too-many-arguments
     def _generate_structured_index_pages(
-        self,
-        topics: set[str],
-        consolidated_issues: dict[str, ConsolidatedIssue],
+        self, consolidated_issues: dict[str, ConsolidatedIssue], group_name: str
     ) -> None:
         """
         Generates a set of index pages due to a structured output feature.
 
-        @param index_data_level_template: The template string for generating the data level index MDoc page.
-        @param index_repo_level_template: The template string for generating the repository level index MDoc page.
-        @param index_org_level_template: The template string for generating the organization level index MDoc page.
-        @param topics: A set of topics used for grouping issues.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @return: None
         """
@@ -203,45 +302,19 @@ class MdocExporter(Exporter):
             issues_by_repository[repository_id].append(consolidated_issue)
 
         # Generate an index page for each repository
-        for repository_id, issues in issues_by_repository.items():
-            organization_name, repository_name = repository_id.split("/")
-
-            self._generate_sub_level_index_page(self._index_org_level_template, "org", repository_id)
+        repository_ids = issues_by_repository.keys()
+        for repository_id in repository_ids:
+            self._generate_sub_level_index_page(self._index_org_level_template, repository_id, group_name)
             logger.debug(
-                "Generated organization level `_index.md` for %s.",
-                organization_name,
+                "Generated '%s' organization level `_index.md` for %s.",
+                group_name,
+                repository_id.split("/")[0],
             )
-
-            # Generate an index pages for the documentation based on the grouped issues by topics
-            if ActionInputs.is_grouping_by_topics_enabled():
-                self._generate_sub_level_index_page(self._index_repo_page_template, "repo", repository_id)
-                logger.debug(
-                    "Generated repository level _index.md` for repository: %s.",
-                    repository_name,
-                )
-
-                for topic in topics:
-                    self._generate_index_page(self._index_data_level_template, issues, repository_id, topic)
-                    logger.debug(
-                        "Generated data level `_index.md` with topic: %s for %s.",
-                        topic,
-                        repository_id,
-                    )
-            else:
-                self._generate_index_page(self._index_data_level_template, issues, repository_id, grouping_topic="")
-                logger.debug(
-                    "Generated data level `_index.md` for %s",
-                    repository_id,
-                )
 
             logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
     def _generate_index_page(
-        self,
-        issue_index_page_template: str,
-        consolidated_issues: list[ConsolidatedIssue],
-        repository_id: str,
-        grouping_topic: str,
+        self, issue_index_page_template: str, group_name: str, consolidated_issues: list[ConsolidatedIssue]
     ) -> None:
         """
         Generates an index page with a summary of all issues and save it to the output directory.
@@ -249,7 +322,6 @@ class MdocExporter(Exporter):
         @param issue_index_page_template: The template string for generating the index mdoc page.
         @param consolidated_issues: A dictionary containing all consolidated issues.
         @param repository_id: The repository id used if the structured output is generated.
-        @param grouping_topic: The topic used if the grouping issues by topics is enabled.
         @return: None
         """
         # Initializing the issue table header based on the project mining state
@@ -261,12 +333,7 @@ class MdocExporter(Exporter):
 
         # Create an issue summary table for every issue
         for consolidated_issue in consolidated_issues:
-            if ActionInputs.is_grouping_by_topics_enabled():
-                for topic in consolidated_issue.topics:
-                    if grouping_topic == topic:
-                        issue_table += self._generate_mdoc_line(consolidated_issue)
-            else:
-                issue_table += self._generate_mdoc_line(consolidated_issue)
+            issue_table += self._generate_mdoc_line(consolidated_issue)
 
         # Prepare issues replacement for the index page
         replacement = {
@@ -274,9 +341,13 @@ class MdocExporter(Exporter):
             "issue_overview_table": issue_table,
         }
 
-        if ActionInputs.is_grouping_by_topics_enabled():
-            replacement["data_level_name"] = grouping_topic
-        elif ActionInputs.is_structured_output_enabled():
+        if len(consolidated_issues) > 0:
+            repository_id = consolidated_issues[0].repository_id
+        else:
+            logger.info("No consolidated issues found for group: %s.", group_name)
+            return
+
+        if ActionInputs.is_structured_output_enabled():
             replacement["data_level_name"] = repository_id.split("/")[1]
 
         # Replace the issue placeholders in the index template
@@ -284,41 +355,32 @@ class MdocExporter(Exporter):
 
         # Generate a directory structure path for the index page
         # Note: repository_id is used only, if the structured output is generated
-        index_directory_path: str = self._generate_index_directory_path(repository_id, grouping_topic)
+        index_directory_path: str = self._generate_index_directory_path(group_name, repository_id)
 
         # Create an index page file
         with open(os.path.join(index_directory_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(index_page)
 
-    def _generate_sub_level_index_page(self, index_template: str, level: str, repository_id: str) -> None:
+    def _generate_sub_level_index_page(self, index_template: str, repository_id: str, group_name) -> None:
         """
         Generates an index page for the structured output based on the level.
 
         @param index_template: The template string for generating the index MDoc page.
-        @param level: The level of the index page. Enum for "org" or "repo".
         @param repository_id: The repository id of a repository that stores the issues.
         @return: None
         """
-        index_level_dir = ""
         replacement = {
             "date": datetime.now().strftime("%Y-%m-%d"),
         }
 
-        # Set correct behaviour based on the level
-        if level == "org":
-            organization_name = repository_id.split("/")[0]
-            index_level_dir = organization_name
-            replacement["organization_name"] = organization_name
-        elif level == "repo":
-            repository_name = repository_id.split("/")[1]
-            index_level_dir = repository_id
-            replacement["repository_name"] = repository_name
+        organization_name = repository_id.split("/")[0]
+        replacement["organization_name"] = organization_name
 
         # Replace the issue placeholders in the index template
         sub_level_index_page = index_template.format(**replacement)
 
         # Create a sub index page file
-        output_path = os.path.join(make_absolute_path(self._output_path), index_level_dir)
+        output_path = os.path.join(make_absolute_path(self._output_path), group_name, organization_name)
         os.makedirs(output_path, exist_ok=True)
         with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(sub_level_index_page)
@@ -448,22 +510,18 @@ class MdocExporter(Exporter):
 
         return issue_info
 
-    def _generate_index_directory_path(self, repository_id: Optional[str], topic: Optional[str]) -> str:
+    def _generate_index_directory_path(self, group_name: str, repository_id: Optional[str]) -> str:
         """
         Generates a directory path based on if structured output is required.
 
         @param repository_id: The repository id.
-        @param topic: The topic used for grouping issues.
         @return: The generated directory path.
         """
-        output_path: str = make_absolute_path(self._output_path)
+        output_path: str = os.path.join(make_absolute_path(self._output_path), group_name)
 
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
             output_path = os.path.join(output_path, organization_name, repository_name)
-
-        if ActionInputs.is_grouping_by_topics_enabled() and topic:
-            output_path = os.path.join(output_path, topic)
 
         os.makedirs(output_path, exist_ok=True)
 
@@ -476,64 +534,157 @@ class MdocExporter(Exporter):
         @return: A tuple containing all loaded template files.
         """
         project_root = Path(__file__).resolve().parent.parent.parent
-        # project_root = os.path.dirname(os.path.abspath(__file__))
+
         templates_base_path = os.path.join(project_root, "templates", "living_documentation_regime")
 
-        issue_page_template_file = os.path.join(templates_base_path, "issue_detail_page_template.md")
-        index_no_struct_template_file = os.path.join(templates_base_path, "_index_no_struct_page_template.md")
-        index_root_level_template_file = os.path.join(templates_base_path, "_index_root_level_page_template.md")
+        us_issue_detail_page_template = os.path.join(templates_base_path, "us_issue_detail_page_template.md")
+        feat_issue_detail_page_template = os.path.join(templates_base_path, "feat_issue_detail_page_template.md")
+        func_issue_detail_page_template = os.path.join(templates_base_path, "func_issue_detail_page_template.md")
+
+        us_index_no_struct_template_file = os.path.join(templates_base_path, "_us_index_no_struct_page_template.md")
+        feat_index_no_struct_template_file = os.path.join(templates_base_path, "_feat_index_no_struct_page_template.md")
+
+        us_index_root_level_template_file = os.path.join(templates_base_path, "_us_index_root_level_page_template.md")
+        feat_index_root_level_template_file = os.path.join(
+            templates_base_path, "_feat_index_root_level_page_template.md"
+        )
         index_org_level_template_file = os.path.join(templates_base_path, "_index_org_level_page_template.md")
-        index_data_level_template_file = os.path.join(templates_base_path, "_index_data_level_page_template.md")
-        index_topic_page_template_file = os.path.join(templates_base_path, "_index_repo_page_template.md")
+
         report_page_template_file = os.path.join(templates_base_path, "report_page_template.md")
 
-        issue_page_detail_template = load_template(
-            issue_page_template_file,
-            "Issue page template file was not successfully loaded.",
+        _us_issue_page_detail_template: Optional[str] = load_template(
+            us_issue_detail_page_template,
+            "User Story detail page template file was not successfully loaded.",
         )
-        index_page_template = load_template(
-            index_no_struct_template_file,
-            "Index page template file was not successfully loaded.",
+        _feat_issue_page_detail_template: Optional[str] = load_template(
+            feat_issue_detail_page_template,
+            "Feature detail page template file was not successfully loaded.",
         )
-        index_root_level_page = load_template(
-            index_root_level_template_file,
-            "Structured index page template file for root level was not successfully loaded.",
+        _func_issue_page_detail_template: Optional[str] = load_template(
+            func_issue_detail_page_template,
+            "Functionality detail page template file was not successfully loaded.",
         )
-        index_org_level_template = load_template(
+
+        _us_index_no_struct_template_file: Optional[str] = load_template(
+            us_index_no_struct_template_file,
+            "User Story index page template file was not successfully loaded.",
+        )
+        _feat_index_no_struct_template_file: Optional[str] = load_template(
+            feat_index_no_struct_template_file,
+            "Feature index page template file was not successfully loaded.",
+        )
+        _us_index_root_level_template_page: Optional[str] = load_template(
+            us_index_root_level_template_file,
+            "Structured User Story index page template file for root level was not successfully loaded.",
+        )
+        _feat_index_root_level_template_page: Optional[str] = load_template(
+            feat_index_root_level_template_file,
+            "Structured Feature index page template file for root level was not successfully loaded.",
+        )
+        _index_org_level_template_file = load_template(
             index_org_level_template_file,
             "Structured index page template file for organization level was not successfully loaded.",
         )
-        index_repo_page_template = load_template(
-            index_topic_page_template_file,
-            "Structured index page template file for repository level was not successfully loaded.",
-        )
-        index_data_level_template = load_template(
-            index_data_level_template_file,
-            "Structured index page template file for data level was not successfully loaded.",
-        )
-        report_page_template = load_template(
+
+        _report_page_template: Optional[str] = load_template(
             report_page_template_file,
             "Report page template file was not successfully loaded.",
         )
 
         if (
-                issue_page_detail_template is None
-                or index_page_template is None
-                or index_root_level_page is None
-                or index_org_level_template is None
-                or index_repo_page_template is None
-                or index_data_level_template is None
-                or report_page_template is None
+                _us_issue_page_detail_template is None
+                or _feat_issue_page_detail_template is None
+                or _func_issue_page_detail_template is None
+                or _us_index_no_struct_template_file is None
+                or _feat_index_no_struct_template_file is None
+                or _us_index_root_level_template_page is None
+                or _feat_index_root_level_template_page is None
+                or _index_org_level_template is None
+                or _report_page_template is None
         ):
             logger.error("MDoc page generation - failed to load all templates.")
             return False
 
-        self._issue_page_detail_template = issue_page_detail_template
-        self._index_page_template = index_page_template
-        self._index_root_level_page = index_root_level_page
-        self._index_org_level_template = index_org_level_template
-        self._index_repo_page_template = index_repo_page_template
-        self._index_data_level_template = index_data_level_template
-        self._report_page_template = report_page_template
+        self._us_issue_page_detail_template = _us_issue_page_detail_template
+        self._feat_issue_page_detail_template = _feat_issue_page_detail_template
+        self._func_issue_page_detail_template = _func_issue_page_detail_template
+        self._us_index_no_struct_template_file = _us_index_no_struct_template_file
+        self._feat_index_no_struct_template_file = _feat_index_no_struct_template_file
+        self._us_index_root_level_template_page = _us_index_root_level_template_page
+        self._feat_index_root_level_template_page = _feat_index_root_level_template_page
+        self._index_org_level_template = _index_org_level_template
+        self._report_page_template = _report_page_template
 
         return True
+
+    def _update_error_page(self, ci: ConsolidatedIssue, group: str) -> None:
+        if ActionInputs.is_report_page_generation_enabled() and ci.errors:
+            keys = self._report_page_content.keys()
+            if group not in keys:
+                self._report_page_content[group] = REPORT_PAGE_HEADER
+
+            repository_id: str = ci.repository_id
+            number: int = ci.number
+            html_url: str = ci.html_url
+
+            for error_type, error_message in ci.errors.items():
+                self._report_page_content[
+                    group
+                ] += f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
+
+    @staticmethod
+    def _generate_directory_path_us(parent_path: str, repository_id: str) -> str:
+        """
+        Generate a list of directory paths based on enabled features.
+
+        @return: The list of generated directory paths.
+        """
+        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+
+        # If structured output is enabled, create a directory path based on the repository
+        if ActionInputs.is_structured_output_enabled() and repository_id:
+            organization_name, repository_name = repository_id.split("/")
+            output_path = os.path.join(output_path, parent_path, organization_name, repository_name)
+        else:
+            # If structured output is not enabled, create a directory path based on the parent path
+            output_path = os.path.join(output_path, parent_path)
+
+        return output_path
+
+    @staticmethod
+    def _generate_directory_path_feat(parent_path: str, repository_id: str, feature_title: str) -> str:
+        """
+        Generate a list of directory paths based on enabled features.
+
+        @return: The list of generated directory paths.
+        """
+        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+
+        # If structured output is enabled, create a directory path based on the repository
+        if ActionInputs.is_structured_output_enabled() and repository_id:
+            organization_name, repository_name = repository_id.split("/")
+            output_path = os.path.join(output_path, parent_path, organization_name, repository_name, feature_title)
+        else:
+            # If structured output is not enabled, create a directory path based on the parent path
+            output_path = os.path.join(output_path, parent_path, feature_title)
+
+        return output_path
+
+    @staticmethod
+    def _generate_directory_path_func(parent_path: str, repository_id: str, feature_title: str) -> str:
+        """
+        Generate a list of directory paths based on enabled features.
+
+        @return: The list of generated directory paths.
+        """
+        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
+
+        # If structured output is enabled, create a directory path based on the repository
+        if ActionInputs.is_structured_output_enabled() and repository_id:
+            organization_name, repository_name = repository_id.split("/")
+            output_path = os.path.join(output_path, parent_path, organization_name, repository_name, feature_title)
+        else:
+            # If structured output is not enabled, create a directory path based on the parent path
+            output_path = os.path.join(output_path, parent_path, feature_title)
+
+        return output_path

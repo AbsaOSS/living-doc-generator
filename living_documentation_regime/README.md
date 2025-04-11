@@ -14,7 +14,6 @@
   - [Data Mining from GitHub Projects](#data-mining-from-github-projects)
   - [Living Documentation Page Generation](#living-documentation-page-generation)
     - [Structured Output](#structured-output)
-    - [Output Grouped by Topics](#output-grouped-by-topics)
     - [Output Formats](#output-formats)
 
 This regime is designed to data-mine GitHub repositories for [documentation tickets](#documentation-ticket-introduction) containing project documentation (e.g. tagged with feature-related labels). This tool automatically generates comprehensive living documentation in a format compatible with an [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer), providing detailed feature overview pages and in-depth feature descriptions.
@@ -30,6 +29,16 @@ This regime is designed to data-mine GitHub repositories for [documentation tick
       liv-doc-regime: true
     ```
     
+## GitHub Repository Structure Requirements
+
+- Is recommended to use only one dedicated repository for documentation tickets.
+- User Story **can** point to multiple Features
+- Feature **can** point to multiple Functionalities
+- Functionality **should** point to one Feature
+  - Why one only?
+    - To avoid confusion and ensure clarity in the documentation.
+    - Functionality implements a specific aspect of a feature, and linking it to multiple features can create ambiguity.
+
 ---
 ## Adding Living Documentation Regime to the Workflow
 
@@ -70,19 +79,16 @@ See the full example of Living Documentation regime step definition (in example 
           {
             "organization-name": "fin-services",
             "repository-name": "investment-app",
-            "query-labels": ["feature", "enhancement"],
             "projects-title-filter": []
           },
           {
             "organization-name": "health-analytics",
             "repository-name": "patient-data-analysis",
-            "query-labels": ["functionality"],
             "projects-title-filter": ["Health Data Analysis Project"]
           }
         ]
     liv-doc-project-state-mining: true     # project state mining feature de/activation
     liv-doc-structured-output: true        # structured output feature de/activation
-    liv-doc-group-output-by-topics: true   # group output by topics feature de/activation
     liv-doc-output-formats: "mdoc"         # output formats selection, supported: mdoc
 ```
 
@@ -91,13 +97,12 @@ See the full example of Living Documentation regime step definition (in example 
 
 Configure the Living Documentation regime by customizing the following parameters:
 
-| Input Name                       | Description                                                                                                                                                                                | Required | Default   | Usage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `liv-doc-repositories`           | A JSON string defining the repositories to be included in the documentation generation.                                                                                                    | No       | `'[]'`    | Provide a list of repositories, including the organization name, repository name, query labels, and any attached projects you wish to filter.<br><br> The `query-labels` include parameter is optional. Only issues with the specified labels will be fetched. To fetch all issues (all labels), omit this parameter or leave the list empty. <br><br> The `projects-title-filter` include parameter is optional. Only issues linked to the specified projects will be fetched. To fetch all issues (all projects), either omit this parameter or leave the list empty. |
-| `liv-doc-project-state-mining`   | Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects). | No       | `false` ` | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `liv-doc-structured-output`      | Enables or disables [structured output](#structured-output).                                                                                                                               | No       | `false`   | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `liv-doc-group-output-by-topics` | Enable or disable [grouping tickets by topics](#output-grouped-by-topics) in the summary index.md file.                                                                                    | No       | `false`   | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `liv-doc-output-formats`         | Selects the [output formats](#output-formats) for the Living Documentation Regime.                                                                                                                          | No       | `mdoc`    | Provide a comma-separated list of output formats.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Input Name                       | Description                                                                                                                                                                                | Required | Default   | Usage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `liv-doc-repositories`           | A JSON string defining the repositories to be included in the documentation generation.                                                                                                    | No       | `'[]'`    | Provide a list of repositories, including the organization name, repository name, and any attached projects you wish to filter in.<br><br> The `projects-title-filter` include parameter is optional. Only issues linked to the specified projects will be fetched. To fetch all issues (all projects), either omit this parameter or leave the list empty. |
+| `liv-doc-project-state-mining`   | Enables or disables the mining of project state data from [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects). | No       | `false` ` | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `liv-doc-structured-output`      | Enables or disables [structured output](#structured-output).                                                                                                                               | No       | `false`   | Set to true to activate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `liv-doc-output-formats`         | Selects the [output formats](#output-formats) for the Living Documentation Regime.                                                                                                                          | No       | `mdoc`    | Provide a comma-separated list of output formats.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 - **Example**
 
@@ -108,7 +113,6 @@ Configure the Living Documentation regime by customizing the following parameter
         {
           "organization-name": "fin-services",
           "repository-name": "investment-app",
-          "query-labels": ["feature", "enhancement"]
         },
         {
           "organization-name": "open-source-initiative",
@@ -119,7 +123,6 @@ Configure the Living Documentation regime by customizing the following parameter
   
       liv-doc-project-state-mining: true 
       liv-doc-structured-output: true
-      liv-doc-group-output-by-topics: true
       liv-doc-output-formats: "mdoc"
   ```
 
@@ -217,10 +220,6 @@ A **Documentation Ticket** is a small piece of documentation realized as a GitHu
 ### Labels
 
 To enhance clarity, the following label groups define and categorize each Documentation Issue:
-- **Topic**:
-  - **{Name}Topic:** Designates the main focus area or theme relevant to the ticket, assigned by the editor for consistency across related documentation.
-    - Examples: `ReportingTopic`, `UserManagementTopic`, `SecurityTopic`.
-  - **NoTopic:** Indicates that the ticket does not align with a specific topic, based on the editor's discretion.
 - **Type**:
   - **DocumentedUserStory:** Describes a user-centric functionality or process, highlighting its purpose and value.
     - Encompasses multiple features, capturing the broader goal from a user perspective.
@@ -250,7 +249,7 @@ Using a dedicated repository solely for documentation tickets provides multiple 
 This is a build-in feature, that allows you to define which repositories should be included in the living documentation process. This essential process can not be deactivated inside of regime scope. By specifying repositories, you can focus on the most relevant projects for your documentation needs.
 
 - **Activation**: This is a built-in feature, so it is always activated.
-- **Default Behavior**: By default, the action will include all repositories defined in the repositories input parameter. Each repository is defined with its organization name, repository name, and query labels.
+- **Default Behavior**: By default, the action will include all repositories defined in the repositories input parameter. Each repository is defined with its organization name, and repository name.
 
 ### Data Mining from GitHub Projects
 
@@ -265,20 +264,42 @@ This feature allows you to define which projects should be included in the livin
         {
           "organization-name": "absa-group",
           "repository-name": "living-doc-example-project",
-          "query-labels": ["feature", "bug"],
           "projects-title-filter": ["Community Outreach Initiatives", "Health Data Analysis"]
          }
       ```
 
 ### Living Documentation Page Generation
 
-The goal is to provide a straightforward view of all issues in a single table, making it easy to see the overall status and details of issues across repositories.
+The goal is to provide an overview of all Documentation tickets, making it easy to see the overall status and details.
 
 The current output implementation is designed to work with the AbsaOSS [mdoc viewer](https://github.com/AbsaOSS/cps-mdoc-viewer) solution.
 The presence of multiple _index.md files is necessary for the current solution to correctly generate the documentation structure.
 
 - **Activation**: This is a built-in feature, so it is always activated.
 - **Default Behavior**: By default, the action generates a single table that lists all issues from the defined repositories.
+
+#### Flat Output (Default)
+
+Most usable when you want to generate all documentation from a single repository.
+
+```
+output/liv-doc-regime
+|- User Stories                     .. Tab in mdoc website
+   |-- User Story nr. 1             .. User Story details
+   |-- User Story nr. 2
+   |-- User Story nr. 3
+   |-- _index.md
+|- Features                         .. Tab in mdoc website
+  |-- Feature nr. 1                 .. Feature details
+     |-- Functionality nr. 1.1      .. Functionality details
+     |-- Functionality nr. 1.2
+     |-- _index.md
+  |-- Feature nr. 2
+     |-- Functionality nr. 2.1
+     |-- Functionality nr. 2.2
+  |-- _index.md
+|- _index.md
+```
 
 #### Structured Output
 
@@ -289,45 +310,27 @@ This feature allows you to generate structured output for the living documentati
 - **Activated Example**: Use the structured output feature to organize the generated documentation by organization and repository name.
   - `structured-output: true` activates the structured output feature.
     ```
-    output
-    |- org 1
-      |--repo 1
-         |-- issue md page 1
-         |-- issue md page 2
-         |-- _index.md
-      |-- _index.md
-    |- org 2
-      |--repo 1
-         |-- issue md page 1
-         |-- _index.md
-      |--repo 2
-          ...
-      |-- _index.md
-    |- _index.md
-    ```
-
-#### Output Grouped by Topics
-
-The feature allows you to generate output grouped by topics. This feature is useful when grouping tickets by specific topics or themes.
-
-To gain a better understanding of the term "Topic", refer to the [Labels](#labels) section.
-
-- **Activation**: To activate this feature, set the `liv-doc-group-output-by-topics` input to true.
-- **Non-Activated Behavior**: By default, when the feature is inactive, the action generates all the documentation in a single directory.
-- **Activated Example**: Use the grouped output feature to organize the generated documentation by topics.
-  - `group-output-by-topics: true` activates the grouped output feature.
-    ```
-    output
-    |- topic 1
-      |-- issue md page 1
-      |-- issue md page 2
-      |-- _index.md
-    |- topic 2
-      |-- issue md page 1
+    output/liv-doc-regime
+    |- User Stories                     [Tab in mdoc website]
+       |-- organization/repo name
+         |--- User Story nr. 1
+         |--- User Story nr. 2
+         |--- User Story nr. 3
+         |--- _index.md
+       |-- _index.md
+    |- Features                         [Tab in mdoc website]
+      |-- Feature nr. 1                  
+        |--- Feature nr. 1                  
+           |---- Functionality nr. 1.1
+           |---- Functionality nr. 1.2
+        |--- Feature nr. 2
+           |---- Functionality nr. 2.1
+           |---- Functionality nr. 2.2
+        |--- _index.md
       |-- _index.md
     |- _index.md
     ```
-    
+
 #### Output Formats
 
 The feature allows you to select the output formats for the Living Documentation Regime.

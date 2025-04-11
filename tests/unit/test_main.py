@@ -110,3 +110,60 @@ def test_run_regime_failed(mocker):
         any_order=False,
     )
     mock_exit.assert_called_once_with(1)
+
+
+def test_validate_user_configuration_failed(mocker):
+    # Mock ActionInputs.validate_user_configuration to return False
+    mocker.patch("action_inputs.ActionInputs.validate_user_configuration", return_value=False)
+    mocker.patch("main.make_absolute_path", return_value="/unit/test/output/path")  # Mock make_absolute_path
+
+    mock_logger_info = mocker.patch("logging.getLogger").return_value.info
+    mock_exit = mocker.patch("sys.exit")
+
+    # Run the function
+    run()
+
+    # Assert logger and sys.exit were called
+    mock_logger_info.assert_has_calls(
+        [
+            mocker.call("Living Documentation generator - starting."),
+            mocker.call("Living Documentation generator - user configuration validation failed."),
+            mocker.call("Living Documentation generator - `LivDoc` generation regime disabled."),
+            mocker.call("Living Documentation generator - root output path set to `%s`.", "/unit/test/output/path"),
+            mocker.call("Living Documentation generator - ending."),
+
+        ],
+        any_order=False,
+    )
+
+    mock_exit.assert_called_once_with(1)
+
+
+def test_validate_query_formats_failed(mocker):
+    # Mock ActionInputs.validate_user_configuration to return True
+    mocker.patch("action_inputs.ActionInputs.validate_user_configuration", return_value=True)
+    mocker.patch("main.make_absolute_path", return_value="/unit/test/output/path")  # Mock make_absolute_path
+
+    # Mock validate_query_formats to return False
+    mocker.patch("main.validate_query_formats", return_value=False)
+    mock_logger_info = mocker.patch("logging.getLogger").return_value.info
+    mock_exit = mocker.patch("sys.exit")
+
+    # Run the function
+    run()
+
+    # Assert logger and sys.exit were called
+    mock_logger_info.assert_has_calls(
+        [
+            mocker.call("Living Documentation generator - starting."),
+            mocker.call("Living Documentation generator - query format validation failed."),
+            mocker.call("Living Documentation generator - `LivDoc` generation regime disabled."),
+            mocker.call("Living Documentation generator - root output path set to `%s`.", "/unit/test/output/path"),
+            mocker.call("Living Documentation generator - ending."),
+
+        ],
+        any_order=False,
+    )
+
+    # mock_logger_info.assert_called_once_with("Living Documentation generator - query format validation failed.")
+    mock_exit.assert_called_once_with(1)
