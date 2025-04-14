@@ -102,7 +102,7 @@ jobs:
       - name: Check types with Mypy
         id: check-types
         run: |
-          mypy main.py --check-untyped-defs 
+          mypy .
 
   python-tests:
     runs-on: ubuntu-latest

@@ -222,20 +222,22 @@ tool which is a static type checker for Python.
 > With mypy, add type hints (PEP 484) to your Python programs, 
 > and mypy will warn you when you use those types incorrectly.
 
+my[py] configuration is in `pyptoject.toml` file.
+
 Follow these steps to format your code with my[py] locally:
 
 ### Run my[py]
 
 Run my[py] on all files in the project.
 ```shell
-  mypy main.py --check-untyped-defs 
+  mypy .
 ```
 
 To run my[py] check on a specific file, follow the pattern `mypy <path_to_file>/<name_of_file>.py --check-untyped-defs`.
 
 Example:
 ```shell
-   mypy living_documentation_regime/living_documentation_generator.py --check-untyped-defs 
+   mypy living_documentation_regime/living_documentation_generator.py
 ``` 
 
 ### Expected Output
