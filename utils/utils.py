@@ -125,7 +125,7 @@ def load_template(file_path: str, error_message: str) -> Optional[str]:
 
 
 # GitHub action utils
-def get_action_input(name: str, default: Optional[str] = None) -> str:
+def get_action_input(name: str, default: str = "") -> str:
     """
     Get the input value from the environment variables.
 
@@ -133,7 +133,7 @@ def get_action_input(name: str, default: Optional[str] = None) -> str:
     @param default: The default value to return if the environment variable is not set.
     @return: The value of the specified input parameter, or an empty string
     """
-    return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default if default else "")
+    return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default)
 
 
 def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:

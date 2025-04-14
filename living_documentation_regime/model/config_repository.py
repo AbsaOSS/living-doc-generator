@@ -33,7 +33,7 @@ class ConfigRepository:
     def __init__(self):
         self.__organization_name: str = ""
         self.__repository_name: str = ""
-        self.__projects_title_filter: list[Optional[str]] = [None]
+        self.__projects_title_filter: list[str] = []
 
     @property
     def organization_name(self) -> str:
@@ -46,7 +46,7 @@ class ConfigRepository:
         return self.__repository_name
 
     @property
-    def projects_title_filter(self) -> list[Optional[str]]:
+    def projects_title_filter(self) -> list[str]:
         """Getter of the project title filter."""
         return self.__projects_title_filter
 
