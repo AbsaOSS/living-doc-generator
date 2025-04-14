@@ -67,18 +67,18 @@ def test_sanitize_filename(filename_example, expected_filename):
 def test_get_input_with_hyphen(mocker):
     mock_getenv = mocker.patch("os.getenv", return_value="test_value")
 
-    actual = get_action_input("test-input", default=None)
+    actual = get_action_input("test-input")
 
-    mock_getenv.assert_called_with("INPUT_TEST_INPUT", default=None)
+    mock_getenv.assert_called_with("INPUT_TEST_INPUT", default='')
     assert "test_value" == actual
 
 
 def test_get_input_without_hyphen(mocker):
     mock_getenv = mocker.patch("os.getenv", return_value="another_test_value")
 
-    actual = get_action_input("anotherinput", default=None)
+    actual = get_action_input("anotherinput")
 
-    mock_getenv.assert_called_with("INPUT_ANOTHERINPUT", default=None)
+    mock_getenv.assert_called_with("INPUT_ANOTHERINPUT", default='')
     assert "another_test_value" == actual
 
 

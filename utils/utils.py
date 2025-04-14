@@ -125,7 +125,7 @@ def load_template(file_path: str, error_message: str) -> Optional[str]:
 
 
 # GitHub action utils
-def get_action_input(name: str, default: Optional[str] = None) -> str:
+def get_action_input(name: str, default: str = "") -> str:
     """
     Get the input value from the environment variables.
 

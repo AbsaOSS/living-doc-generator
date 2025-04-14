@@ -56,21 +56,16 @@ class MdocExporter(Exporter):
 
     def __init__(self, output_path: str):
         self._output_path = output_path
-
         # templates
-        self._us_issue_page_detail_template: Optional[str] = None
-        self._feat_issue_page_detail_template: Optional[str] = None
-        self._func_issue_page_detail_template: Optional[str] = None
-
-        self._us_index_no_struct_template_file: Optional[str] = None
-        self._feat_index_no_struct_template_file: Optional[str] = None
-
-        self._us_index_root_level_template_page: Optional[str] = None
-        self._feat_index_root_level_template_page: Optional[str] = None
-        self._index_org_level_template: Optional[str] = None
-
-        self._report_page_template: Optional[str] = None
-
+        self._us_issue_page_detail_template: str = ""
+        self._feat_issue_page_detail_template: str = ""
+        self._func_issue_page_detail_template: str = ""
+        self._us_index_root_level_template_page: str = ""
+        self._feat_index_root_level_template_page: str = ""
+        self._index_org_level_template: str = ""
+        self._report_page_template: str = ""
+        self._us_index_no_struct_template_file: str = ""
+        self._feat_index_no_struct_template_file: str = ""
         self._report_page_content: dict[str, str] = {}
 
     def export(self, **kwargs) -> bool:
@@ -299,7 +294,7 @@ class MdocExporter(Exporter):
         @return: None
         """
         # Group issues by repository for structured index page content
-        issues_by_repository = {}
+        issues_by_repository: dict[str, list[ConsolidatedIssue]] = {}
         for consolidated_issue in consolidated_issues.values():
             repository_id = consolidated_issue.repository_id
             if repository_id not in issues_by_repository:
@@ -441,12 +436,12 @@ class MdocExporter(Exporter):
         @return: The string representation of the issue info in a table format.
         """
         # Join issue labels into one string
-        labels = consolidated_issue.labels
-        labels = ", ".join(labels) if labels else None
+        issue_labels = consolidated_issue.labels
+        labels = ", ".join(issue_labels) if issue_labels else None
 
         # Format issue URL as a MDoc link
-        issue_url = consolidated_issue.html_url
-        issue_url = f"<a href='{issue_url}' target='_blank'>GitHub link</a> " if issue_url else None
+        issue_url_ = consolidated_issue.html_url
+        issue_url = f"<a href='{issue_url_}' target='_blank'>GitHub link</a> " if issue_url_ else None
 
         # Define the header for the issue summary table
         headers = [
@@ -557,60 +552,68 @@ class MdocExporter(Exporter):
 
         report_page_template_file = os.path.join(templates_base_path, "report_page_template.md")
 
-        self._us_issue_page_detail_template: Optional[str] = load_template(
+        _us_issue_page_detail_template: Optional[str] = load_template(
             us_issue_detail_page_template,
             "User Story detail page template file was not successfully loaded.",
         )
-        self._feat_issue_page_detail_template: Optional[str] = load_template(
+        _feat_issue_page_detail_template: Optional[str] = load_template(
             feat_issue_detail_page_template,
             "Feature detail page template file was not successfully loaded.",
         )
-        self._func_issue_page_detail_template: Optional[str] = load_template(
+        _func_issue_page_detail_template: Optional[str] = load_template(
             func_issue_detail_page_template,
             "Functionality detail page template file was not successfully loaded.",
         )
 
-        self._us_index_no_struct_template_file: Optional[str] = load_template(
+        _us_index_no_struct_template_file: Optional[str] = load_template(
             us_index_no_struct_template_file,
             "User Story index page template file was not successfully loaded.",
         )
-        self._feat_index_no_struct_template_file: Optional[str] = load_template(
+        _feat_index_no_struct_template_file: Optional[str] = load_template(
             feat_index_no_struct_template_file,
             "Feature index page template file was not successfully loaded.",
         )
-        self._us_index_root_level_template_page: Optional[str] = load_template(
+        _us_index_root_level_template_page: Optional[str] = load_template(
             us_index_root_level_template_file,
             "Structured User Story index page template file for root level was not successfully loaded.",
         )
-        self._feat_index_root_level_template_page: Optional[str] = load_template(
+        _feat_index_root_level_template_page: Optional[str] = load_template(
             feat_index_root_level_template_file,
             "Structured Feature index page template file for root level was not successfully loaded.",
         )
-        self._index_org_level_template: Optional[str] = load_template(
+        _index_org_level_template_file = load_template(
             index_org_level_template_file,
             "Structured index page template file for organization level was not successfully loaded.",
         )
 
-        self._report_page_template: Optional[str] = load_template(
+        _report_page_template: Optional[str] = load_template(
             report_page_template_file,
             "Report page template file was not successfully loaded.",
         )
 
-        if not all(
-            [
-                self._us_issue_page_detail_template,
-                self._feat_issue_page_detail_template,
-                self._func_issue_page_detail_template,
-                self._us_index_no_struct_template_file,
-                self._feat_index_no_struct_template_file,
-                self._us_index_root_level_template_page,
-                self._feat_index_root_level_template_page,
-                self._index_org_level_template,
-                self._report_page_template,
-            ]
+        if (
+            _us_issue_page_detail_template is None
+            or _feat_issue_page_detail_template is None
+            or _func_issue_page_detail_template is None
+            or _us_index_no_struct_template_file is None
+            or _feat_index_no_struct_template_file is None
+            or _us_index_root_level_template_page is None
+            or _feat_index_root_level_template_page is None
+            or _index_org_level_template_file is None
+            or _report_page_template is None
         ):
             logger.error("MDoc page generation - failed to load all templates.")
             return False
+
+        self._us_issue_page_detail_template = _us_issue_page_detail_template
+        self._feat_issue_page_detail_template = _feat_issue_page_detail_template
+        self._func_issue_page_detail_template = _func_issue_page_detail_template
+        self._us_index_no_struct_template_file = _us_index_no_struct_template_file
+        self._feat_index_no_struct_template_file = _feat_index_no_struct_template_file
+        self._us_index_root_level_template_page = _us_index_root_level_template_page
+        self._feat_index_root_level_template_page = _feat_index_root_level_template_page
+        self._index_org_level_template = _index_org_level_template_file
+        self._report_page_template = _report_page_template
 
         return True
 
