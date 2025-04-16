@@ -20,6 +20,7 @@ import logging
 from typing import Optional
 from exporter.exporter import Exporter
 from living_documentation_regime.exporter.mdoc_exporter import MdocExporter
+from living_documentation_regime.exporter.pdf_exporter import PDFExporter
 from utils.constants import Regime, Format
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,8 @@ class ExporterFactory:
         match (regime, fmt):
             case (Regime.LIV_DOC_REGIME, Format.MDOC.value):
                 return MdocExporter(regime_output_path)
+            case (Regime.LIV_DOC_REGIME, Format.PDF.value):
+                return PDFExporter(regime_output_path)
             case _:
                 logger.error("Exporter not found for regime: %s and format: %s", regime, fmt)
                 return None
