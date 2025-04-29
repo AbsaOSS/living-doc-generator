@@ -1,0 +1,63 @@
+\usepackage{newunicodechar}
+\usepackage{xcolor}        % Color support
+\usepackage{titlesec}      % Heading styling
+\usepackage{fancyhdr}      % Header/Footer
+\usepackage{pagecolor}     % Background color
+\usepackage{tikz}
+\newunicodechar{🔴}{No}
+\newunicodechar{🟢}{Yes}
+
+% Optional: background color of entire page
+% \pagecolor{white}
+
+% Set text color globally
+\color{black}
+
+% Customize the title format
+\makeatletter
+\renewcommand{\maketitle}{
+  \begin{center}
+    {\Huge\bfseries\color{absaRed} \@title \par}
+    \vskip 1em
+    {\large\@date \par}
+  \end{center}
+}
+\makeatother
+
+% Heading styles
+
+\titleformat{\section}
+  {\color{absaRed}\normalfont\Large\bfseries}
+  {\thesection}{1em}{}
+
+\titleformat{\subsection}
+  {\color{secondary}\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+
+% Define page header/footer
+\pagestyle{fancy}
+\fancyhf{}  % clear all header and footer fields
+
+% HEADER: thin red bar with ABSA
+\fancyhead[L]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[absaRed] (current page.north west) rectangle ([yshift=-6em]current page.north east);
+    \node[anchor=west, text=absaWhite, font=\bfseries\large] at ([xshift=1em, yshift=-3em]current page.north west) {ABSA};
+  \end{tikzpicture}
+}
+
+% FOOTER: thick red bar
+\fancyfoot[C]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[absaRed] (current page.south west) rectangle ([yshift=2em]current page.south east);
+  \end{tikzpicture}
+}
+
+% Prevent text from overlapping with the footer/header
+\setlength{\headheight}{20pt}
+\setlength{\footskip}{40pt}
+
+% Optional: Define custom colors
+\definecolor{secondary}{RGB}{184, 16, 14}
+\definecolor{absaRed}{RGB}{237, 28, 36}
+\definecolor{absaWhite}{RGB}{255, 255, 255}
