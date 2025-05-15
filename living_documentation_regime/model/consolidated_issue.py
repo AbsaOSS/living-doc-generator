@@ -48,6 +48,7 @@ class ConsolidatedIssue:
         self.__project_issue_statuses: list[ProjectStatus] = []
 
         self.__errors: dict = {}
+        self.__issue_body_html = ""
 
     # Issue properties
     @property
@@ -106,6 +107,22 @@ class ConsolidatedIssue:
     def body(self) -> str:
         """Getter of the issue description."""
         return self.__issue.body if self.__issue else ""
+
+    def set_body_html(self, body_html: str) -> None:
+        """
+        Set the issue body in HTML format.
+
+        @param body_html: The issue body in HTML format.
+        @return: None
+        """
+        self.__issue_body_html = body_html
+
+    @property
+    def body_html(self) -> str:
+        """
+        @return: The issue body in HTML format.
+        """
+        return self.__issue_body_html
 
     @property
     def labels(self) -> list[str]:

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ project_name }} - Living Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="footer" class="footer">
+    Page {{ page_number }} | {{ generation_date }} | Created by: {{ author }}
+</div>
+
+
+<div class="cover-page">
+    <h1 class="cover-title">{{ project_name }}<br>Living Documentation</h1>
+<!--    <img src="absa-logo.jpg" alt="ABSA Logo" class="logo">-->
+</div>
+
+<!-- Page Break -->
+<p style="page-break-after: always;"></p>
+
+<!-- Abstract Page -->
+<div class="abstract">
+    <h1>Abstract</h1>
+    <p>{{ abstract }}</p>
+</div>
+
+<p style="page-break-after: always;"></p>
+
+<!-- Table of Contents -->
+<div class="toc">
+    <h1>Table of Contents</h1>
+    <ul>
+        {% for section in toc %}
+        <li><strong>{{ section.name }}</strong>
+            <ul>
+                {% for issue in section.issues %}
+                <li>{{ issue.title }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<p style="page-break-after: always;"></p>
+
+<!-- Sections -->
+{% for section_name, issues_list in sections.items() %}
+    <h1>{{ section_name }}</h1>
+
+    <!-- Table of metadata -->
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Status</th>
+                <th>Labels</th>
+                <th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in issues_list %}
+            <tr>
+                <td>{{ issue.number }}</td>
+                <td>{{ issue.state }}</td>
+                <td>
+                    {% for label in issue.labels %}
+                        {{ label.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td><a href="{{ issue.html_url }}">{{ issue.html_url }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="page-break-after: always;"></p>
+
+    <!-- Issue Details -->
+    {% for issue in issues_list %}
+    <h2>{{ issue.title }}</h2>
+    <div class="issue-body">
+        {{ issue.body_html | safe }}
+    </div>
+    <p style="page-break-after: always;"></p>
+    {% endfor %}
+{% endfor %}
+
+</body>
+</html>

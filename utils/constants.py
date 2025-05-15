@@ -45,7 +45,7 @@ class Regime(Enum):
 # Export formats
 class Format(Enum):
     MDOC = "mdoc"
-    PDF = "PDF"
+    PDF = "pdf"
 
 
 # Regime output paths
