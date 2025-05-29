@@ -21,11 +21,3 @@ This module contains custom exceptions for this project
 
 class LivingDocumentationGeneratorException(Exception):
     """Base class for exceptions in this project."""
-
-
-class FetchRepositoriesException(LivingDocumentationGeneratorException):
-    """Raised when fetching repositories fails in get_repositories()."""
-
-
-class InvalidQueryFormatError(LivingDocumentationGeneratorException):
-    """Raised when a query string is missing or has unexpected placeholders."""

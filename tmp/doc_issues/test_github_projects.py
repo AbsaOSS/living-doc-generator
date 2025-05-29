@@ -15,7 +15,7 @@
 #
 import requests
 
-from living_documentation_regime.github_projects import GithubProjects
+from living_doc_generator.github_projects import GithubProjects
 
 
 # _send_graphql_query

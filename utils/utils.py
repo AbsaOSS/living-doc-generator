@@ -23,8 +23,6 @@ import re
 import logging
 from typing import Optional
 
-from utils.exceptions import InvalidQueryFormatError
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,14 +30,15 @@ def make_issue_key(organization_name: str, repository_name: str, issue_number: i
     """
     Create a unique string key for identifying the issue.
 
-    @param organization_name: The name of the organization where issue is located at.
-    @param repository_name: The name of the repository where issue is located at.
+    @param organization_name: The name of the organization where the issue is located.
+    @param repository_name: The name of the repository where the issue is located.
     @param issue_number: The number of the issue.
     @return: The unique string key for the issue.
     """
     return f"{organization_name}/{repository_name}/{issue_number}"
 
 
+# TODO - check if used after refactoring
 def sanitize_filename(filename: str) -> str:
     """
     Sanitize the provided filename by removing invalid characters.
@@ -73,31 +72,11 @@ def make_absolute_path(path: str) -> str:
     return os.path.abspath(path)
 
 
-def validate_query_format(query_string, expected_placeholders) -> None:
-    """
-    Validate the placeholders in the query string.
-    Check if all the expected placeholders are present in the query and exit if not.
-
-    @param query_string: The query string to validate.
-    @param expected_placeholders: The set of expected placeholders in the query.
-    @return: None
-    @raise InvalidQueryFormatError: When some placeholders are missing in the query.
-    """
-    actual_placeholders = set(re.findall(r"\{(\w+)\}", query_string))
-    missing = expected_placeholders - actual_placeholders
-    extra = actual_placeholders - expected_placeholders
-    if missing or extra:
-        missing_message = f"Missing placeholders: {missing}. " if missing else ""
-        extra_message = f"Extra placeholders: {extra}." if extra else ""
-        logger.error("%s%s\nFor the query: %s", missing_message, extra_message, query_string)
-        raise InvalidQueryFormatError
-
-
 def generate_root_level_index_page(index_root_level_page: str, output_path: str) -> None:
     """
-    Generate the root level index page for the output living documentation.
+    Generate the root-level index page for the output living documentation.
 
-    @param index_root_level_page: The content of the root level index page.
+    @param index_root_level_page: The content of the root-level index page.
     @param output_path: The path to the output directory.
     @return: None
     """
@@ -122,32 +101,3 @@ def load_template(file_path: str, error_message: str) -> Optional[str]:
     except IOError:
         logger.error(error_message, exc_info=True)
         return None
-
-
-# GitHub action utils
-def get_action_input(name: str, default: str = "") -> str:
-    """
-    Get the input value from the environment variables.
-
-    @param name: The name of the input parameter.
-    @param default: The default value to return if the environment variable is not set.
-    @return: The value of the specified input parameter, or an empty string
-    """
-    return os.getenv(f'INPUT_{name.replace("-", "_").upper()}', default=default)
-
-
-def set_action_output(name: str, value: str, default_output_path: str = "default_output.txt") -> None:
-    """
-    Write an action output to a file in the format expected by GitHub Actions.
-
-    This function writes the output in a specific format that includes the name of the
-    output and its value. The output is appended to the specified file.
-
-    @param name: The name of the output parameter.
-    @param value: The value of the output parameter.
-    @param default_output_path: The default file path to which the output is written if the
-    @return: None
-    """
-    output_file = os.getenv("GITHUB_OUTPUT", default_output_path)
-    with open(output_file, "a", encoding="utf-8") as f:
-        f.write(f"{name}={value}\n")

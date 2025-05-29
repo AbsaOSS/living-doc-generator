@@ -17,7 +17,7 @@
 This module contains a parent class for creating exporters.
 """
 
-
+# TODO - move the parent to utils lib
 # pylint: disable=too-few-public-methods
 class Exporter:
     """

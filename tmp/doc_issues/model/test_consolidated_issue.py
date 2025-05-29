@@ -15,7 +15,7 @@
 #
 from github.Issue import Issue
 
-from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
+from living_doc_generator.model.consolidated_issue import ConsolidatedIssue
 
 
 # generate_page_filename

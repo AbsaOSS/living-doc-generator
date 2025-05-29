@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from living_documentation_regime.model.config_repository import ConfigRepository
+from living_doc_generator.model.config_repository import ConfigRepository
 
 
 def test_load_from_json_with_valid_input_loads_correctly():

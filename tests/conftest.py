@@ -21,11 +21,11 @@ from github.Rate import Rate
 from github.RateLimit import RateLimit
 from github.Repository import Repository
 
-from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
-from living_documentation_regime.model.config_repository import ConfigRepository
-from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
-from living_documentation_regime.model.github_project import GithubProject
-from living_documentation_regime.model.project_status import ProjectStatus
+from living_doc_generator.living_doc_generator import MdocLivingDocumentationGenerator
+from living_doc_generator.model.config_repository import ConfigRepository
+from living_doc_generator.model.consolidated_issue import ConsolidatedIssue
+from living_doc_generator.model.github_project import GithubProject
+from living_doc_generator.model.project_status import ProjectStatus
 from utils.constants import OUTPUT_PATH
 from utils.github_rate_limiter import GithubRateLimiter
 from utils.utils import make_absolute_path
@@ -88,7 +88,7 @@ def repository_setup(mocker):
 @pytest.fixture
 def load_all_templates_setup(mocker):
     mock_load_all_templates = mocker.patch.object(
-        LivingDocumentationGenerator,
+        MdocLivingDocumentationGenerator,
         "_load_all_templates",
         return_value=(
             "Issue Page Template",
@@ -120,7 +120,7 @@ def living_documentation_generator(mocker):
         "living_documentation_regime.living_documentation_generator.ActionInputs.get_github_token",
         return_value="FakeGithubToken",
     )
-    return LivingDocumentationGenerator(make_absolute_path(OUTPUT_PATH))
+    return MdocLivingDocumentationGenerator(make_absolute_path(OUTPUT_PATH))
 
 
 @pytest.fixture

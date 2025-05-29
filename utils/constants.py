@@ -22,36 +22,13 @@ from enum import Enum
 # General Action inputs
 GITHUB_TOKEN = "GITHUB_TOKEN"
 REPORT_PAGE = "REPORT_PAGE"
-
-# Living Documentation Regime Action inputs
-LIV_DOC_PROJECT_STATE_MINING = "LIV_DOC_PROJECT_STATE_MINING"
-LIV_DOC_REPOSITORIES = "LIV_DOC_REPOSITORIES"
-LIV_DOC_STRUCTURED_OUTPUT = "LIV_DOC_STRUCTURED_OUTPUT"
-LIV_DOC_OUTPUT_FORMATS = "LIV_DOC_OUTPUT_FORMATS"
-
-# Supported issue labels
-DOC_USER_STORY_LABEL = "DocumentedUserStory"
-DOC_FEATURE_LABEL = "DocumentedFeature"
-DOC_FUNCTIONALITY_LABEL = "DocumentedFunctionality"
-SUPPORTED_ISSUE_LABELS = [DOC_USER_STORY_LABEL, DOC_FEATURE_LABEL, DOC_FUNCTIONALITY_LABEL]
-
-
-# Mining regimes
-class Regime(Enum):
-    LIV_DOC_REGIME = "LIV_DOC_REGIME"
-    # CI_REGIME = "CI_REGIME"
-
-
-# Export formats
-class Format(Enum):
-    MDOC = "mdoc"
-    # PDF = "PDF"
-
+VERBOSE_LOGGING = "VERBOSE_LOGGING"
+RELEASE = "RELEASE"
+SOURCE = "SOURCE"
+STRUCTURED_OUTPUT = "STRUCTURED_OUTPUT"
 
 # Regime output paths
-OUTPUT_PATH = "./output"
 LIV_DOC_OUTPUT_PATH = "./output/liv-doc-regime"
-# CI_OUTPUT_PATH = "./output/ci-regime"
 
 # GitHub API constants
 ISSUES_PER_PAGE_LIMIT = 100
@@ -141,9 +118,6 @@ REPORT_PAGE_HEADER = """
 | Error Type | Source | Message |
 | ---------- | ------ | ------- |
 """
-
-# Symbol, when no project is attached to an issue
-NO_PROJECT_DATA = "---"
 
 # Constant to symbolize if issue is linked to a project
 LINKED_TO_PROJECT_TRUE = "🟢"

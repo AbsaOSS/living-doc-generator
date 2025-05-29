@@ -15,7 +15,7 @@
 #
 
 from github.Repository import Repository
-from living_documentation_regime.model.github_project import GithubProject
+from living_doc_generator.model.github_project import GithubProject
 
 
 # loads

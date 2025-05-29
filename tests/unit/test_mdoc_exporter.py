@@ -1,9 +1,9 @@
 import os.path
 import pytest
 
-from living_documentation_regime.exporter.mdoc_exporter import MdocExporter
-from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
-from living_documentation_regime.model.project_status import ProjectStatus
+from living_doc_generator.mdoc_exporter import MdocExporter
+from living_doc_generator.model.consolidated_issue import ConsolidatedIssue
+from living_doc_generator.model.project_status import ProjectStatus
 
 
 @pytest.fixture

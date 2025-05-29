@@ -14,7 +14,7 @@
 #
 
 """
-This module contains the MDoc Output Factory class which is responsible
+This module contains the MDoc Output Factory class, which is responsible
 for generating outputs in the MDoc format.
 """
 
@@ -25,20 +25,22 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+from living_doc_utilities.model.feature_issue import FeatureIssue
+from living_doc_utilities.model.functionality_issue import FunctionalityIssue
+from living_doc_utilities.model.issue import Issue
+from living_doc_utilities.model.issues import Issues
+
 from exporter.exporter import Exporter
 from action_inputs import ActionInputs
-from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
-from utils.utils import make_absolute_path, generate_root_level_index_page, load_template
+from living_doc_utilities.model.user_story_issue import UserStoryIssue
+from utils.utils import make_absolute_path, generate_root_level_index_page, load_template, sanitize_filename
 from utils.constants import (
     REPORT_PAGE_HEADER,
     TABLE_HEADER_WITH_PROJECT_DATA,
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LINKED_TO_PROJECT_TRUE,
     LINKED_TO_PROJECT_FALSE,
-    DOC_USER_STORY_LABEL,
     LIV_DOC_OUTPUT_PATH,
-    DOC_FEATURE_LABEL,
-    DOC_FUNCTIONALITY_LABEL,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,20 +70,23 @@ class MdocExporter(Exporter):
         self._feat_index_no_struct_template_file: str = ""
         self._report_page_content: dict[str, str] = {}
 
+        self.project_statuses_included: bool = False
+
     def export(self, **kwargs) -> bool:
         logger.info("MDoc page generation - started.")
 
-        issues: dict[str, ConsolidatedIssue] = kwargs.get("issues", {})
-        logger.debug("Exporting %d issues...", len(issues))
+        issues: Issues = kwargs.get("issues", Issues())
+        self.project_statuses_included = issues.project_state_included
+        logger.debug("Exporting %d issues...", issues.count())
 
         # Load the template files for generating the MDoc pages
         if not self._load_all_templates():
             return False
 
-        # Generate a MDoc page for every issue in expected path
+        # Generate an MDoc page for every issue in the expected path
         self._generate_page_per_issue(issues)
 
-        # Generate all structure of the index pages
+        # Generate all the structure of the index pages
         self._generate_output_structure(issues)
 
         # Generate a report page
@@ -113,35 +118,30 @@ class MdocExporter(Exporter):
             parent_dir = self.PARENT_PATH_US if group == self.REPORT_PAGE_US_GROUP else self.PARENT_PATH_FEAT
             write_report_page(group, parent_dir, content)
 
-    def _generate_page_per_issue(self, issues: dict[str, ConsolidatedIssue]) -> None:
-        logger.info("Generating MDoc pages for User Stories ...")
-        for consolidated_issue in issues.values():
-            # self._generate_md_issue_page(consolidated_issue)
-            if DOC_USER_STORY_LABEL in consolidated_issue.labels:
-                self._generate_md_issue_page_for_us(consolidated_issue)
-                self._update_error_page(consolidated_issue, self.REPORT_PAGE_US_GROUP)
+    def _generate_page_per_issue(self, issues: Issues) -> None:
+        logger.info("Generating MDoc pages ...")
+        for issue in issues.issues.values():
+            if isinstance(issue, UserStoryIssue):
+                self._generate_md_issue_page_for_us(issue)
+                self._update_error_page(issue, self.REPORT_PAGE_US_GROUP)
 
-        logger.info("Generating MDoc pages for Features ...")
-        for consolidated_issue in issues.values():
-            if DOC_FEATURE_LABEL in consolidated_issue.labels:
-                self._generate_md_issue_page_for_feat(consolidated_issue)
-                self._update_error_page(consolidated_issue, self.REPORT_PAGE_FEAT_GROUP)
+            if isinstance(issue, FeatureIssue):
+                self._generate_md_issue_page_for_feat(issue)
+                self._update_error_page(issue, self.REPORT_PAGE_FEAT_GROUP)
 
-        logger.info("Generating MDoc pages for Functionalities ...")
-        for consolidated_issue in issues.values():
-            if DOC_FUNCTIONALITY_LABEL in consolidated_issue.labels:
+            if isinstance(issue, FunctionalityIssue):
                 # get associated feature ID
                 feature_key = None
-                feature_id = consolidated_issue.get_feature_id()
-                if feature_id is not None:
-                    feature_key = f"{consolidated_issue.repository_id}/{feature_id}"
+                feature_ids = issue.get_feature_ids()
+                if feature_ids:
+                    feature_key = f"{issue.repository_id}/{feature_ids[0]}"
 
-                self._generate_md_issue_page_for_func(consolidated_issue, issues[feature_key] if feature_key else None)
-                self._update_error_page(consolidated_issue, self.REPORT_PAGE_FEAT_GROUP)
+                self._generate_md_issue_page_for_func(issue, issues.get_issue(feature_key) if feature_key else None)
+                self._update_error_page(issue, self.REPORT_PAGE_FEAT_GROUP)
 
-        logger.info("MDoc page generation - generated `%i` issue pages.", len(issues))
+        logger.info("MDoc page generation - generated `%i` issue pages.", issues.count())
 
-    def _generate_output_structure(self, issues: dict[str, ConsolidatedIssue]) -> None:
+    def _generate_output_structure(self, issues: Issues) -> None:
         if ActionInputs.is_structured_output_enabled():
             regime_output_path = make_absolute_path(self._output_path)
 
@@ -158,22 +158,22 @@ class MdocExporter(Exporter):
             self._generate_structured_index_pages(issues, "features")
 
         # Generate an index page with a summary table about all User Stories
-        us_issues: list[ConsolidatedIssue] = [
-            issue for issue in issues.values() if DOC_USER_STORY_LABEL in issue.labels
+        us_issues: list[UserStoryIssue] = [
+            issue for issue in issues.issues.values() if isinstance(issue, UserStoryIssue)
         ]
         self._generate_index_page(self._us_index_no_struct_template_file, "user_stories", us_issues)
         logger.info("MDoc page generation - generated User Stories `_index.md`.")
 
         # Generate an index page with a summary table about all Features
-        feat_issues: list[ConsolidatedIssue] = [issue for issue in issues.values() if DOC_FEATURE_LABEL in issue.labels]
+        feat_issues: list[FeatureIssue] = [issue for issue in issues.issues.values() if isinstance(issue, FeatureIssue)]
         self._generate_index_page(self._feat_index_no_struct_template_file, "features", feat_issues)
         logger.info("MDoc page generation - generated Features `_index.md`.")
 
-    def _generate_md_issue_page_for_us(self, consolidated_issue: ConsolidatedIssue) -> None:
+    def _generate_md_issue_page_for_us(self, issue: Issue) -> None:
         """
-        Generates a MDoc page for User Story ticket/GH issue from a template and save to the output directory.
+        Generates an MDoc page for a User Story ticket or GitHub issue from a template and saves it to the output directory.
 
-        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @param issue: The source Issue object containing the issue data.
         @return: None
         """
         # Initialize dictionary with replacements
@@ -183,9 +183,9 @@ class MdocExporter(Exporter):
         #   - GH Priority
         #   - GH Icon link
         replacements = {
-            "title": consolidated_issue.title,
+            "title": issue.title,
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "issue_content": consolidated_issue.body,
+            "issue_content": issue.body,
         }
 
         # Run through all replacements and update template keys with adequate content
@@ -193,22 +193,22 @@ class MdocExporter(Exporter):
 
         # Create a directory structure path for the issue page
         page_directory_path: str = self._generate_directory_path_us(
-            self.PARENT_PATH_US, consolidated_issue.repository_id
+            self.PARENT_PATH_US, issue.repository_id
         )
         os.makedirs(page_directory_path, exist_ok=True)
 
         # Save the single issue MDoc page
-        page_filename = consolidated_issue.generate_page_filename()
+        page_filename = self.generate_page_filename(issue)
         with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
             f.write(issue_md_page_content)
 
         logger.debug("Generated MDoc page: %s.", page_filename)
 
-    def _generate_md_issue_page_for_feat(self, consolidated_issue: ConsolidatedIssue) -> None:
+    def _generate_md_issue_page_for_feat(self, issue: Issue) -> None:
         """
-        Generates a MDoc page for Feature ticket/GH issue from a template and save to the output directory.
+        Generates an MDoc page for a Feature ticket/GH issue from a template and saves it to the output directory.
 
-        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @param issue: The source Issue object containing the issue data.
         @return: None
         """
         # Initialize dictionary with replacements
@@ -219,9 +219,9 @@ class MdocExporter(Exporter):
         #   - GH Icon link
 
         replacements = {
-            "title": consolidated_issue.title,
+            "title": issue.title,
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "issue_content": consolidated_issue.body,
+            "issue_content": issue.body,
         }
 
         # Run through all replacements and update template keys with adequate content
@@ -229,24 +229,25 @@ class MdocExporter(Exporter):
 
         # Create a directory structure path for the issue page
         page_directory_path: str = self._generate_directory_path_feat(
-            self.PARENT_PATH_FEAT, consolidated_issue.repository_id, consolidated_issue.title
+            self.PARENT_PATH_FEAT, issue.repository_id, issue.title
         )
         os.makedirs(page_directory_path, exist_ok=True)
 
         # Save the single issue MDoc page
-        page_filename = consolidated_issue.generate_page_filename()
+        page_filename = self.generate_page_filename(issue)
         with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
             f.write(issue_md_page_content)
 
         logger.debug("Generated MDoc page: %s.", page_filename)
 
     def _generate_md_issue_page_for_func(
-        self, consolidated_issue: ConsolidatedIssue, feature_consolidated_issue: Optional[ConsolidatedIssue] = None
+        self, issue: FunctionalityIssue, feature_issue: Optional[FeatureIssue] = None
     ) -> None:
         """
-        Generates a MDoc page for Functionality ticket/GH issue from a template and save to the output directory.
+        Generates an MDoc page for a Functionality ticket or GitHub issue from a template and saves it to the output directory.
 
-        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @param issue: The source Issue object containing the issue data.
+        @param feature_issue: The FeatureIssue object associated with the FunctionalityIssue, if any.
         @return: None
         """
         # Initialize dictionary with replacements
@@ -256,15 +257,13 @@ class MdocExporter(Exporter):
         #   - GH Priority
         #   - GH Icon link
 
-        title = consolidated_issue.title
-        feature_title = "no_feature"
-        if feature_consolidated_issue is not None:
-            feature_title = feature_consolidated_issue.title
+        title = issue.title
+        feature_title = feature_issue.title if feature_issue.title else "no_feature"
 
         replacements = {
             "title": title,
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "issue_content": consolidated_issue.body,
+            "issue_content": issue.body,
         }
 
         # Run through all replacements and update template keys with adequate content
@@ -272,34 +271,48 @@ class MdocExporter(Exporter):
 
         # Create a directory structure path for the issue page
         page_directory_path: str = self._generate_directory_path_func(
-            self.PARENT_PATH_FEAT, consolidated_issue.repository_id, feature_title
+            self.PARENT_PATH_FEAT, issue.repository_id, feature_title
         )
         os.makedirs(page_directory_path, exist_ok=True)
 
         # Save the single issue MDoc page
-        page_filename = consolidated_issue.generate_page_filename()
+        page_filename = self.generate_page_filename(issue)
         with open(os.path.join(page_directory_path, page_filename), "w", encoding="utf-8") as f:
             f.write(issue_md_page_content)
 
         logger.debug("Generated MDoc page: %s.", page_filename)
 
+    def generate_page_filename(self, issue: Issue) -> str:
+        """
+        Generate a filename page naming based on the issue number and title.
+
+        @return: The generated page filename.
+        """
+        if isinstance(issue, UserStoryIssue) or isinstance(issue, FunctionalityIssue):
+            md_filename_base = f"{issue.issue_number}_{issue.title.lower()}.md"
+            page_filename = sanitize_filename(md_filename_base)
+        elif isinstance(issue, FeatureIssue):
+            page_filename = "_index.md"
+        else:
+            page_filename = f"{issue.issue_number}.md"
+
+        return page_filename
+
     # pylint: disable=too-many-arguments
-    def _generate_structured_index_pages(
-        self, consolidated_issues: dict[str, ConsolidatedIssue], group_name: str
-    ) -> None:
+    def _generate_structured_index_pages(self, issues: Issues, group_name: str) -> None:
         """
         Generates a set of index pages due to a structured output feature.
 
-        @param consolidated_issues: A dictionary containing all consolidated issues.
+        @param issues: A dictionary containing all source issues.
         @return: None
         """
         # Group issues by repository for structured index page content
-        issues_by_repository: dict[str, list[ConsolidatedIssue]] = {}
-        for consolidated_issue in consolidated_issues.values():
-            repository_id = consolidated_issue.repository_id
+        issues_by_repository: dict[str, list[Issue]] = {}
+        for issue in issues.issues.values():
+            repository_id = issue.repository_id
             if repository_id not in issues_by_repository:
                 issues_by_repository[repository_id] = []
-            issues_by_repository[repository_id].append(consolidated_issue)
+            issues_by_repository[repository_id].append(issue)
 
         # Generate an index page for each repository
         repository_ids = issues_by_repository.keys()
@@ -314,26 +327,26 @@ class MdocExporter(Exporter):
             logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
     def _generate_index_page(
-        self, issue_index_page_template: str, group_name: str, consolidated_issues: list[ConsolidatedIssue]
+        self, issue_index_page_template: str, group_name: str, issues: list[Issue]
     ) -> None:
         """
-        Generates an index page with a summary of all issues and save it to the output directory.
+        Generates an index page that summarizes all issues and saves it to the output directory.
 
         @param issue_index_page_template: The template string for generating the index mdoc page.
-        @param consolidated_issues: A dictionary containing all consolidated issues.
-        @param repository_id: The repository id used if the structured output is generated.
+        @param issues: A dictionary containing all source issues.
+        @param repository_id: The repository ID used if the structured output is generated.
         @return: None
         """
         # Initializing the issue table header based on the project mining state
         issue_table = (
             TABLE_HEADER_WITH_PROJECT_DATA
-            if ActionInputs.is_project_state_mining_enabled()
+            if self.project_statuses_included
             else TABLE_HEADER_WITHOUT_PROJECT_DATA
         )
 
         # Create an issue summary table for every issue
-        for consolidated_issue in consolidated_issues:
-            issue_table += self._generate_mdoc_line(consolidated_issue)
+        for issue in issues:
+            issue_table += self._generate_mdoc_line(issue)
 
         # Prepare issues replacement for the index page
         replacement = {
@@ -341,10 +354,10 @@ class MdocExporter(Exporter):
             "issue_overview_table": issue_table,
         }
 
-        if len(consolidated_issues) > 0:
-            repository_id = consolidated_issues[0].repository_id
+        if len(issues) > 0:
+            repository_id = issues[0].repository_id
         else:
-            logger.info("No consolidated issues found for group: %s.", group_name)
+            logger.info("No source issues found for group: %s.", group_name)
             return
 
         if ActionInputs.is_structured_output_enabled():
@@ -354,7 +367,7 @@ class MdocExporter(Exporter):
         index_page: str = issue_index_page_template.format(**replacement)
 
         # Generate a directory structure path for the index page
-        # Note: repository_id is used only, if the structured output is generated
+        # Note: repository_id is used only if the structured output is generated
         index_directory_path: str = self._generate_index_directory_path(group_name, repository_id)
 
         # Create an index page file
@@ -366,7 +379,7 @@ class MdocExporter(Exporter):
         Generates an index page for the structured output based on the level.
 
         @param index_template: The template string for generating the index MDoc page.
-        @param repository_id: The repository id of a repository that stores the issues.
+        @param repository_id: The repository ID of a repository that stores the issues.
         @return: None
         """
         replacement = {
@@ -379,36 +392,35 @@ class MdocExporter(Exporter):
         # Replace the issue placeholders in the index template
         sub_level_index_page = index_template.format(**replacement)
 
-        # Create a sub index page file
+        # Create a sub-index page file
         output_path = os.path.join(make_absolute_path(self._output_path), group_name, organization_name)
         os.makedirs(output_path, exist_ok=True)
         with open(os.path.join(output_path, "_index.md"), "w", encoding="utf-8") as f:
             f.write(sub_level_index_page)
 
-    @staticmethod
-    def _generate_mdoc_line(consolidated_issue: ConsolidatedIssue) -> str:
+    def _generate_mdoc_line(self, issue: Issue) -> str:
         """
-        Generates a MDoc summary line for a single issue.
+        Generates an MDoc summary line for a single issue.
 
-        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @param issue: The source Issue object containing the issue data.
         @return: The MDoc line for the issue.
         """
-        organization_name = consolidated_issue.organization_name
-        repository_name = consolidated_issue.repository_name
-        number = consolidated_issue.number
-        title = consolidated_issue.title
+        organization_name = issue.organization_name
+        repository_name = issue.repository_name
+        number = issue.issue_number
+        title = issue.title
         title = title.replace("|", " _ ")
-        issue_link_base = consolidated_issue.title.replace(" ", "-").lower()
+        issue_link_base = issue.title.replace(" ", "-").lower()
         issue_mdoc_link = f"features#{issue_link_base}"
-        url = consolidated_issue.html_url
-        state = consolidated_issue.state
+        url = issue.html_url
+        state = issue.state
 
-        status_list = [project_status.status for project_status in consolidated_issue.project_issue_statuses]
+        status_list = [project_status.status for project_status in issue.project_statuses]
         status = ", ".join(status_list) if status_list else "---"
 
         # Change the bool values to more user-friendly characters
-        if ActionInputs.is_project_state_mining_enabled():
-            if consolidated_issue.linked_to_project:
+        if self.project_statuses_included:
+            if issue.linked_to_project:
                 linked_to_project = LINKED_TO_PROJECT_TRUE
             else:
                 linked_to_project = LINKED_TO_PROJECT_FALSE
@@ -427,20 +439,19 @@ class MdocExporter(Exporter):
 
         return md_issue_line
 
-    @staticmethod
-    def _generate_issue_summary_table(consolidated_issue: ConsolidatedIssue) -> str:
+    def _generate_issue_summary_table(self, issue: Issue) -> str:
         """
         Generates a string representation of feature info in a table format.
 
-        @param consolidated_issue: The ConsolidatedIssue object containing the issue data.
+        @param issue: The source Issue object containing the issue data.
         @return: The string representation of the issue info in a table format.
         """
         # Join issue labels into one string
-        issue_labels = consolidated_issue.labels
+        issue_labels = issue.labels
         labels = ", ".join(issue_labels) if issue_labels else None
 
-        # Format issue URL as a MDoc link
-        issue_url_ = consolidated_issue.html_url
+        # Format issue URL as an MDoc link
+        issue_url_ = issue.html_url
         issue_url = f"<a href='{issue_url_}' target='_blank'>GitHub link</a> " if issue_url_ else None
 
         # Define the header for the issue summary table
@@ -459,23 +470,23 @@ class MdocExporter(Exporter):
 
         # Define the values for the issue summary table
         values = [
-            consolidated_issue.organization_name,
-            consolidated_issue.repository_name,
-            consolidated_issue.number,
-            consolidated_issue.title,
-            consolidated_issue.state.lower(),
+            issue.organization_name,
+            issue.repository_name,
+            issue.issue_number,
+            issue.title,
+            issue.state.lower(),
             issue_url,
-            consolidated_issue.created_at,
-            consolidated_issue.updated_at,
-            consolidated_issue.closed_at,
+            issue.created_at,
+            issue.updated_at,
+            issue.closed_at,
             labels,
         ]
 
-        # Update the summary table, based on the project data mining situation
-        if ActionInputs.is_project_state_mining_enabled():
-            project_statuses = consolidated_issue.project_issue_statuses
+        # Update the summary table based on the project data mining situation
+        if self.project_statuses_included:
+            project_statuses = issue.project_statuses
 
-            if consolidated_issue.linked_to_project:
+            if issue.linked_to_project:
                 project_data_header = [
                     "Project title",
                     "Status",
@@ -485,7 +496,7 @@ class MdocExporter(Exporter):
                 ]
 
                 for project_status in project_statuses:
-                    # Update the summary data table for every project attached to repository issue
+                    # Update the summary data table for every project attached to the repository issue
                     project_data_values = [
                         project_status.project_title,
                         project_status.status,
@@ -512,9 +523,9 @@ class MdocExporter(Exporter):
 
     def _generate_index_directory_path(self, group_name: str, repository_id: Optional[str]) -> str:
         """
-        Generates a directory path based on if structured output is required.
+        Generates a directory path based on whether structured output is required.
 
-        @param repository_id: The repository id.
+        @param repository_id: The repository ID.
         @return: The generated directory path.
         """
         output_path: str = os.path.join(make_absolute_path(self._output_path), group_name)
@@ -617,17 +628,17 @@ class MdocExporter(Exporter):
 
         return True
 
-    def _update_error_page(self, ci: ConsolidatedIssue, group: str) -> None:
-        if ActionInputs.is_report_page_generation_enabled() and ci.errors:
+    def _update_error_page(self, issue: Issue, group: str) -> None:
+        if ActionInputs.is_report_page_generation_enabled() and issue.errors:
             keys = self._report_page_content.keys()
             if group not in keys:
                 self._report_page_content[group] = REPORT_PAGE_HEADER
 
-            repository_id: str = ci.repository_id
-            number: int = ci.number
-            html_url: str = ci.html_url
+            repository_id: str = issue.repository_id
+            number: int = issue.issue_number
+            html_url: str = issue.html_url
 
-            for error_type, error_message in ci.errors.items():
+            for error_type, error_message in issue.errors.items():
                 self._report_page_content[
                     group
                 ] += f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"

@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from living_documentation_regime.model.github_project import GithubProject
-from living_documentation_regime.model.project_issue import ProjectIssue
+from living_doc_generator.model.github_project import GithubProject
+from living_doc_generator.model.project_issue import ProjectIssue
 
 
 # loads
