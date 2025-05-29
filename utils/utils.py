@@ -38,7 +38,6 @@ def make_issue_key(organization_name: str, repository_name: str, issue_number: i
     return f"{organization_name}/{repository_name}/{issue_number}"
 
 
-# TODO - check if used after refactoring
 def sanitize_filename(filename: str) -> str:
     """
     Sanitize the provided filename by removing invalid characters.
