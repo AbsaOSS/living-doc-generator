@@ -1,10 +1,6 @@
 name: 'Living Documentation Generator - MDOC'
 description: 'Generates living documentation in MDOC format'
 inputs:
-  # Base action inputs
-#  GITHUB-TOKEN:
-#    description: 'GitHub token for authentication.'
-#    required: true
   source:
     description: 'Path to source file containing the data to be processed.'
     required: true
@@ -49,10 +45,8 @@ runs:
         export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/living-doc-generator"
       shell: bash
 
-    - name: Prepare environment based on mining regimes
+    - name: Prepare environment variables
       run: |
-        # Set base env variables common for all regimes
-#        echo "INPUT_GITHUB_TOKEN=${{ env.GITHUB-TOKEN }}" >> $GITHUB_ENV
         echo "INPUT_SOURCE=${{ inputs.source }}" >> $GITHUB_ENV
         echo "INPUT_RELEASE=${{ inputs.release }}" >> $GITHUB_ENV
         echo "INPUT_STRUCTURED_OUTPUT=${{ inputs.structured-output }}" >> $GITHUB_ENV
@@ -60,10 +54,9 @@ runs:
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
       shell: bash
 
-    - name: Run Living Documentation Generator
+    - name: Run Living Documentation Generator for Mdoc
       id: liv-doc-generator
       env:
-#        INPUT_GITHUB_TOKEN: ${{ env.INPUT_GITHUB_TOKEN }}
         INPUT_SOURCE: ${{ env.INPUT_SOURCE }}
 
         INPUT_RELEASE: ${{ env.INPUT_RELEASE }}

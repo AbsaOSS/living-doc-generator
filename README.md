@@ -25,7 +25,6 @@ The raw data can be obtained from the action [liv-doc-collector-gh](https://gith
 ### Prerequisites
 
 Before we begin, ensure you have the following prerequisites:
-- GitHub Token with permission to fetch repository data such as Issues and Pull Requests,
 - Python version 3.12 or higher.
 
 ### Adding the Action to Your Workflow
@@ -36,8 +35,6 @@ See the default action step definition:
 - name: Generate Living Documentation MDOC
   id: living_doc-generator-mdoc
   uses: AbsaOSS/living-doc-generator-mdoc@v0.1.0
-  env:
-    GITHUB-TOKEN: ${{ secrets.GITHUB_TOKEN }}  
   with:
     source: "TODO - path to the raw input file"  # Path to the raw input file containing the data to be processed.
     
@@ -50,19 +47,7 @@ See the default action step definition:
 ---
 ## Action Configuration
 
-This section outlines the essential parameters common to all regimes that a user can define.
-
-Configure the action by customizing the following parameters based on your needs:
-
-### Environment Variables
-
-| Variable Name  | Description             | Required | Usage                                                                                                                 |
-|----------------|-------------------------|----------|-----------------------------------------------------------------------------------------------------------------------|
-| `GITHUB_TOKEN` | GitHub token, that TODO | Yes      | Store it in the GitHub repository secrets and reference it in the workflow file using  `${{ secrets.GITHUB_TOKEN }}`. |
-
-# TODO - je potreba pro generovani token? | pokud ano, je nutne ho brat z secrets? mam dojem, ze neni
-
-### Inputs
+This section outlines the essential parameters that a user can define.
 
 | Input Name          | Description                                              | Required | Default | Usage                     | 
 |---------------------|----------------------------------------------------------|----------|---------|---------------------------|

@@ -38,14 +38,7 @@ class MdocLivingDocumentationGenerator:
     """
 
     def __init__(self, output_path: str):
-        # TODO - is the gh token needed for generator?
-        github_token = ActionInputs.get_github_token()
-
-        self.__output_path = os.path.join(output_path, "mdoc")
-        # self.__github_instance: Github = Github(auth=Auth.Token(token=github_token), per_page=ISSUES_PER_PAGE_LIMIT)
-        # self.__github_projects_instance: GithubProjects = GithubProjects(token=github_token)
-        # self.__rate_limiter: GithubRateLimiter = GithubRateLimiter(self.__github_instance)
-        # self.__safe_call: Callable = safe_call_decorator(self.__rate_limiter)
+        self.__output_path = output_path
 
     def generate(self) -> bool:
         """

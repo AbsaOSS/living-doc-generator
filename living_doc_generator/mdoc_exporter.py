@@ -25,12 +25,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+from living_doc_utilities.exporter.exporter import Exporter
 from living_doc_utilities.model.feature_issue import FeatureIssue
 from living_doc_utilities.model.functionality_issue import FunctionalityIssue
 from living_doc_utilities.model.issue import Issue
 from living_doc_utilities.model.issues import Issues
 
-from exporter.exporter import Exporter
 from action_inputs import ActionInputs
 from living_doc_utilities.model.user_story_issue import UserStoryIssue
 from utils.utils import make_absolute_path, generate_root_level_index_page, load_template, sanitize_filename
@@ -40,7 +40,6 @@ from utils.constants import (
     TABLE_HEADER_WITHOUT_PROJECT_DATA,
     LINKED_TO_PROJECT_TRUE,
     LINKED_TO_PROJECT_FALSE,
-    LIV_DOC_OUTPUT_PATH,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,6 +57,7 @@ class MdocExporter(Exporter):
 
     def __init__(self, output_path: str):
         self._output_path = output_path
+
         # templates
         self._us_issue_page_detail_template: str = ""
         self._feat_issue_page_detail_template: str = ""
@@ -258,7 +258,7 @@ class MdocExporter(Exporter):
         #   - GH Icon link
 
         title = issue.title
-        feature_title = feature_issue.title if feature_issue.title else "no_feature"
+        feature_title = feature_issue.title if feature_issue and feature_issue.title else "no_feature"
 
         replacements = {
             "title": title,
@@ -544,9 +544,8 @@ class MdocExporter(Exporter):
 
         @return: A tuple containing all loaded template files.
         """
-        project_root = Path(__file__).resolve().parent.parent.parent
-
-        templates_base_path = os.path.join(project_root, "templates", "living_documentation_regime")
+        project_root = Path(__file__).resolve().parent.parent
+        templates_base_path = os.path.join(project_root, "templates")
 
         us_issue_detail_page_template = os.path.join(templates_base_path, "us_issue_detail_page_template.md")
         feat_issue_detail_page_template = os.path.join(templates_base_path, "feat_issue_detail_page_template.md")
@@ -643,59 +642,50 @@ class MdocExporter(Exporter):
                     group
                 ] += f"| {error_type} | [{repository_id}#{number}]({html_url}) | {error_message} |\n"
 
-    @staticmethod
-    def _generate_directory_path_us(parent_path: str, repository_id: str) -> str:
+    def _generate_directory_path_us(self, parent_path: str, repository_id: str) -> str:
         """
         Generate a list of directory paths based on enabled features.
 
         @return: The list of generated directory paths.
         """
-        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
-
         # If structured output is enabled, create a directory path based on the repository
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
-            output_path = os.path.join(output_path, parent_path, organization_name, repository_name)
+            output_path = os.path.join(self._output_path, parent_path, organization_name, repository_name)
         else:
             # If structured output is not enabled, create a directory path based on the parent path
-            output_path = os.path.join(output_path, parent_path)
+            output_path = os.path.join(self._output_path, parent_path)
 
         return output_path
 
-    @staticmethod
-    def _generate_directory_path_feat(parent_path: str, repository_id: str, feature_title: str) -> str:
+    def _generate_directory_path_feat(self, parent_path: str, repository_id: str, feature_title: str) -> str:
         """
         Generate a list of directory paths based on enabled features.
 
         @return: The list of generated directory paths.
         """
-        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
-
         # If structured output is enabled, create a directory path based on the repository
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
-            output_path = os.path.join(output_path, parent_path, organization_name, repository_name, feature_title)
+            output_path = os.path.join(self._output_path, parent_path, organization_name, repository_name, feature_title)
         else:
             # If structured output is not enabled, create a directory path based on the parent path
-            output_path = os.path.join(output_path, parent_path, feature_title)
+            output_path = os.path.join(self._output_path, parent_path, feature_title)
 
         return output_path
 
-    @staticmethod
-    def _generate_directory_path_func(parent_path: str, repository_id: str, feature_title: str) -> str:
+    def _generate_directory_path_func(self, parent_path: str, repository_id: str, feature_title: str) -> str:
         """
         Generate a list of directory paths based on enabled features.
 
         @return: The list of generated directory paths.
         """
-        output_path: str = make_absolute_path(LIV_DOC_OUTPUT_PATH)
-
         # If structured output is enabled, create a directory path based on the repository
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
-            output_path = os.path.join(output_path, parent_path, organization_name, repository_name, feature_title)
+            output_path = os.path.join(self._output_path, parent_path, organization_name, repository_name, feature_title)
         else:
             # If structured output is not enabled, create a directory path based on the parent path
-            output_path = os.path.join(output_path, parent_path, feature_title)
+            output_path = os.path.join(self._output_path, parent_path, feature_title)
 
         return output_path

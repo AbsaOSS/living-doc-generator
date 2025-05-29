@@ -20,6 +20,7 @@ for the GH Action.
 """
 
 import logging
+import os.path
 import sys
 
 from living_doc_utilities.constants import OUTPUT_PATH
@@ -28,6 +29,7 @@ from living_doc_utilities.logging_config import setup_logging
 
 from action_inputs import ActionInputs
 from living_doc_generator.living_doc_generator import MdocLivingDocumentationGenerator
+from utils.constants import GENERATOR_OUTPUT_PATH
 from utils.utils import make_absolute_path
 
 
@@ -46,7 +48,7 @@ def run() -> None:
         logger.info("Living Documentation generator - mdoc - user configuration validation failed.")
         sys.exit(1)
 
-    output_path: str = make_absolute_path(OUTPUT_PATH)
+    output_path: str = make_absolute_path(os.path.join(OUTPUT_PATH, GENERATOR_OUTPUT_PATH, "mdoc"))
 
     # Generate the Living documentation
     res = MdocLivingDocumentationGenerator(output_path).generate()

@@ -28,7 +28,7 @@ SOURCE = "SOURCE"
 STRUCTURED_OUTPUT = "STRUCTURED_OUTPUT"
 
 # Regime output paths
-LIV_DOC_OUTPUT_PATH = "./output/liv-doc-regime"
+GENERATOR_OUTPUT_PATH = "generator"
 
 # GitHub API constants
 ISSUES_PER_PAGE_LIMIT = 100

@@ -45,11 +45,11 @@ touch run_local.sh
 #!/bin/sh
 
 # Essential environment variables for GitHub Action functionality
-export INPUT_GITHUB_TOKEN=$(printenv GITHUB_TOKEN)
 export INPUT_SOURCE="TODO"
 
 # Optional environment variables
 export INPUT_RELEASE=false
+export INPUT_STRUCTURED_OUTPUT=true
 export INPUT_REPORT_PAGE=true
 export INPUT_VERBOSE_LOGGING=true
 
