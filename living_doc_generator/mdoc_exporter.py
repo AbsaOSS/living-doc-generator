@@ -30,9 +30,9 @@ from living_doc_utilities.model.feature_issue import FeatureIssue
 from living_doc_utilities.model.functionality_issue import FunctionalityIssue
 from living_doc_utilities.model.issue import Issue
 from living_doc_utilities.model.issues import Issues
+from living_doc_utilities.model.user_story_issue import UserStoryIssue
 
 from action_inputs import ActionInputs
-from living_doc_utilities.model.user_story_issue import UserStoryIssue
 from utils.utils import make_absolute_path, generate_root_level_index_page, load_template, sanitize_filename
 from utils.constants import (
     REPORT_PAGE_HEADER,
@@ -76,7 +76,7 @@ class MdocExporter(Exporter):
         logger.info("MDoc page generation - started.")
 
         issues: Issues = kwargs.get("issues", Issues())
-        self.project_statuses_included = issues.project_state_included
+        self.project_statuses_included = issues.project_states_included
         logger.debug("Exporting %d issues...", issues.count())
 
         # Load the template files for generating the MDoc pages
@@ -98,7 +98,7 @@ class MdocExporter(Exporter):
 
     def _generate_report_page(self):
         def write_report_page(group: str, parent_dir: str, content: str) -> None:
-            header, divider, *error_rows = content.strip().split("\n")
+            header, divider, *error_rows = content.strip().split("\n")  # pylint: disable=unused-variable
             if error_rows:
                 report_page = self._report_page_template.format(
                     date=datetime.now().strftime("%Y-%m-%d"),
@@ -132,7 +132,7 @@ class MdocExporter(Exporter):
             if isinstance(issue, FunctionalityIssue):
                 # get associated feature ID
                 feature_key = None
-                feature_ids = issue.get_feature_ids()
+                feature_ids = issue.get_related_feature_ids()
                 if feature_ids:
                     feature_key = f"{issue.repository_id}/{feature_ids[0]}"
 
@@ -171,7 +171,8 @@ class MdocExporter(Exporter):
 
     def _generate_md_issue_page_for_us(self, issue: Issue) -> None:
         """
-        Generates an MDoc page for a User Story ticket or GitHub issue from a template and saves it to the output directory.
+        Generates an MDoc page for a User Story ticket or GitHub issue from a template and saves
+        it to the output directory.
 
         @param issue: The source Issue object containing the issue data.
         @return: None
@@ -192,9 +193,7 @@ class MdocExporter(Exporter):
         issue_md_page_content = self._us_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
-        page_directory_path: str = self._generate_directory_path_us(
-            self.PARENT_PATH_US, issue.repository_id
-        )
+        page_directory_path: str = self._generate_directory_path_us(self.PARENT_PATH_US, issue.repository_id)
         os.makedirs(page_directory_path, exist_ok=True)
 
         # Save the single issue MDoc page
@@ -244,7 +243,8 @@ class MdocExporter(Exporter):
         self, issue: FunctionalityIssue, feature_issue: Optional[FeatureIssue] = None
     ) -> None:
         """
-        Generates an MDoc page for a Functionality ticket or GitHub issue from a template and saves it to the output directory.
+        Generates an MDoc page for a Functionality ticket or GitHub issue from a template and saves
+        it to the output directory.
 
         @param issue: The source Issue object containing the issue data.
         @param feature_issue: The FeatureIssue object associated with the FunctionalityIssue, if any.
@@ -288,7 +288,7 @@ class MdocExporter(Exporter):
 
         @return: The generated page filename.
         """
-        if isinstance(issue, UserStoryIssue) or isinstance(issue, FunctionalityIssue):
+        if isinstance(issue, (UserStoryIssue, FunctionalityIssue)):
             md_filename_base = f"{issue.issue_number}_{issue.title.lower()}.md"
             page_filename = sanitize_filename(md_filename_base)
         elif isinstance(issue, FeatureIssue):
@@ -326,9 +326,7 @@ class MdocExporter(Exporter):
 
             logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
-    def _generate_index_page(
-        self, issue_index_page_template: str, group_name: str, issues: list[Issue]
-    ) -> None:
+    def _generate_index_page(self, issue_index_page_template: str, group_name: str, issues: list[Issue]) -> None:
         """
         Generates an index page that summarizes all issues and saves it to the output directory.
 
@@ -339,9 +337,7 @@ class MdocExporter(Exporter):
         """
         # Initializing the issue table header based on the project mining state
         issue_table = (
-            TABLE_HEADER_WITH_PROJECT_DATA
-            if self.project_statuses_included
-            else TABLE_HEADER_WITHOUT_PROJECT_DATA
+            TABLE_HEADER_WITH_PROJECT_DATA if self.project_statuses_included else TABLE_HEADER_WITHOUT_PROJECT_DATA
         )
 
         # Create an issue summary table for every issue
@@ -474,7 +470,7 @@ class MdocExporter(Exporter):
             issue.repository_name,
             issue.issue_number,
             issue.title,
-            issue.state.lower(),
+            issue.state.lower() if issue.state else None,
             issue_url,
             issue.created_at,
             issue.updated_at,
@@ -667,7 +663,9 @@ class MdocExporter(Exporter):
         # If structured output is enabled, create a directory path based on the repository
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
-            output_path = os.path.join(self._output_path, parent_path, organization_name, repository_name, feature_title)
+            output_path = os.path.join(
+                self._output_path, parent_path, organization_name, repository_name, feature_title
+            )
         else:
             # If structured output is not enabled, create a directory path based on the parent path
             output_path = os.path.join(self._output_path, parent_path, feature_title)
@@ -683,7 +681,9 @@ class MdocExporter(Exporter):
         # If structured output is enabled, create a directory path based on the repository
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
-            output_path = os.path.join(self._output_path, parent_path, organization_name, repository_name, feature_title)
+            output_path = os.path.join(
+                self._output_path, parent_path, organization_name, repository_name, feature_title
+            )
         else:
             # If structured output is not enabled, create a directory path based on the parent path
             output_path = os.path.join(self._output_path, parent_path, feature_title)

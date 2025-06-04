@@ -17,7 +17,6 @@
 """
 This module contains all constants and enums used across the project.
 """
-from enum import Enum
 
 # General Action inputs
 GITHUB_TOKEN = "GITHUB_TOKEN"

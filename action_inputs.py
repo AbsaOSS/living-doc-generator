@@ -88,7 +88,7 @@ class ActionInputs(BaseActionInputs):
             err_counter += 1
         else:
             if not os.path.isfile(source):
-                logger.error(f"Source file not found at received path: '{source}'.")
+                logger.error("Source file not found at received path: '%s'.", source)
                 err_counter += 1
 
         if err_counter > 0:

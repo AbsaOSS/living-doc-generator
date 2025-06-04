@@ -13,18 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 
 import pytest
 
-from utils.exceptions import InvalidQueryFormatError
-from utils.utils import (
-    make_issue_key,
-    sanitize_filename,
-    validate_query_format,
-    get_action_input,
-    set_action_output,
-    load_template, generate_root_level_index_page,
-)
+from utils.utils import make_issue_key, sanitize_filename, generate_root_level_index_page, load_template, \
+    make_absolute_path
 
 
 # make_issue_key
@@ -60,98 +54,17 @@ def test_sanitize_filename(filename_example, expected_filename):
     assert expected_filename == actual_filename
 
 
-# GitHub action utils
-# get_action_input
+# make_absolute_path
 
 
-def test_get_input_with_hyphen(mocker):
-    mock_getenv = mocker.patch("os.getenv", return_value="test_value")
+def test_make_absolute_path_with_relative_path():
+    relative_path = "some/relative/path"
+    expected = os.path.abspath(relative_path)
+    assert make_absolute_path(relative_path) == expected
 
-    actual = get_action_input("test-input")
-
-    mock_getenv.assert_called_with("INPUT_TEST_INPUT", default='')
-    assert "test_value" == actual
-
-
-def test_get_input_without_hyphen(mocker):
-    mock_getenv = mocker.patch("os.getenv", return_value="another_test_value")
-
-    actual = get_action_input("anotherinput")
-
-    mock_getenv.assert_called_with("INPUT_ANOTHERINPUT", default='')
-    assert "another_test_value" == actual
-
-
-# validate_query_format
-
-
-def test_validate_query_format_right_behaviour(mocker):
-    mock_log_error = mocker.patch("utils.utils.logger.error")
-
-    # Test case where there are no missing or extra placeholders
-    query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
-    expected_placeholders = {"placeholder1", "placeholder2"}
-    validate_query_format(query_string, expected_placeholders)
-    mock_log_error.assert_not_called()
-
-
-def test_validate_query_format_missing_placeholder(mocker):
-    mock_log_error = mocker.patch("utils.utils.logger.error")
-
-    # Test case where there are missing placeholders
-    query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
-    expected_placeholders = {"placeholder1", "placeholder2", "placeholder3"}
-    with pytest.raises(InvalidQueryFormatError):
-        validate_query_format(query_string, expected_placeholders)
-        mock_log_error.assert_called_with(
-            "%s%s\nFor the query: %s",
-            "Missing placeholders: {'placeholder3'}. ",
-            "",
-            "This is a query with placeholders {placeholder1} and {placeholder2}",
-        )
-
-
-def test_validate_query_format_extra_placeholder(mocker):
-    mock_log_error = mocker.patch("utils.utils.logger.error")
-
-    # Test case where there are extra placeholders
-    query_string = "This is a query with placeholders {placeholder1} and {placeholder2}"
-    expected_placeholders = {"placeholder1"}
-    with pytest.raises(InvalidQueryFormatError):
-        validate_query_format(query_string, expected_placeholders)
-        mock_log_error.assert_called_with(
-            "%s%s\nFor the query: %s",
-            "",
-            "Extra placeholders: {'placeholder2'}.",
-            "This is a query with placeholders {placeholder1} and {placeholder2}",
-        )
-
-
-# set_action_output
-
-
-def test_set_output_default(mocker):
-    mocker.patch("os.getenv", return_value="default_output.txt")
-    mock_open = mocker.patch("builtins.open", new_callable=mocker.mock_open)
-
-    set_action_output("test-output", "test_value")
-
-    mock_open.assert_called_with("default_output.txt", "a", encoding="utf-8")
-    handle = mock_open()
-    handle.write.assert_any_call("test-output=test_value\n")
-
-
-def test_set_output_custom_path(mocker):
-    mocker.patch("os.getenv", return_value="custom_output.txt")
-    mock_open = mocker.patch("builtins.open", new_callable=mocker.mock_open)
-
-    set_action_output("custom-output", "custom_value", "default_output.txt")
-
-    mock_open.assert_called_with("custom_output.txt", "a", encoding="utf-8")
-    handle = mock_open()
-    handle.write.assert_any_call("custom-output=custom_value\n")
-
-
+def test_make_absolute_path_with_absolute_path():
+    absolute_path = os.path.abspath("already/absolute/path")
+    assert make_absolute_path(absolute_path) == absolute_path
 
 
 # generate_root_level_index_page

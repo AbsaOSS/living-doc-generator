@@ -65,5 +65,6 @@ def run() -> None:
 
     logger.info("Living Documentation generator - mdoc - generation successfully completed.")
 
+
 if __name__ == "__main__":
     run()
