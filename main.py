@@ -45,7 +45,7 @@ def run() -> None:
     logger.info("Living Documentation generator - mdoc - starting.")
 
     if not ActionInputs().validate_user_configuration():
-        logger.info("Living Documentation generator - mdoc - user configuration validation failed.")
+        logger.error("Living Documentation generator - mdoc - user configuration validation failed.")
         sys.exit(1)
 
     output_path: str = make_absolute_path(os.path.join(OUTPUT_PATH, GENERATOR_OUTPUT_PATH, "mdoc"))
