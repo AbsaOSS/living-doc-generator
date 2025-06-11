@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from living_doc_utilities.model.issues import Issues
+
 from action_inputs import ActionInputs
 from living_doc_generator.living_doc_generator import MdocLivingDocumentationGenerator
 
@@ -26,7 +28,7 @@ def test_generate_correct_behaviour(mocker):
     mock_logger_info = mocker.patch("living_doc_generator.living_doc_generator.logger.info")
     mock_logger_debug = mocker.patch("living_doc_generator.living_doc_generator.logger.debug")
     mock_issues_load = mocker.patch("living_doc_utilities.model.issues.Issues.load_from_json")
-    mock_issues_load.return_value = mocker.Mock()
+    mock_issues_load.return_value = Issues()
     mock_action_inputs = mocker.patch("action_inputs.ActionInputs.get_source", return_value="mocked_source")
 
     # Act

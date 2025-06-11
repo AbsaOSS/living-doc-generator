@@ -23,7 +23,7 @@ import os
 
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TypeVar, Sequence
 
 from living_doc_utilities.exporter.exporter import Exporter
 from living_doc_utilities.model.feature_issue import FeatureIssue
@@ -43,6 +43,8 @@ from utils.constants import (
 )
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T", bound=Issue)
 
 
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -131,12 +133,15 @@ class MdocExporter(Exporter):
 
             if isinstance(issue, FunctionalityIssue):
                 # get associated feature ID
-                feature_key = None
+                feature_issue = None
                 feature_ids = issue.get_related_feature_ids()
                 if feature_ids:
                     feature_key = f"{issue.repository_id}/{feature_ids[0]}"
+                    possible_feature = issues.get_issue(feature_key)
+                    if isinstance(possible_feature, FeatureIssue):
+                        feature_issue = possible_feature
 
-                self._generate_md_issue_page_for_func(issue, issues.get_issue(feature_key) if feature_key else None)
+                self._generate_md_issue_page_for_func(issue, feature_issue)
                 self._update_error_page(issue, self.REPORT_PAGE_FEAT_GROUP)
 
         logger.info("MDoc page generation - generated `%i` issue pages.", issues.count())
@@ -193,6 +198,7 @@ class MdocExporter(Exporter):
         issue_md_page_content = self._us_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
+        assert issue.repository_id is not None
         page_directory_path: str = self._generate_directory_path_us(self.PARENT_PATH_US, issue.repository_id)
         os.makedirs(page_directory_path, exist_ok=True)
 
@@ -227,8 +233,9 @@ class MdocExporter(Exporter):
         issue_md_page_content = self._feat_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
+        assert issue.repository_id is not None
         page_directory_path: str = self._generate_directory_path_feat(
-            self.PARENT_PATH_FEAT, issue.repository_id, issue.title
+            self.PARENT_PATH_FEAT, issue.repository_id, issue.title if issue.title else ""
         )
         os.makedirs(page_directory_path, exist_ok=True)
 
@@ -270,6 +277,7 @@ class MdocExporter(Exporter):
         issue_md_page_content = self._func_issue_page_detail_template.format(**replacements)
 
         # Create a directory structure path for the issue page
+        assert issue.repository_id is not None
         page_directory_path: str = self._generate_directory_path_func(
             self.PARENT_PATH_FEAT, issue.repository_id, feature_title
         )
@@ -288,8 +296,9 @@ class MdocExporter(Exporter):
 
         @return: The generated page filename.
         """
+        title = issue.title if issue.title else ""
         if isinstance(issue, (UserStoryIssue, FunctionalityIssue)):
-            md_filename_base = f"{issue.issue_number}_{issue.title.lower()}.md"
+            md_filename_base = f"{issue.issue_number}_{title.lower()}.md"
             page_filename = sanitize_filename(md_filename_base)
         elif isinstance(issue, FeatureIssue):
             page_filename = "_index.md"
@@ -309,10 +318,10 @@ class MdocExporter(Exporter):
         # Group issues by repository for structured index page content
         issues_by_repository: dict[str, list[Issue]] = {}
         for issue in issues.issues.values():
-            repository_id = issue.repository_id
-            if repository_id not in issues_by_repository:
-                issues_by_repository[repository_id] = []
-            issues_by_repository[repository_id].append(issue)
+            assert issue.repository_id is not None
+            if issue.repository_id not in issues_by_repository:
+                issues_by_repository[issue.repository_id] = []
+            issues_by_repository[issue.repository_id].append(issue)
 
         # Generate an index page for each repository
         repository_ids = issues_by_repository.keys()
@@ -326,7 +335,7 @@ class MdocExporter(Exporter):
 
             logger.info("MDoc page generation - generated `_index.md` pages for %s.", repository_id)
 
-    def _generate_index_page(self, issue_index_page_template: str, group_name: str, issues: list[Issue]) -> None:
+    def _generate_index_page(self, issue_index_page_template: str, group_name: str, issues: Sequence[T]) -> None:
         """
         Generates an index page that summarizes all issues and saves it to the output directory.
 
@@ -631,7 +640,10 @@ class MdocExporter(Exporter):
 
             repository_id: str = issue.repository_id
             number: int = issue.issue_number
-            html_url: str = issue.html_url
+            if issue.html_url is None:
+                html_url: str = f"https://github.com/{repository_id}/issues/{number}"
+            else:
+                html_url = issue.html_url
 
             for error_type, error_message in issue.errors.items():
                 self._report_page_content[

@@ -54,6 +54,13 @@ class MdocLivingDocumentationGenerator:
         issues: Issues = Issues.load_from_json(ActionInputs.get_source())
         logger.info("Loading of issue from source - finished.")
 
+        # filter out issues without repository id
+        issues_keys = list(issues.issues.keys())
+        for key in issues_keys:
+            if issues.issues[key] is None:
+                logger.warning("Issue '%s' has no repository id, removing it from the loaded issues.", key)
+                del issues.issues[key]
+
         # Generate markdown pages
         logger.info("Generating Living Documentation output - started.")
         res = self._generate_living_documents(issues)
