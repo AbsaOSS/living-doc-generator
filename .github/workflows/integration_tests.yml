@@ -44,13 +44,13 @@ jobs:
         doc-issues-project-state-mining: false
 
     - name: Use output path
-      run: echo "Output path is ${{ steps.living_doc_collector_gh.outputs.output-path }}"
+      run: echo "Output path is ${{ steps.collect_data_without_project.outputs.output-path }}"
 
     - name: Integration test
       id: generate_living_doc
       uses: ./
       with:
-        source: ${{ steps.collect_data_without_project.outputs.output-path }}
+        source: "${{ steps.collect_data_without_project.outputs.output-path }}/doc-issues/doc-issues.json"
         report-page: true
         verbose-logging: true
 
