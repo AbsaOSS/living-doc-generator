@@ -26,7 +26,7 @@ jobs:
 
     - name: Collect data for Integration tests
       id: collect_data_without_project
-      uses: AbsaOSS/living-doc-collector-gh@feature/7-Add-data-required-by-mdoc-generator
+      uses: AbsaOSS/living-doc-collector-gh@v0.1.0
       env:
         GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
       with:
@@ -51,7 +51,7 @@ jobs:
         report-page: true
         verbose-logging: true
 
-    - name: Use output path
+    - name: Show generated output
       run: ls -lR "${{ steps.generate_living_doc_1.outputs.output-path }}"
 
     - name: Verify integration test results
@@ -77,7 +77,7 @@ jobs:
 
       - name: Collect data with Project for Integration tests
         id: collect_data_with_project_1
-        uses: AbsaOSS/living-doc-collector-gh@feature/7-Add-data-required-by-mdoc-generator
+        uses: AbsaOSS/living-doc-collector-gh@v0.1.0
         env:
           GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
         with:
@@ -104,7 +104,7 @@ jobs:
           report-page: true
           verbose-logging: true
 
-      - name: Use output path
+      - name: Show generated output
         run: ls -lR "${{ steps.generate_living_doc_1.outputs.output-path }}"
 
       - name: Verify integration test results
@@ -130,7 +130,7 @@ jobs:
 
       - name: Collect data with Project for Integration tests
         id: collect_data_with_project_2
-        uses: AbsaOSS/living-doc-collector-gh@feature/7-Add-data-required-by-mdoc-generator
+        uses: AbsaOSS/living-doc-collector-gh@v0.1.0
         env:
           GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
         with:
@@ -157,7 +157,7 @@ jobs:
           report-page: true
           verbose-logging: true
 
-      - name: Use output path
+      - name: Show generated output
         run: ls -lR "${{ steps.generate_living_doc_2.outputs.output-path }}"
 
       - name: Verify integration test results
