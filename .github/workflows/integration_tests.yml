@@ -52,7 +52,7 @@ jobs:
         verbose-logging: true
 
     - name: Use output path
-      run: ls -l "Output path is ${{ steps.generate_living_doc_1.outputs.output-path }}"
+      run: ls -l "${{ steps.generate_living_doc_1.outputs.output-path }}"
 
     - name: Verify integration test results
       run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_without_project_mining
