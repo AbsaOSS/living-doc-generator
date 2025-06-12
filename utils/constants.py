@@ -15,7 +15,7 @@
 #
 
 """
-This module contains all constants and enums used across the project.
+This module centralises all constants used across the project.
 """
 
 # General Action inputs
