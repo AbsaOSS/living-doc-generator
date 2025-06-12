@@ -458,7 +458,7 @@ def test_generate_md_issue_page_for_feat(mdoc_exporter, tmp_path, mocker):
     mocker.patch.object(mdoc_exporter, "_feat_issue_page_detail_template", mock_template)
 
     mdoc_exporter._output_path = str(tmp_path)
-    output_file = os.path.join(tmp_path, "features", "Sample Feature", "_index.md")
+    output_file = os.path.join(tmp_path, "features", "Sample_Feature", "_index.md")
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     # Act

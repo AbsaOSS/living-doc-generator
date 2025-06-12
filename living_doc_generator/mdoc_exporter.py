@@ -677,9 +677,7 @@ class MdocExporter(Exporter):
         # If structured output is enabled, create a directory path based on the repository
         if ActionInputs.is_structured_output_enabled() and repository_id:
             organization_name, repository_name = repository_id.split("/")
-            output_path = os.path.join(
-                self._output_path, parent_path, organization_name, repository_name, safe_title
-            )
+            output_path = os.path.join(self._output_path, parent_path, organization_name, repository_name, safe_title)
         else:
             # If structured output is not enabled, create a directory path based on the parent path
             output_path = os.path.join(self._output_path, parent_path, safe_title)
