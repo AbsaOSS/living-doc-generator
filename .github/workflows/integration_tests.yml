@@ -52,123 +52,113 @@ jobs:
         verbose-logging: true
 
     - name: Use output path
-      run: ls -l "${{ steps.generate_living_doc_1.outputs.output-path }}"
+      run: ls -lR "${{ steps.generate_living_doc_1.outputs.output-path }}"
 
     - name: Verify integration test results
       run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_without_project_mining
 
-#  TestsWithProjectMining:
-#    runs-on: ubuntu-latest
-#    name: Integration Tests with project mining
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#
-#      - name: Set up Python
-#        uses: actions/setup-python@v5.1.0
-#        with:
-#          python-version: '3.12'
-#          cache: 'pip'
-#
-#      - name: Install dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          pip install -r requirements.txt
-#
-#      - name: Collect data with Project for Integration tests
-#        id: collect_data_with_project
-#        uses: AbsaOSS/living-doc-collector-gh@feature/7-Add-data-required-by-mdoc-generator
-#        env:
-#          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
-#        with:
-#          doc-issues: true
-#          verbose-logging: true
-#
-#          doc-issues-repositories: |
-#            [
-#              {
-#                "organization-name": "AbsaOSS",
-#                "repository-name": "living-doc-generator",
-#                "projects-title-filter": []
-#              }
-#            ]
-#          doc-issues-project-state-mining: true
-#
-#      - name: Integration test
-#        id: generate_living_doc
-#        uses: ./
-#        env:
-#          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
-#        with:
-#          liv-doc-regime: true
-#          liv-doc-repositories: |
-#            [
-#              {
-#                "organization-name": "AbsaOSS",
-#                "repository-name": "living-doc-generator",
-#                "projects-title-filter": []
-#              }
-#            ]
-#          liv-doc-project-state-mining: true
-#          verbose-logging: true
-#
-#      - name: Verify integration test results
-#        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_with_project_mining
-#
-#  TestWithProjectMiningExcludeProject:
-#    runs-on: ubuntu-latest
-#    name: Integration Tests with project mining and excluded project
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#
-#      - name: Set up Python
-#        uses: actions/setup-python@v5.1.0
-#        with:
-#          python-version: '3.12'
-#          cache: 'pip'
-#
-#      - name: Install dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          pip install -r requirements.txt
-#
-#      - name: Collect data with Project for Integration tests
-#        id: collect_data_with_project
-#        uses: AbsaOSS/living-doc-collector-gh@feature/7-Add-data-required-by-mdoc-generator
-#        env:
-#          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
-#        with:
-#          doc-issues: true
-#          verbose-logging: true
-#
-#          doc-issues-repositories: |
-#            [
-#              {
-#                "organization-name": "AbsaOSS",
-#                "repository-name": "living-doc-generator",
-#                "projects-title-filter": []
-#              }
-#            ]
-#          doc-issues-project-state-mining: true
-#
-#      - name: Integration test
-#        id: generate_living_doc
-#        uses: ./
-#        env:
-#          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
-#        with:
-#          liv-doc-regime: true
-#          liv-doc-repositories: |
-#            [
-#              {
-#                "organization-name": "AbsaOSS",
-#                "repository-name": "living-doc-generator",
-#                "projects-title-filter": ["integration-tests-for-living-doc-generator"]
-#              }
-#            ]
-#          liv-doc-project-state-mining: true
-#          verbose-logging: true
-#
-#      - name: Verify integration test results
-#        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_with_project_mining_and_excluded_project
+  TestsWithProjectMining:
+    runs-on: ubuntu-latest
+    name: Integration Tests with project mining
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Collect data with Project for Integration tests
+        id: collect_data_with_project_1
+        uses: AbsaOSS/living-doc-collector-gh@feature/7-Add-data-required-by-mdoc-generator
+        env:
+          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
+        with:
+          doc-issues: true
+          verbose-logging: true
+
+          doc-issues-repositories: |
+            [
+              {
+                "organization-name": "AbsaOSS",
+                "repository-name": "living-doc-generator",
+                "projects-title-filter": []
+              }
+            ]
+          doc-issues-project-state-mining: true
+
+      - name: Integration test
+        id: generate_living_doc_1
+        uses: ./
+        env:
+          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
+        with:
+          source: "${{ steps.collect_data_with_project_1.outputs.output-path }}/doc-issues/doc-issues.json"
+          report-page: true
+          verbose-logging: true
+
+      - name: Use output path
+        run: ls -lR "${{ steps.generate_living_doc_1.outputs.output-path }}"
+
+      - name: Verify integration test results
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_with_project_mining
+
+  TestWithProjectMiningExcludeProject:
+    runs-on: ubuntu-latest
+    name: Integration Tests with project mining and excluded project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Collect data with Project for Integration tests
+        id: collect_data_with_project_2
+        uses: AbsaOSS/living-doc-collector-gh@feature/7-Add-data-required-by-mdoc-generator
+        env:
+          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
+        with:
+          doc-issues: true
+          verbose-logging: true
+
+          doc-issues-repositories: |
+            [
+              {
+                "organization-name": "AbsaOSS",
+                "repository-name": "living-doc-generator",
+                "projects-title-filter": []
+              }
+            ]
+          doc-issues-project-state-mining: true
+
+      - name: Integration test
+        id: generate_living_doc_2
+        uses: ./
+        env:
+          GITHUB-TOKEN: ${{ secrets.REPOSITORIES_TOKEN }}
+        with:
+          source: "${{ steps.collect_data_with_project_2.outputs.output-path }}/doc-issues/doc-issues.json"
+          report-page: true
+          verbose-logging: true
+
+      - name: Use output path
+        run: ls -lR "${{ steps.generate_living_doc_2.outputs.output-path }}"
+
+      - name: Verify integration test results
+        run: pytest tests/integration/validate_outputs_test.py::test_validate_for_test_with_project_mining_and_excluded_project
