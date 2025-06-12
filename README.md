@@ -84,7 +84,7 @@ The report page summarizes the errors found during the generation of living docu
 
 - **Activation**: Set the `report-page` input to true to activate this feature.
 - **Non-Activated Behavior**: By default, when the feature is inactive, the errors are not listed in the output but are present in the log output.
-- **Activated Example**: The report page is generated only, when some error are found during the generation of living documents.
+- **Activated Example**: The report page is generated only when some error are found during the generation of living documents.
   - `report-page: true` activates the generation of report page.
     ```markdown
     <h3>Report page</h3>

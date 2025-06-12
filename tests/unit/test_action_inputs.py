@@ -23,10 +23,10 @@ from action_inputs import ActionInputs
 
 def test_report_page_default():
     # Act
-    actual = os.getenv("INPUT_REPORT_PAGE", "true").lower() == "true"
+    actual = ActionInputs.is_report_page_generation_enabled()
 
     # Assert
-    assert actual
+    assert not actual
 
 
 def test_get_source_returns_env_value(monkeypatch):

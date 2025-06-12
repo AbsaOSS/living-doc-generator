@@ -48,7 +48,7 @@ class ActionInputs(BaseActionInputs):
     def is_release_filtering_enabled() -> bool:
         """
         Getter of the release filtering switch. False by default.
-        @return: True
+        @return: True if release filtering is enabled, False otherwise.
         """
         return get_action_input(RELEASE, "false").lower() == "true"
 

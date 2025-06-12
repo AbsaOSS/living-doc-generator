@@ -57,7 +57,6 @@ def test_generate_correct_behaviour(mocker):
 def test_clean_output_directory_correct_behaviour(mocker):
     # Arrange
     generator: MdocLivingDocumentationGenerator = MdocLivingDocumentationGenerator("/path/to/output")
-    mock_exists = mocker.patch("os.path.exists", return_value=True)
     mock_rmtree = mocker.patch("shutil.rmtree")
     mock_makedirs = mocker.patch("os.makedirs")
 
@@ -65,7 +64,6 @@ def test_clean_output_directory_correct_behaviour(mocker):
     generator._clean_output_directory()
 
     # Assert
-    mock_exists.assert_called_once()
     mock_rmtree.assert_called_once()
     mock_makedirs.assert_called_once()
 
@@ -78,7 +76,7 @@ def test_generate_living_documents_correct_behaviour(mocker, tmp_path, sample_is
     generator: MdocLivingDocumentationGenerator = MdocLivingDocumentationGenerator(str(tmp_path))
     mock_logger_info = mocker.patch("living_doc_generator.living_doc_generator.logger.info")
     mock_logger_error = mocker.patch("living_doc_generator.living_doc_generator.logger.error")
-    mocker.patch.object(mdoc_exporter, "export", return_value=True)
+    mocker.patch("living_doc_generator.mdoc_exporter.MdocExporter.export", return_value=True)
 
     # Act
     res = generator._generate_living_documents(sample_issues_with_project_states)

@@ -14,8 +14,8 @@
 #
 
 """
-This module contains the LivingDocumentationGenerator class, which is responsible for generating
-The Living Documentation output.
+This module defines `MdocLivingDocumentationGenerator`, responsible for producing Living Documentation output
+in the Mdoc format.
 """
 
 import logging
@@ -74,9 +74,8 @@ class MdocLivingDocumentationGenerator:
 
         @return: None
         """
-        if os.path.exists(self.__output_path):
-            shutil.rmtree(self.__output_path)
-        os.makedirs(self.__output_path)
+        shutil.rmtree(self.__output_path, ignore_errors=True)
+        os.makedirs(self.__output_path, exist_ok=True)
 
     def _generate_living_documents(self, issues: Issues) -> bool:
         """

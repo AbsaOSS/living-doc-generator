@@ -1,9 +1,10 @@
 import os
 
 from datetime import date
+from pathlib import Path
 
-output_folder = "output"
-directory_path = f"{output_folder}/generator/mdoc"
+output_folder = Path("output")
+directory_path = output_folder / "generator" / "mdoc"
 issue88_path = f"{directory_path}/features/TEST: Documented feature /_index.md"
 issue89_path = f"{directory_path}/user_stories/89_test_user_story_in_project.md"
 issue90_path = f"{directory_path}/features/TEST: Documented feature  in project/_index.md"
