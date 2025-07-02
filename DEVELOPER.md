@@ -45,7 +45,7 @@ touch run_local.sh
 #!/bin/sh
 
 # Essential environment variables for GitHub Action functionality
-export INPUT_SOURCE="TODO"
+export INPUT_SOURCE="{path-to-location}/doc-issues/doc-issues.json"
 
 # Optional environment variables
 export INPUT_RELEASE=false
@@ -78,7 +78,7 @@ It checks for errors, enforces coding standards, and looks for code smells, amon
 We do exclude the `tests/` file from the pylint check.
 
 Pylint displays a global evaluation score for the code, rated out of a maximum score of 10.0.
-We aim to maintain a code quality score above 9.5.
+We aim to maintain the code quality score above 9.5.
 
 Follow these steps to run a Pylint check locally:
 
