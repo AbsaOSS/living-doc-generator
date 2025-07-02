@@ -1,6 +1,7 @@
-> Add information about goal of Pull Request.
+Here: place release notes for the pull request. See example below:
 
----
-> **Note:** Remember to link this PR to the related issue by adding `Fixes #issue_number` to the description above.
+Release Notes:
+- TBD: 1st item of release notes
+- TBD: 2nd item of release notes
 
 Closes #issue_number

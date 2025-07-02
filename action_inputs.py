@@ -15,78 +15,58 @@
 #
 
 """
-This module contains an Action Inputs class methods,
+This module contains an ActionInputs class method,
 which are essential for running the GH action.
 """
 
-import json
 import logging
-import requests
+import os
 
-from living_documentation_regime.model.config_repository import ConfigRepository
-from utils.exceptions import FetchRepositoriesException
-from utils.utils import get_action_input
-from utils.constants import (
-    GITHUB_TOKEN,
-    LIV_DOC_OUTPUT_FORMATS,
-    LIV_DOC_PROJECT_STATE_MINING,
-    LIV_DOC_REPOSITORIES,
-    LIV_DOC_STRUCTURED_OUTPUT,
-    REPORT_PAGE,
-    Regime,
-)
+from living_doc_utilities.github.utils import get_action_input
+from living_doc_utilities.inputs.action_inputs import BaseActionInputs
+
+from utils.constants import REPORT_PAGE, RELEASE, SOURCE, VERBOSE_LOGGING, STRUCTURED_OUTPUT
 
 logger = logging.getLogger(__name__)
 
 
-class ActionInputs:
+class ActionInputs(BaseActionInputs):
     """
-    A class representing all the action inputs. It is responsible for loading, managing
+    A class representing all the action inputs. It is responsible for loading and managing
     and validating the inputs required for running the GH Action.
     """
 
     @staticmethod
-    def get_github_token() -> str:
-        """
-        Getter of the GitHub authorization token.
-        @return: The GitHub authorization token.
-        """
-        return get_action_input(GITHUB_TOKEN)
-
-    @staticmethod
     def is_report_page_generation_enabled() -> bool:
         """
-        Getter of the report page switch. True by default.
+        Getter of the report page switch. False by default.
         @return: True if report page is enabled, False otherwise.
         """
-        return get_action_input(REPORT_PAGE, "true").lower() == "true"
+        return get_action_input(REPORT_PAGE, "false").lower() == "true"
 
     @staticmethod
-    def is_living_doc_regime_enabled() -> bool:
+    def is_release_filtering_enabled() -> bool:
         """
-        Getter of the LivDoc regime switch.
-        @return: True if LivDoc regime is enabled, False otherwise.
+        Getter of the release filtering switch. False by default.
+        @return: True if release filtering is enabled, False otherwise.
         """
-        regime: str = Regime.LIV_DOC_REGIME.value
-        return get_action_input(regime, "false").lower() == "true"
+        return get_action_input(RELEASE, "false").lower() == "true"
 
     @staticmethod
-    def get_liv_doc_output_formats() -> list[str]:
+    def get_verbose_logging() -> bool:
         """
-        Getter of the LivDoc regime output formats for generated documents.
-        @return: A list of LivDoc output formats.
+        Getter of the verbose logging switch. False by default.
+        @return: True if verbose logging is enabled, False otherwise.
         """
-        output_formats_string = get_action_input(LIV_DOC_OUTPUT_FORMATS, "mdoc").strip().lower()
-        output_formats = [fmt.strip() for fmt in output_formats_string.split(",")]
-        return output_formats
+        return get_action_input(VERBOSE_LOGGING, "false").lower() == "true"
 
     @staticmethod
-    def is_project_state_mining_enabled() -> bool:
+    def get_source() -> str:
         """
-        Getter of the project state mining switch.
-        @return: True if project state mining is enabled, False otherwise.
+        Getter of the source input.
+        @return: The source input.
         """
-        return get_action_input(LIV_DOC_PROJECT_STATE_MINING, "false").lower() == "true"
+        return get_action_input(SOURCE)
 
     @staticmethod
     def is_structured_output_enabled() -> bool:
@@ -96,114 +76,36 @@ class ActionInputs:
         throws raise LivDocFetchRepositoriesException when fetching failed (Json or Type error)
         @return: True if structured output is enabled, False otherwise.
         """
-        return get_action_input(LIV_DOC_STRUCTURED_OUTPUT, "false").lower() == "true"
+        return get_action_input(STRUCTURED_OUTPUT, "false").lower() == "true"
 
-    @staticmethod
-    def get_repositories() -> list[ConfigRepository]:
+    def _validate(self) -> int:
+        err_counter = 0
+
+        # Validate source input
+        source: str = self.get_source()
+        if not isinstance(source, str) or not source.strip():
+            logger.error("Source input must be a non-empty string.")
+            err_counter += 1
+        else:
+            if not os.path.isfile(source):
+                logger.error("Source file not found at received path: '%s'.", source)
+                err_counter += 1
+
+        if err_counter > 0:
+            logger.error("User configuration validation failed.")
+        else:
+            logger.info("User configuration validation successfully completed.")
+
+        self.print_effective_configuration()
+
+        return err_counter
+
+    def _print_effective_configuration(self) -> None:
         """
-        Getter and parser of the Config Repositories.
-
-        @return: A list of Config Repositories
-        @raise FetchRepositoriesException: When parsing JSON string to dictionary fails.
+        Print the effective configuration of the action inputs.
         """
-        repositories = []
-        action_input = get_action_input(LIV_DOC_REPOSITORIES, "[]")
-        try:
-            # Parse repositories json string into json dictionary format
-            repositories_json = json.loads(action_input)
-
-            # Load repositories into ConfigRepository object from JSON
-            for repository_json in repositories_json:
-                config_repository = ConfigRepository()
-                if config_repository.load_from_json(repository_json):
-                    repositories.append(config_repository)
-                else:
-                    logger.error("Failed to load repository from JSON: %s.", repository_json)
-
-        except json.JSONDecodeError as e:
-            logger.error("Error parsing JSON repositories: %s.", e, exc_info=True)
-            raise FetchRepositoriesException from e
-
-        except TypeError as e:
-            logger.error("Type error parsing input JSON repositories: %s.", action_input)
-            raise FetchRepositoriesException from e
-
-        return repositories
-
-    def validate_user_configuration(self) -> bool:
-        """
-        Checks that all the user configurations defined are correct.
-        @return: True if configuration is correct, False otherwise.
-        """
-        logger.debug("User configuration validation started")
-
-        # validate repositories configuration
-        try:
-            repositories = self.get_repositories()
-        except FetchRepositoriesException:
-            return False
-
-        github_token = self.get_github_token()
-        headers = {"Authorization": f"token {github_token}"}
-
-        # Validate GitHub token
-        response = requests.get("https://api.github.com/octocat", headers=headers, timeout=10)
-        if response.status_code != 200:
-            logger.error(
-                "Can not connect to GitHub. Possible cause: Invalid GitHub token. Status code: %s, Response: %s",
-                response.status_code,
-                response.text,
-            )
-            return False
-
-        repository_error_count = 0
-        for repository in repositories:
-            org_name = repository.organization_name
-            repo_name = repository.repository_name
-            github_repo_url = f"https://api.github.com/repos/{org_name}/{repo_name}"
-
-            response = requests.get(github_repo_url, headers=headers, timeout=10)
-
-            if response.status_code == 404:
-                logger.error(
-                    "Repository '%s/%s' could not be found on GitHub. Please verify that the repository "
-                    "exists and that your authorization token is correct.",
-                    org_name,
-                    repo_name,
-                )
-                repository_error_count += 1
-            elif response.status_code != 200:
-                logger.error(
-                    "An error occurred while validating the repository '%s/%s'. "
-                    "The response status code is %s. Response: %s",
-                    org_name,
-                    repo_name,
-                    response.status_code,
-                    response.text,
-                )
-                repository_error_count += 1
-        if repository_error_count > 0:
-            return False
-
-        # log user configuration
-        logger.debug("User configuration validation successfully completed.")
-
-        # log regime: enabled/disabled
-        logger.debug("Regime: `LivDoc`: %s.", "Enabled" if ActionInputs.is_living_doc_regime_enabled() else "Disabled")
-
-        # log common user inputs
-        logger.debug("Global: `report-page`: %s.", ActionInputs.is_report_page_generation_enabled())
-
-        # log liv-doc regime user inputs
-        if ActionInputs.is_living_doc_regime_enabled():
-            logger.debug("Regime(LivDoc): `liv-doc-repositories`: %s.", repositories)
-            logger.debug(
-                "Regime(LivDoc): `liv-doc-project-state-mining`: %s.",
-                ActionInputs.is_project_state_mining_enabled(),
-            )
-            logger.debug(
-                "Regime(LivDoc): `liv-doc-structured-output`: %s.", ActionInputs.is_structured_output_enabled()
-            )
-            logger.debug("Regime(LivDoc): `liv-doc-output-formats`: %s.", ActionInputs.get_liv_doc_output_formats())
-
-        return True
+        logger.info("source: %s", self.get_source())
+        logger.info("release filtering enabled: %s", self.is_release_filtering_enabled())
+        logger.info("structured output enabled: %s", self.is_structured_output_enabled())
+        logger.info("report page generation enabled: %s", self.is_report_page_generation_enabled())
+        logger.info("verbose logging: %s", self.get_verbose_logging())

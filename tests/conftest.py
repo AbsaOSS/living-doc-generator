@@ -13,82 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import datetime
-import time
+import os
 import pytest
-from github import Github
-from github.Rate import Rate
-from github.RateLimit import RateLimit
-from github.Repository import Repository
 
-from living_documentation_regime.living_documentation_generator import LivingDocumentationGenerator
-from living_documentation_regime.model.config_repository import ConfigRepository
-from living_documentation_regime.model.consolidated_issue import ConsolidatedIssue
-from living_documentation_regime.model.github_project import GithubProject
-from living_documentation_regime.model.project_status import ProjectStatus
-from utils.constants import OUTPUT_PATH
-from utils.github_rate_limiter import GithubRateLimiter
-from utils.utils import make_absolute_path
-
-
-@pytest.fixture
-def rate_limiter(mocker, request):
-    mock_github_client = mocker.Mock(spec=Github)
-    mock_github_client.get_rate_limit.return_value = request.getfixturevalue("mock_rate_limiter")
-    return GithubRateLimiter(mock_github_client)
-
-
-@pytest.fixture
-def mock_rate_limiter(mocker):
-    mock_rate = mocker.Mock(spec=Rate)
-    mock_rate.timestamp = mocker.Mock(return_value=time.time() + 3600)
-
-    mock_core = mocker.Mock(spec=RateLimit)
-    mock_core.reset = mock_rate
-
-    mock = mocker.Mock(spec=GithubRateLimiter)
-    mock.core = mock_core
-    mock.core.remaining = 10
-
-    return mock
-
-
-@pytest.fixture
-def mock_logging_setup(mocker):
-    mock_log_config = mocker.patch("logging.basicConfig")
-    yield mock_log_config
-
-
-@pytest.fixture
-def github_project_setup(mocker):
-    project = mocker.Mock(spec=GithubProject)
-    project_json = {"id": "123", "number": 1, "title": "Test Project"}
-
-    repository = mocker.Mock(spec=Repository)
-    repository.owner.login = "organizationABC"
-    repository.full_name = "organizationABC/repoABC"
-
-    field_option_response = {}
-    project.loads(project_json, repository, field_option_response)
-
-    return project
-
-
-@pytest.fixture
-def repository_setup(mocker):
-    repository = mocker.Mock(spec=Repository)
-    repository.owner.login = "test_owner"
-    repository.name = "test_repo"
-    repository.full_name = "test_owner/test_repo"
-    repository.get_issues.return_value = []
-
-    return repository
+from living_doc_generator.living_doc_generator import MdocLivingDocumentationGenerator
+from living_doc_generator.mdoc_exporter import MdocExporter
+from living_doc_utilities.model.feature_issue import FeatureIssue
+from living_doc_utilities.model.functionality_issue import FunctionalityIssue
+from living_doc_utilities.model.issues import Issues
+from living_doc_utilities.model.project_status import ProjectStatus
+from living_doc_utilities.model.user_story_issue import UserStoryIssue
 
 
 @pytest.fixture
 def load_all_templates_setup(mocker):
     mock_load_all_templates = mocker.patch.object(
-        LivingDocumentationGenerator,
+        MdocLivingDocumentationGenerator,
         "_load_all_templates",
         return_value=(
             "Issue Page Template",
@@ -105,72 +45,97 @@ def load_all_templates_setup(mocker):
 
 
 @pytest.fixture
-def living_documentation_generator(mocker):
-    mock_github_class = mocker.patch("living_documentation_regime.living_documentation_generator.Github")
-    mock_github_instance = mock_github_class.return_value
-
-    mock_rate_limit = mocker.Mock()
-    mock_rate_limit.remaining = 5000
-    mock_rate_limit.reset = datetime.datetime.now() + datetime.timedelta(minutes=10)
-
-    mock_github_instance.get_rate_limit.return_value = mocker.Mock(core=mock_rate_limit)
-    mock_github_instance.get_repo.return_value = mocker.Mock()
-
-    mocker.patch(
-        "living_documentation_regime.living_documentation_generator.ActionInputs.get_github_token",
-        return_value="FakeGithubToken",
-    )
-    return LivingDocumentationGenerator(make_absolute_path(OUTPUT_PATH))
+def mdoc_exporter(tmp_path):
+    """Fixture to create an instance of MdocExporter with modified template paths."""
+    output_dir = os.path.join(tmp_path, "output")
+    os.makedirs(output_dir, exist_ok=True)
+    return MdocExporter(output_dir)
 
 
 @pytest.fixture
-def config_repository(mocker):
-    config_repository = mocker.Mock(spec=ConfigRepository)
-    config_repository.organization_name = "test_org"
-    config_repository.repository_name = "test_repo"
-    config_repository.projects_title_filter = []
-    config_repository.full_name = "test_org/test_repo"
+def sample_issues_without_project_states():
+    issues: Issues = Issues()
 
-    return config_repository
+    issue_us_1: UserStoryIssue = UserStoryIssue()
+    issue_us_1.repository_id = "org/repo"
+    issue_us_1.issue_number = 1
+    issue_us_1.title = "Sample User Story 1"
+    issue_us_1.body = "This is a sample user story issue body."
+    issue_us_1.state = "In Progress"
+    issue_us_2: UserStoryIssue = UserStoryIssue()
+    issue_us_2.repository_id = "org/repo"
+    issue_us_2.issue_number = 2
+    issue_us_2.title = "Sample User Story 2"
+    issue_us_2.body = "This is another sample user story issue body."
+    issue_us_2.state = "To Do"
+    issue_feat_1: FeatureIssue = FeatureIssue()
+    issue_feat_1.repository_id = "org/repo"
+    issue_feat_1.issue_number = 3
+    issue_feat_1.title = "Sample Feature 1"
+    issue_feat_1.body = "This is a sample feature issue body."
+    issue_feat_1.state = "In Progress"
+    issue_feat_2: FeatureIssue = FeatureIssue()
+    issue_feat_2.repository_id = "org/repo"
+    issue_feat_2.issue_number = 4
+    issue_feat_2.title = "Sample Feature 2"
+    issue_feat_2.body = "This is a sample feature issue body."
+    issue_feat_2.state = "To Do"
+    issue_func_1: FunctionalityIssue = FunctionalityIssue()
+    issue_func_1.repository_id = "org/repo"
+    issue_func_1.issue_number = 5
+    issue_func_1.title = "Sample Functionality 1"
+    issue_func_1.body = "This is a sample function issue body.\n### Associated Feature\n- #3\n"
+    issue_func_1.state = "In Progress"
+    issue_func_2: FunctionalityIssue = FunctionalityIssue()
+    issue_func_2.repository_id = "org/repo"
+    issue_func_2.issue_number = 6
+    issue_func_2.title = "Sample Functionality 2"
+    issue_func_2.body = "This is a sample function issue body.\n### Associated Feature\n- #4\n"
+    issue_func_2.state = "To Do"
+
+    issues.issues["org/repo/1"] = issue_us_1
+    issues.issues["org/repo/2"] = issue_us_2
+    issues.issues["org/repo/3"] = issue_feat_1
+    issues.issues["org/repo/4"] = issue_feat_2
+    issues.issues["org/repo/5"] = issue_func_1
+    issues.issues["org/repo/6"] = issue_func_2
+
+    return issues
+
+@pytest.fixture
+def sample_issues_with_project_states(sample_issues_without_project_states):
+    prj_status_in_progress = ProjectStatus()
+    prj_status_in_progress.status = "In Progress"
+    prj_status_todo = ProjectStatus()
+    prj_status_todo.status = "To Do"
+
+    sample_issues_without_project_states.issues["org/repo/1"].linked_to_project = True
+    sample_issues_without_project_states.issues["org/repo/1"].project_statuses.append(prj_status_in_progress)
+    sample_issues_without_project_states.issues["org/repo/2"].linked_to_project = True
+    sample_issues_without_project_states.issues["org/repo/2"].project_statuses.append(prj_status_todo)
+    sample_issues_without_project_states.issues["org/repo/3"].linked_to_project = True
+    sample_issues_without_project_states.issues["org/repo/3"].project_statuses.append(prj_status_in_progress)
+    sample_issues_without_project_states.issues["org/repo/4"].linked_to_project = True
+    sample_issues_without_project_states.issues["org/repo/4"].project_statuses.append(prj_status_todo)
+    sample_issues_without_project_states.issues["org/repo/5"].linked_to_project = True
+    sample_issues_without_project_states.issues["org/repo/5"].project_statuses.append(prj_status_in_progress)
+    sample_issues_without_project_states.issues["org/repo/6"].linked_to_project = True
+    sample_issues_without_project_states.issues["org/repo/6"].project_statuses.append(prj_status_todo)
+
+    sample_issues_without_project_states.project_states_included = True
+
+    return sample_issues_without_project_states
 
 
 @pytest.fixture
-def consolidated_issue(mocker):
-    consolidated_issue = mocker.Mock(spec=ConsolidatedIssue)
-    consolidated_issue.repository_id = "TestOrg/TestRepo"
-    consolidated_issue.organization_name = "TestOrg"
-    consolidated_issue.repository_name = "TestRepo"
-    consolidated_issue.number = 42
-    consolidated_issue.title = "Sample Issue"
-    consolidated_issue.state = "OPEN"
-    consolidated_issue.html_url = "https://github.com/TestOrg/TestRepo/issues/42"
-    consolidated_issue.created_at = "2024-01-01T00:00:00Z"
-    consolidated_issue.updated_at = "2024-01-02T00:00:00Z"
-    consolidated_issue.closed_at = None
-    consolidated_issue.labels = ["bug", "urgent"]
-    consolidated_issue.body = "This is the issue content."
-    consolidated_issue.linked_to_project = False
-    consolidated_issue.errors = {}
-    consolidated_issue.project_issue_statuses = [
-        mocker.Mock(
-            project_title="Project A",
-            status="In Progress",
-            priority="High",
-            size="Large",
-            moscow="Must Have",
-        )
-    ]
-
-    return consolidated_issue
+def sample_issues_with_errors_without_project_states(sample_issues_without_project_states):
+    sample_issues_without_project_states.get_issue("org/repo/1").add_errors({"SomeError": "Fake some error."})
+    sample_issues_without_project_states.get_issue("org/repo/2").add_errors({"SomeError": "Fake some error."})
+    return sample_issues_without_project_states
 
 
 @pytest.fixture
-def project_status(mocker):
-    project_status = mocker.Mock(spec=ProjectStatus)
-    project_status.project_title = "Test Project"
-    project_status.status = "In Progress"
-    project_status.priority = "High"
-    project_status.size = "Large"
-    project_status.moscow = "Must Have"
-
-    return project_status
+def sample_issues_with_errors_with_project_states(sample_issues_with_project_states):
+    sample_issues_with_project_states.get_issue("org/repo/1").add_errors({"SomeError": "Fake some error."})
+    sample_issues_with_project_states.get_issue("org/repo/2").add_errors({"SomeError": "Fake some error."})
+    return sample_issues_with_project_states

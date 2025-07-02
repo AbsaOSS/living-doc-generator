@@ -1,12 +1,13 @@
 import os
 
 from datetime import date
+from pathlib import Path
 
-output_folder = "output"
-directory_path = f"{output_folder}/liv-doc-regime"
-issue88_path = f"{directory_path}/features/TEST: Documented feature /_index.md"
+output_folder = Path("output")
+directory_path = output_folder / "generator" / "mdoc"
+issue88_path = f"{directory_path}/features/TEST_Documented_feature_/_index.md"
 issue89_path = f"{directory_path}/user_stories/89_test_user_story_in_project.md"
-issue90_path = f"{directory_path}/features/TEST: Documented feature  in project/_index.md"
+issue90_path = f"{directory_path}/features/TEST_Documented_feature_in_project/_index.md"
 issue91_path = f"{directory_path}/user_stories/91_test_user_story.md"
 
 issue88_header = f'''---
@@ -207,7 +208,6 @@ def count_files_in_directory(directory):
 def validate_issue(path, issue):
     with open(path, 'r') as f:
         markdown_string = f.read()
-
 
         if issue not in markdown_string:
             print(f"Expected:\n'{issue}'")

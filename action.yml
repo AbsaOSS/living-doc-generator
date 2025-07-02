@@ -1,39 +1,25 @@
-name: 'Living Documentation Generator'
-description: 'Generates living documentation from current state of user defined GitHub repositories.'
+name: 'Living Documentation Generator - MDOC'
+description: 'Generates living documentation in MDOC format'
 inputs:
-  # Base action inputs
-  GITHUB-TOKEN:
-    description: 'GitHub token for authentication.'
+  source:
+    description: 'Path to source file containing the data to be processed.'
     required: true
-  liv-doc-regime:
-    description: 'Enable or disable the LivDoc regime.'
-    required: true
-  report-page:
-    description: 'Enable or disable the generation of report page.'
+  release:
+    description: 'Enable or disable the release filtering.'
     required: false
-    default: 'true'
+    default: 'false'
+  structured-output:
+    description: 'Enable or disable structured output.'
+    required: false
+    default: 'false'
+  report-page:
+    description: 'Enable or disable the generation of the report page.'
+    required: false
+    default: 'false'
   verbose-logging:
     description: 'Enable or disable verbose logging.'
     required: false
     default: 'false'
-
-  # LivDoc-regime action inputs
-  liv-doc-repositories:
-    description: 'JSON string defining the repositories to be included in the documentation generation.'
-    required: false
-    default: '[]'
-  liv-doc-project-state-mining:
-    description: 'Enable or disable mining of project state data.'
-    required: false
-    default: 'false'
-  liv-doc-structured-output:
-    description: 'Enable or disable structured output.'
-    required: false
-    default: 'false'
-  liv-doc-output-formats:
-    description: 'Comma-separated list of wanted output formats for Living Documentation Regime.'
-    required: false
-    default: 'mdoc'
 
 outputs:
   output-path:
@@ -59,36 +45,25 @@ runs:
         export PYTHONPATH="${PYTHONPATH}:${ACTION_ROOT}/living-doc-generator"
       shell: bash
 
-    - name: Prepare environment based on mining regimes
+    - name: Prepare environment variables
       run: |
-        # Set base env variables common for all regimes
-        echo "INPUT_GITHUB_TOKEN=${{ env.GITHUB-TOKEN }}" >> $GITHUB_ENV
-        echo "INPUT_LIV_DOC_REGIME=${{ inputs.liv-doc-regime }}" >> $GITHUB_ENV
+        echo "INPUT_SOURCE=${{ inputs.source }}" >> $GITHUB_ENV
+        echo "INPUT_RELEASE=${{ inputs.release }}" >> $GITHUB_ENV
+        echo "INPUT_STRUCTURED_OUTPUT=${{ inputs.structured-output }}" >> $GITHUB_ENV
         echo "INPUT_REPORT_PAGE=${{ inputs.report-page }}" >> $GITHUB_ENV
         echo "INPUT_VERBOSE_LOGGING=${{ inputs.verbose-logging }}" >> $GITHUB_ENV
-
-        # Add LivDoc-specific env variables if the regime is enabled
-        if [[ "${{ inputs.liv-doc-regime }}" == "true" ]]; then
-          echo "INPUT_LIV_DOC_REPOSITORIES=$(echo '${{ inputs.liv-doc-repositories }}' | jq -c .)" >> $GITHUB_ENV
-          echo "INPUT_LIV_DOC_PROJECT_STATE_MINING=${{ inputs.liv-doc-project-state-mining }}" >> $GITHUB_ENV
-          echo "INPUT_LIV_DOC_STRUCTURED_OUTPUT=${{ inputs.liv-doc-structured-output }}" >> $GITHUB_ENV
-          echo "INPUT_LIV_DOC_OUTPUT_FORMATS=${{ inputs.liv-doc-output-formats }}" >> $GITHUB_ENV
-        fi
       shell: bash
 
-    - name: Run Living Documentation Generator
+    - name: Run Living Documentation Generator for Mdoc
       id: liv-doc-generator
       env:
-        INPUT_GITHUB_TOKEN: ${{ env.INPUT_GITHUB_TOKEN }}
-        INPUT_LIV_DOC_REGIME: ${{ env.INPUT_LIV_DOC_REGIME }}
+        INPUT_SOURCE: ${{ env.INPUT_SOURCE }}
 
+        INPUT_RELEASE: ${{ env.INPUT_RELEASE }}
+        INPUT_STRUCTURED_OUTPUT: ${{ env.INPUT_STRUCTURED_OUTPUT }}
         INPUT_REPORT_PAGE: ${{ env.INPUT_REPORT_PAGE }}
         INPUT_VERBOSE_LOGGING: ${{ env.INPUT_VERBOSE_LOGGING }}
 
-        INPUT_LIV_DOC_REPOSITORIES: ${{ env.INPUT_LIV_DOC_REPOSITORIES }}
-        INPUT_LIV_DOC_PROJECT_STATE_MINING: ${{ env.INPUT_LIV_DOC_PROJECT_STATE_MINING }}
-        INPUT_LIV_DOC_STRUCTURED_OUTPUT: ${{ env.INPUT_LIV_DOC_STRUCTURED_OUTPUT }}
-        INPUT_LIV_DOC_OUTPUT_FORMATS: ${{ env.INPUT_LIV_DOC_OUTPUT_FORMATS }}
       run: |
         python ${{ github.action_path }}/main.py
       shell: bash
