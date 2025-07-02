@@ -41,7 +41,7 @@ touch run_local.sh
 
 ### Fill the Shell Script
 
-```
+```shell
 #!/bin/sh
 
 # Essential environment variables for GitHub Action functionality
@@ -111,7 +111,7 @@ pylint living_doc_generator/living_doc_generator.py
 ### Expected Output
 
 This is the console's expected output example after running the tool:
-```
+```text
 ************* Module main
 main.py:30:0: C0116: Missing function or method docstring (missing-function-docstring)
 
@@ -161,7 +161,7 @@ black living_doc_generator/living_doc_generator.py
 ### Expected Output
 
 This is the console's expected output example after running the tool:
-```
+```text
 All done! ✨ 🍰 ✨
 1 file reformatted.
 ```
@@ -198,7 +198,7 @@ Example:
 ### Expected Output
 
 This is the console's expected output example after running the tool:
-```
+```text
 Success: no issues found in 1 source file
 ```
 
